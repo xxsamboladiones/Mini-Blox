@@ -26,3 +26,9 @@ MiniBlox is in early alpha.
 ## License
 
 MIT
+
+## Support MiniBlox
+
+If you like MiniBlox and want to support its development, you can buy me a coffee:
+
+☕ https://buymeacoffee.com/xxsam
