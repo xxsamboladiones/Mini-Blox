@@ -1,0 +1,307 @@
+import * as THREE from "three";
+import { AssetLoader } from "./AssetLoader";
+import { AudioSystem } from "./AudioSystem";
+import { createMapObject3D, disposeObject3D, stampMapObject3D } from "./ObjectFactory";
+import { FeedbackSystem } from "./FeedbackSystem";
+import { PlayerController } from "./PlayerController";
+import { PhysicsSystem } from "./PhysicsSystem";
+import { RuntimeHud } from "./RuntimeHud";
+import { RuntimeMechanics } from "./RuntimeMechanics";
+import { ThirdPersonCameraController } from "./ThirdPersonCameraController";
+import { resolveVisualSettings } from "../shared/VisualSettings";
+import type { GameMap } from "../shared/types/MapSchema";
+
+type GameRuntimeOptions = {
+  onEditMap?: (map: GameMap) => void;
+  onBackToMenu?: () => void;
+  onMapCompleted?: (summary: { map: GameMap; coinsCollected: number }) => void;
+};
+
+export class GameRuntime {
+  private readonly renderer: THREE.WebGLRenderer;
+  private readonly scene = new THREE.Scene();
+  private readonly world = new THREE.Group();
+  private readonly camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
+  private readonly clock = new THREE.Clock();
+  private readonly assetLoader = new AssetLoader();
+  private readonly physicsSystem = new PhysicsSystem();
+  private readonly playerController: PlayerController;
+  private readonly cameraController: ThirdPersonCameraController;
+  private readonly hud: RuntimeHud;
+  private readonly audioSystem = new AudioSystem();
+  private readonly feedbackSystem: FeedbackSystem;
+  private readonly objectViews = new Map<string, THREE.Object3D>();
+  private readonly resizeObserver: ResizeObserver;
+  private ambientLight: THREE.HemisphereLight | null = null;
+  private sunLight: THREE.DirectionalLight | null = null;
+  private mechanics: RuntimeMechanics | null = null;
+  private animationFrame = 0;
+  private activeMap: GameMap | null = null;
+  private paused = false;
+
+  constructor(
+    private readonly container: HTMLElement,
+    private readonly options: GameRuntimeOptions = {}
+  ) {
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.domElement.tabIndex = 0;
+    this.renderer.domElement.className = "editor-canvas";
+    this.container.replaceChildren(this.renderer.domElement);
+    this.hud = new RuntimeHud(this.container);
+
+    this.camera.position.set(7, 5, 8);
+    this.playerController = new PlayerController(
+      this.scene,
+      this.camera,
+      this.renderer.domElement,
+      this.physicsSystem
+    );
+    this.playerController.setExternalCameraControl(true);
+    this.feedbackSystem = new FeedbackSystem(this.world, this.container);
+    this.cameraController = new ThirdPersonCameraController({
+      camera: this.camera,
+      container: this.container,
+      domElement: this.renderer.domElement,
+      getTargetPosition: () => {
+        const position = this.playerController.getPosition();
+        return new THREE.Vector3(position.x, position.y, position.z);
+      },
+      objectViews: this.objectViews,
+      getInteractionHint: (objectId) => this.mechanics?.getInteractionHint(objectId) ?? null,
+      interact: (objectId) => this.mechanics?.interactWithObject(objectId) ?? false,
+      onPrimaryAction: () => this.mechanics?.attack()
+    });
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(this.container);
+
+    this.setupScene();
+    this.resize();
+    this.cameraController.start();
+    window.addEventListener("keydown", this.handleRuntimeKeyDown);
+    this.animate();
+  }
+
+  async loadMap(map: GameMap): Promise<void> {
+    this.activeMap = structuredClone(map);
+    this.paused = false;
+    this.clearWorld();
+    this.objectViews.clear();
+    this.mechanics = null;
+    this.feedbackSystem.clear();
+    this.audioSystem.applySettings(this.activeMap.audioSettings);
+    this.applyVisualSettings();
+    this.hud.hidePause();
+    this.hud.hideVictory();
+    this.hud.setMapName(this.activeMap.name);
+    this.hud.setActions({
+      onContinue: () => {
+        this.audioSystem.play("uiClick");
+        this.resume();
+      },
+      onRestart: () => {
+        this.audioSystem.play("uiClick");
+        this.restart();
+      },
+      onEdit: () => {
+        this.audioSystem.play("uiClick");
+        this.editActiveMap();
+      },
+      onMenu: () => {
+        this.audioSystem.play("uiClick");
+        this.options.onBackToMenu?.();
+      },
+      onToggleMute: () => {
+        this.audioSystem.toggleMuted();
+        this.hud.setAudioMuted(this.audioSystem.isMuted());
+      }
+    });
+    this.hud.setAudioMuted(this.audioSystem.isMuted());
+
+    for (const mapObject of this.activeMap.objects) {
+      const object3D = createMapObject3D(mapObject);
+
+      if (mapObject.type === "model" && mapObject.assetId) {
+        const asset = this.activeMap.assets?.find((candidate) => candidate.id === mapObject.assetId);
+
+        if (asset) {
+          disposeObject3D(object3D);
+          object3D.clear();
+          const model = await this.assetLoader.loadModelInstance(asset);
+          object3D.add(model);
+          stampMapObject3D(object3D, mapObject.id);
+        }
+      }
+
+      this.objectViews.set(mapObject.id, object3D);
+      this.world.add(object3D);
+    }
+
+    this.physicsSystem.setCollidersFromObjects(this.activeMap, this.objectViews);
+    this.playerController.start(this.activeMap.spawnPoint);
+    this.cameraController.reset();
+    this.mechanics = new RuntimeMechanics(
+      this.activeMap,
+      this.world,
+      this.objectViews,
+      this.playerController,
+      this.hud,
+      this.physicsSystem,
+      this.audioSystem,
+      this.feedbackSystem,
+      {
+        onRestart: () => this.restart(),
+        onEdit: () => this.editActiveMap(),
+        onMenu: () => this.options.onBackToMenu?.(),
+        onComplete: (coinsCollected) => {
+          if (this.activeMap) {
+            this.options.onMapCompleted?.({
+              map: structuredClone(this.activeMap),
+              coinsCollected
+            });
+          }
+        }
+      }
+    );
+  }
+
+  getMap(): GameMap | null {
+    return this.activeMap ? structuredClone(this.activeMap) : null;
+  }
+
+  dispose(): void {
+    cancelAnimationFrame(this.animationFrame);
+    window.removeEventListener("keydown", this.handleRuntimeKeyDown);
+    this.cameraController.releasePointerLock();
+    this.cameraController.dispose();
+    this.playerController.dispose();
+    this.audioSystem.dispose();
+    this.feedbackSystem.dispose();
+    this.hud.dispose();
+    this.resizeObserver.disconnect();
+    this.clearWorld();
+    for (const child of [...this.scene.children]) {
+      if (child !== this.world) {
+        disposeObject3D(child);
+      }
+    }
+    this.renderer.dispose();
+    this.container.replaceChildren();
+  }
+
+  private setupScene(): void {
+    this.scene.add(this.world);
+
+    this.ambientLight = new THREE.HemisphereLight("#ffffff", "#748293", 1.8);
+    this.sunLight = new THREE.DirectionalLight("#ffffff", 2.2);
+    this.sunLight.position.set(7, 12, 8);
+    this.sunLight.castShadow = true;
+    this.sunLight.shadow.mapSize.set(2048, 2048);
+
+    this.scene.add(this.ambientLight, this.sunLight);
+    this.applyVisualSettings();
+  }
+
+  private applyVisualSettings(): void {
+    const settings = resolveVisualSettings(this.activeMap?.visualSettings);
+    this.scene.background = new THREE.Color(settings.skyColor);
+    this.scene.fog = settings.fogEnabled
+      ? new THREE.Fog(settings.fogColor, settings.fogNear, settings.fogFar)
+      : null;
+
+    if (this.ambientLight) {
+      this.ambientLight.intensity = settings.ambientLightIntensity;
+    }
+
+    if (this.sunLight) {
+      this.sunLight.intensity = settings.sunLightIntensity;
+    }
+  }
+
+  private clearWorld(): void {
+    this.physicsSystem.clear();
+
+    for (const child of [...this.world.children]) {
+      this.world.remove(child);
+      disposeObject3D(child);
+    }
+
+    this.objectViews.clear();
+  }
+
+  private resize(): void {
+    const width = Math.max(1, this.container.clientWidth);
+    const height = Math.max(1, this.container.clientHeight);
+    this.renderer.setSize(width, height, false);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+  }
+
+  private animate = (): void => {
+    const delta = this.clock.getDelta();
+
+    if (!this.paused) {
+      this.cameraController.update();
+      this.playerController.setViewYaw(this.cameraController.getYaw());
+      this.playerController.update(delta);
+      this.cameraController.update();
+      this.mechanics?.update(delta);
+      this.feedbackSystem.update(delta);
+    }
+
+    this.renderer.render(this.scene, this.camera);
+    this.animationFrame = requestAnimationFrame(this.animate);
+  };
+
+  private restart(): void {
+    this.paused = false;
+    this.hud.hidePause();
+    this.feedbackSystem.clear();
+    this.mechanics?.restart();
+    this.cameraController.reset();
+  }
+
+  private pause(): void {
+    if (this.paused) {
+      return;
+    }
+
+    this.paused = true;
+    this.cameraController.releasePointerLock();
+    this.hud.showPause();
+  }
+
+  private resume(): void {
+    if (!this.paused) {
+      return;
+    }
+
+    this.paused = false;
+    this.hud.hidePause();
+    this.renderer.domElement.focus();
+  }
+
+  private togglePause(): void {
+    if (this.paused) {
+      this.resume();
+    } else {
+      this.pause();
+    }
+  }
+
+  private editActiveMap(): void {
+    if (this.activeMap) {
+      this.options.onEditMap?.(structuredClone(this.activeMap));
+    }
+  }
+
+  private readonly handleRuntimeKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== "Escape") {
+      return;
+    }
+
+    event.preventDefault();
+    this.togglePause();
+  };
+}
