@@ -28,6 +28,7 @@ export class PlayerController {
   private jumpStretch = 0;
   private landSquash = 0;
   private respawnPulse = 0;
+  private attackPulse = 0;
   private maxHealth = DEFAULT_MAX_HEALTH;
   private health = DEFAULT_MAX_HEALTH;
   private dead = false;
@@ -81,6 +82,7 @@ export class PlayerController {
     this.jumpStretch = 0;
     this.landSquash = 0;
     this.respawnPulse = 0;
+    this.attackPulse = 0;
     this.player.scale.set(1, 1, 1);
     this.resetHealth();
     this.setPosition(spawnPoint);
@@ -104,6 +106,7 @@ export class PlayerController {
     this.jumpRequested = false;
     this.resetVelocity();
     this.player.scale.set(1, 1, 1);
+    this.attackPulse = 0;
     this.active = false;
   }
 
@@ -277,6 +280,10 @@ export class PlayerController {
     this.landSquash = 0.8;
   }
 
+  playAttackFeedback(): void {
+    this.attackPulse = 1;
+  }
+
   private getMovementDirection(): THREE.Vector3 {
     const forward = new THREE.Vector3();
     this.camera.getWorldDirection(forward);
@@ -337,6 +344,22 @@ export class PlayerController {
     this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(this.avatar.rightArm.rotation.z, 0.08 - counterSwing, 10, deltaSeconds);
     this.avatar.head.position.y = THREE.MathUtils.damp(this.avatar.head.position.y, 1.55 + Math.abs(swing) * 0.025, 10, deltaSeconds);
 
+    if (this.attackPulse > 0.01) {
+      const attack = Math.sin(this.attackPulse * Math.PI);
+      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
+        this.avatar.rightArm.rotation.x,
+        -1.15 - attack * 0.65,
+        20,
+        deltaSeconds
+      );
+      this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(
+        this.avatar.rightArm.rotation.z,
+        -0.35,
+        18,
+        deltaSeconds
+      );
+    }
+
     const cameraForward = new THREE.Vector3();
     this.camera.getWorldDirection(cameraForward);
     cameraForward.y = 0;
@@ -355,6 +378,7 @@ export class PlayerController {
     this.jumpStretch = THREE.MathUtils.damp(this.jumpStretch, 0, 7, deltaSeconds);
     this.landSquash = THREE.MathUtils.damp(this.landSquash, 0, 10, deltaSeconds);
     this.respawnPulse = THREE.MathUtils.damp(this.respawnPulse, 0, 5, deltaSeconds);
+    this.attackPulse = THREE.MathUtils.damp(this.attackPulse, 0, 8, deltaSeconds);
 
     const stretch = this.jumpStretch;
     const squash = this.landSquash;

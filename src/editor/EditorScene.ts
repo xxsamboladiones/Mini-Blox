@@ -180,7 +180,9 @@ export class EditorScene {
       "publishedAt" |
       "logicDebug" |
       "visualSettings" |
-      "audioSettings"
+      "audioSettings" |
+      "gameplaySettings" |
+      "objectives"
     >>
   ): void {
     Object.assign(this.map, patch);

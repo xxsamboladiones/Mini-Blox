@@ -107,7 +107,8 @@ export class ThirdPersonCameraController {
       .addScaledVector(forward, -horizontalDistance)
       .add(new THREE.Vector3(0, CAMERA_HEIGHT + Math.sin(this.pitch) * CAMERA_DISTANCE, 0));
 
-    this.options.camera.position.lerp(cameraPosition, 0.35);
+    cameraPosition.y = Math.max(cameraPosition.y, target.y + 0.35);
+    this.options.camera.position.lerp(cameraPosition, CAMERA_LERP);
     const lookTarget = target.clone().addScaledVector(forward, LOOK_AHEAD);
     this.options.camera.lookAt(lookTarget);
   }
@@ -217,6 +218,7 @@ function getMapObjectId(object: THREE.Object3D): string | null {
 const CENTER_SCREEN = new THREE.Vector2(0, 0);
 const CAMERA_DISTANCE = 5.4;
 const CAMERA_HEIGHT = 1.15;
+const CAMERA_LERP = 0.32;
 const TARGET_HEIGHT = 1.1;
 const LOOK_AHEAD = 2.4;
 const INTERACTION_DISTANCE = 6;

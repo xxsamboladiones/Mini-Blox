@@ -212,6 +212,22 @@ export class LogicPanel {
       return this.renderKeySelect("Chave", rule.trigger.keyId, "data-trigger-key", rule.id);
     }
 
+    if (rule.trigger.type === "onEnemyDefeated") {
+      return this.renderEnemySelect("Inimigo", rule.trigger.objectId, "data-trigger-enemy", rule.id);
+    }
+
+    if (rule.trigger.type === "onNpcInteracted") {
+      return this.renderNpcSelect("NPC", rule.trigger.objectId, "data-trigger-npc", rule.id);
+    }
+
+    if (rule.trigger.type === "onObjectiveCompleted") {
+      return this.renderObjectiveSelect("Objetivo", rule.trigger.objectiveId, "data-trigger-objective", rule.id);
+    }
+
+    if (rule.trigger.type === "onItemCollected") {
+      return this.renderItemTypeSelect("Item", rule.trigger.itemType, "data-trigger-item", rule.id);
+    }
+
     return "";
   }
 
@@ -252,6 +268,32 @@ export class LogicPanel {
 
     if (condition.type === "doorIsOpen") {
       return this.renderDoorSelect("Porta", condition.doorId, "data-condition-door", rule.id, index);
+    }
+
+    if (condition.type === "enemyDefeated") {
+      return this.renderEnemySelect("Inimigo", condition.objectId, "data-condition-enemy", rule.id, index);
+    }
+
+    if (condition.type === "enemiesDefeatedAtLeast") {
+      return `
+        <label class="field">
+          <span>Quantidade</span>
+          <input type="number" min="0" step="1" value="${condition.amount}" data-condition-amount data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" />
+        </label>
+      `;
+    }
+
+    if (condition.type === "hasWeapon") {
+      return this.renderWeaponSelect("Arma", condition.weaponId, "data-condition-weapon", rule.id, index);
+    }
+
+    if (condition.type === "healthBelow") {
+      return `
+        <label class="field">
+          <span>Vida abaixo de</span>
+          <input type="number" min="1" step="1" value="${condition.amount}" data-condition-amount data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" />
+        </label>
+      `;
     }
 
     return `<div class="logic-note">Executa uma vez por sessao.</div>`;
@@ -307,6 +349,37 @@ export class LogicPanel {
 
     if (action.type === "setCheckpoint" || action.type === "enableObject" || action.type === "disableObject") {
       return this.renderObjectSelect("Objeto", action.objectId, "data-action-object", rule.id, index);
+    }
+
+    if (action.type === "spawnEnemy") {
+      return this.renderEnemySelect("Inimigo", action.objectId, "data-action-enemy", rule.id, index);
+    }
+
+    if (action.type === "healPlayer" || action.type === "damagePlayer") {
+      return `
+        <label class="field">
+          <span>Quantidade</span>
+          <input type="number" step="1" value="${action.amount}" data-action-amount data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" />
+        </label>
+      `;
+    }
+
+    if (action.type === "giveWeapon") {
+      return this.renderWeaponSelect("Arma", action.weaponId, "data-action-weapon", rule.id, index);
+    }
+
+    if (action.type === "completeObjective") {
+      return this.renderObjectiveSelect("Objetivo", action.objectiveId, "data-action-objective", rule.id, index);
+    }
+
+    if (action.type === "showDialogue") {
+      return `
+        ${this.renderNpcSelect("NPC", action.objectId, "data-action-dialogue-object", rule.id, index)}
+        <label class="field">
+          <span>Fala</span>
+          <input type="text" value="${escapeAttribute(action.message)}" data-action-message data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" />
+        </label>
+      `;
     }
 
     return `<div class="logic-note">Finaliza o mapa imediatamente.</div>`;
@@ -387,6 +460,133 @@ export class LogicPanel {
             <option value="${escapeAttribute(key.id)}" ${key.id === value ? "selected" : ""}>
               ${escapeHtml(`${key.label} (${key.id})`)}
             </option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderEnemySelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const enemies = this.getEnemyOptions();
+    const exists = value.length === 0 || enemies.some((enemy) => enemy.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">Escolha um inimigo</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Inimigo nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${enemies.map((enemy) => `
+            <option value="${escapeAttribute(enemy.id)}" ${enemy.id === value ? "selected" : ""}>
+              ${escapeHtml(`${enemy.label} (${enemy.id})`)}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderNpcSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const npcs = this.getNpcOptions();
+    const exists = value.length === 0 || npcs.some((npc) => npc.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">Escolha um NPC</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>NPC nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${npcs.map((npc) => `
+            <option value="${escapeAttribute(npc.id)}" ${npc.id === value ? "selected" : ""}>
+              ${escapeHtml(`${npc.label} (${npc.id})`)}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderObjectiveSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const objectives = this.getObjectiveOptions();
+    const exists = value.length === 0 || objectives.some((objective) => objective.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">Escolha um objetivo</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Objetivo nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${objectives.map((objective) => `
+            <option value="${escapeAttribute(objective.id)}" ${objective.id === value ? "selected" : ""}>
+              ${escapeHtml(`${objective.label} (${objective.id})`)}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderItemTypeSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const exists = isValidItemType(value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Item invalido (${escapeHtml(value)})</option>` : ""}
+          ${ITEM_TYPE_OPTIONS.map((item) => `
+            <option value="${item.id}" ${item.id === value ? "selected" : ""}>${item.label}</option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderWeaponSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const exists = isValidWeaponId(value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Arma invalida (${escapeHtml(value)})</option>` : ""}
+          ${WEAPON_OPTIONS.map((weapon) => `
+            <option value="${weapon.id}" ${weapon.id === value ? "selected" : ""}>${weapon.label}</option>
           `).join("")}
         </select>
       </label>
@@ -534,6 +734,46 @@ export class LogicPanel {
       });
     });
 
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-enemy]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onEnemyDefeated") {
+            rule.trigger.objectId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-npc]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onNpcInteracted") {
+            rule.trigger.objectId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-objective]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onObjectiveCompleted") {
+            rule.trigger.objectiveId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-item]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onItemCollected") {
+            rule.trigger.itemType = select.value;
+          }
+        });
+      });
+    });
+
     this.bindConditionEvents();
     this.bindActionEvents();
   }
@@ -584,8 +824,10 @@ export class LogicPanel {
         this.updateRule(input.dataset.ruleId, (rule) => {
           const condition = rule.conditions[getIndex(input)];
 
-          if (condition?.type === "coinsAtLeast") {
+          if (condition?.type === "coinsAtLeast" || condition?.type === "enemiesDefeatedAtLeast") {
             condition.amount = Math.max(0, Math.floor(Number(input.value) || 0));
+          } else if (condition?.type === "healthBelow") {
+            condition.amount = Math.max(1, Math.floor(Number(input.value) || 1));
           }
         });
       });
@@ -598,6 +840,30 @@ export class LogicPanel {
 
           if (condition?.type === "doorIsOpen") {
             condition.doorId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-condition-enemy]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const condition = rule.conditions[getIndex(select)];
+
+          if (condition?.type === "enemyDefeated") {
+            condition.objectId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-condition-weapon]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const condition = rule.conditions[getIndex(select)];
+
+          if (condition?.type === "hasWeapon") {
+            condition.weaponId = select.value;
           }
         });
       });
@@ -636,6 +902,8 @@ export class LogicPanel {
 
           if (action?.type === "showMessage") {
             action.message = input.value;
+          } else if (action?.type === "showDialogue") {
+            action.message = input.value;
           }
         });
       });
@@ -672,6 +940,8 @@ export class LogicPanel {
 
           if (action?.type === "giveCoins") {
             action.amount = Math.floor(Number(input.value) || 0);
+          } else if (action?.type === "healPlayer" || action?.type === "damagePlayer") {
+            action.amount = Math.max(0, Math.floor(Number(input.value) || 0));
           }
         });
       });
@@ -683,6 +953,54 @@ export class LogicPanel {
           const action = rule.actions[getIndex(select)];
 
           if (action?.type === "setCheckpoint" || action?.type === "enableObject" || action?.type === "disableObject") {
+            action.objectId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-enemy]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "spawnEnemy") {
+            action.objectId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-weapon]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "giveWeapon") {
+            action.weaponId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-objective]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "completeObjective") {
+            action.objectiveId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-dialogue-object]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "showDialogue") {
             action.objectId = select.value;
           }
         });
@@ -770,6 +1088,22 @@ export class LogicPanel {
       return [`Trigger onKeyCollected aponta para chave inexistente: ${trigger.keyId || "(vazio)"}`];
     }
 
+    if (trigger.type === "onEnemyDefeated" && !this.hasEnemy(trigger.objectId)) {
+      return [`Trigger onEnemyDefeated aponta para inimigo inexistente: ${trigger.objectId || "(vazio)"}`];
+    }
+
+    if (trigger.type === "onNpcInteracted" && !this.hasNpc(trigger.objectId)) {
+      return [`Trigger onNpcInteracted aponta para NPC inexistente: ${trigger.objectId || "(vazio)"}`];
+    }
+
+    if (trigger.type === "onObjectiveCompleted" && !this.hasObjective(trigger.objectiveId)) {
+      return [`Trigger onObjectiveCompleted aponta para objetivo inexistente: ${trigger.objectiveId || "(vazio)"}`];
+    }
+
+    if (trigger.type === "onItemCollected" && !isValidItemType(trigger.itemType)) {
+      return [`Trigger onItemCollected usa item invalido: ${trigger.itemType || "(vazio)"}`];
+    }
+
     return [];
   }
 
@@ -780,6 +1114,14 @@ export class LogicPanel {
 
     if (condition.type === "doorIsOpen" && !this.hasDoor(condition.doorId)) {
       return [`Condicao doorIsOpen aponta para porta inexistente: ${condition.doorId || "(vazio)"}`];
+    }
+
+    if (condition.type === "enemyDefeated" && !this.hasEnemy(condition.objectId)) {
+      return [`Condicao enemyDefeated aponta para inimigo inexistente: ${condition.objectId || "(vazio)"}`];
+    }
+
+    if (condition.type === "hasWeapon" && !isValidWeaponId(condition.weaponId)) {
+      return [`Condicao hasWeapon usa arma invalida: ${condition.weaponId || "(vazio)"}`];
     }
 
     return [];
@@ -800,6 +1142,22 @@ export class LogicPanel {
 
     if ((action.type === "enableObject" || action.type === "disableObject") && !this.hasObject(action.objectId)) {
       return [`Acao ${action.type} aponta para objeto inexistente: ${action.objectId || "(vazio)"}`];
+    }
+
+    if (action.type === "spawnEnemy" && !this.hasEnemy(action.objectId)) {
+      return [`Acao spawnEnemy aponta para objeto que nao e inimigo: ${action.objectId || "(vazio)"}`];
+    }
+
+    if (action.type === "giveWeapon" && !isValidWeaponId(action.weaponId)) {
+      return [`Acao giveWeapon usa arma invalida: ${action.weaponId || "(vazio)"}`];
+    }
+
+    if (action.type === "completeObjective" && !this.hasObjective(action.objectiveId)) {
+      return [`Acao completeObjective aponta para objetivo inexistente: ${action.objectiveId || "(vazio)"}`];
+    }
+
+    if (action.type === "showDialogue" && !this.hasNpc(action.objectId)) {
+      return [`Acao showDialogue aponta para NPC inexistente: ${action.objectId || "(vazio)"}`];
     }
 
     return [];
@@ -848,6 +1206,24 @@ export class LogicPanel {
       });
   }
 
+  private getEnemyOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter((object) => object.type === "enemy")
+      .map((enemy) => ({ id: enemy.id, label: enemy.name ?? enemy.id }));
+  }
+
+  private getNpcOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter((object) => object.type === "npc")
+      .map((npc) => ({ id: npc.id, label: String(npc.properties?.npcName ?? npc.name ?? npc.id) }));
+  }
+
+  private getObjectiveOptions(): Array<{ id: string; label: string }> {
+    return structuredClone(this.map?.objectives ?? [])
+      .filter((objective) => typeof objective.id === "string" && typeof objective.title === "string")
+      .map((objective) => ({ id: objective.id, label: objective.title }));
+  }
+
   private hasObject(objectId: string): boolean {
     return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId);
   }
@@ -863,6 +1239,18 @@ export class LogicPanel {
   private hasKey(keyId: string): boolean {
     return keyId.length > 0 && this.getKeyOptions().some((key) => key.id === keyId);
   }
+
+  private hasEnemy(objectId: string): boolean {
+    return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId && object.type === "enemy");
+  }
+
+  private hasNpc(objectId: string): boolean {
+    return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId && object.type === "npc");
+  }
+
+  private hasObjective(objectiveId: string): boolean {
+    return objectiveId.length > 0 && this.getObjectiveOptions().some((objective) => objective.id === objectiveId);
+  }
 }
 
 const TRIGGER_OPTIONS: Array<{ type: TriggerType; label: string }> = [
@@ -870,14 +1258,25 @@ const TRIGGER_OPTIONS: Array<{ type: TriggerType; label: string }> = [
   { type: "onPlayerEnterObject", label: "Jogador entra no objeto" },
   { type: "onButtonActivated", label: "Botao ativado" },
   { type: "onCoinCollected", label: "Moeda coletada" },
-  { type: "onKeyCollected", label: "Chave coletada" }
+  { type: "onKeyCollected", label: "Chave coletada" },
+  { type: "onEnemyDefeated", label: "Inimigo derrotado" },
+  { type: "onAnyEnemyDefeated", label: "Qualquer inimigo derrotado" },
+  { type: "onAllEnemiesDefeated", label: "Todos inimigos derrotados" },
+  { type: "onPlayerDamaged", label: "Player recebeu dano" },
+  { type: "onItemCollected", label: "Item coletado" },
+  { type: "onNpcInteracted", label: "NPC interagido" },
+  { type: "onObjectiveCompleted", label: "Objetivo concluido" }
 ];
 
 const CONDITION_OPTIONS: Array<{ type: ConditionType; label: string }> = [
   { type: "once", label: "Uma vez" },
   { type: "hasKey", label: "Tem chave" },
   { type: "coinsAtLeast", label: "Moedas pelo menos" },
-  { type: "doorIsOpen", label: "Porta aberta" }
+  { type: "doorIsOpen", label: "Porta aberta" },
+  { type: "enemyDefeated", label: "Inimigo derrotado" },
+  { type: "enemiesDefeatedAtLeast", label: "Inimigos derrotados pelo menos" },
+  { type: "hasWeapon", label: "Tem arma" },
+  { type: "healthBelow", label: "Vida abaixo" }
 ];
 
 const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
@@ -889,8 +1288,24 @@ const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
   { type: "setCheckpoint", label: "Definir checkpoint" },
   { type: "finishMap", label: "Finalizar mapa" },
   { type: "enableObject", label: "Habilitar objeto" },
-  { type: "disableObject", label: "Desabilitar objeto" }
+  { type: "disableObject", label: "Desabilitar objeto" },
+  { type: "spawnEnemy", label: "Reativar inimigo" },
+  { type: "healPlayer", label: "Curar player" },
+  { type: "damagePlayer", label: "Dar dano no player" },
+  { type: "giveWeapon", label: "Dar arma" },
+  { type: "completeObjective", label: "Completar objetivo" },
+  { type: "showDialogue", label: "Mostrar fala de NPC" }
 ];
+
+const ITEM_TYPE_OPTIONS = [
+  { id: "health", label: "Cura" },
+  { id: "coin", label: "Moeda" },
+  { id: "weapon_basic", label: "Arma basica" }
+] as const;
+
+const WEAPON_OPTIONS = [
+  { id: "basic_sword", label: "Basica" }
+] as const;
 
 const PRESET_OPTIONS: Array<{ id: LogicPresetId; label: string }> = [
   { id: "messageOnEnter", label: "Mostrar mensagem ao entrar em zona" },
@@ -1022,6 +1437,30 @@ function createDefaultTrigger(
     return { type, keyId: keys[0]?.id ?? "" };
   }
 
+  if (type === "onEnemyDefeated") {
+    return { type, objectId: getPreferredObjectId(objects, "enemy") };
+  }
+
+  if (type === "onItemCollected") {
+    return { type, itemType: "weapon_basic" };
+  }
+
+  if (type === "onNpcInteracted") {
+    return { type, objectId: getPreferredObjectId(objects, "npc") };
+  }
+
+  if (type === "onObjectiveCompleted") {
+    return { type, objectiveId: "" };
+  }
+
+  if (
+    type === "onAnyEnemyDefeated" ||
+    type === "onAllEnemiesDefeated" ||
+    type === "onPlayerDamaged"
+  ) {
+    return { type };
+  }
+
   return { type: "onMapStart" };
 }
 
@@ -1040,6 +1479,22 @@ function createDefaultCondition(
 
   if (type === "doorIsOpen") {
     return { type, doorId: getPreferredDoorId(objects) };
+  }
+
+  if (type === "enemyDefeated") {
+    return { type, objectId: getPreferredObjectId(objects, "enemy") };
+  }
+
+  if (type === "enemiesDefeatedAtLeast") {
+    return { type, amount: 1 };
+  }
+
+  if (type === "hasWeapon") {
+    return { type, weaponId: "basic_sword" };
+  }
+
+  if (type === "healthBelow") {
+    return { type, amount: 50 };
   }
 
   return { type: "once" };
@@ -1064,6 +1519,30 @@ function createDefaultAction(type: ActionType, objects: MapObject[]): LogicActio
 
   if (type === "enableObject" || type === "disableObject") {
     return { type, objectId: objects[0]?.id ?? "" };
+  }
+
+  if (type === "spawnEnemy") {
+    return { type, objectId: getPreferredObjectId(objects, "enemy") };
+  }
+
+  if (type === "healPlayer") {
+    return { type, amount: 25 };
+  }
+
+  if (type === "damagePlayer") {
+    return { type, amount: 10 };
+  }
+
+  if (type === "giveWeapon") {
+    return { type, weaponId: "basic_sword" };
+  }
+
+  if (type === "completeObjective") {
+    return { type, objectiveId: "" };
+  }
+
+  if (type === "showDialogue") {
+    return { type, objectId: getPreferredObjectId(objects, "npc"), message: "Nova fala do NPC." };
   }
 
   if (type === "finishMap") {
@@ -1136,6 +1615,14 @@ function toPresetId(value: string): LogicPresetId {
 
 function isKnownTriggerType(value: string): value is TriggerType {
   return TRIGGER_OPTIONS.some((option) => option.type === value);
+}
+
+function isValidItemType(value: string): boolean {
+  return ITEM_TYPE_OPTIONS.some((option) => option.id === value);
+}
+
+function isValidWeaponId(value: string): boolean {
+  return WEAPON_OPTIONS.some((option) => option.id === value);
 }
 
 function getIndex(element: HTMLElement): number {

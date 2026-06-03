@@ -220,7 +220,17 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#4ecdc4",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "capsule", height: 1.8, radius: 0.35 },
-    properties: { collision: false, dialog: "Ola, construtor!" }
+    properties: {
+      collision: false,
+      npcName: "Guia",
+      dialog: "Ola, construtor!",
+      dialogue: [
+        "Ola, construtor!",
+        "Use objetivos para guiar o jogador pelo mapa."
+      ],
+      interactionRange: 4,
+      showQuestHint: true
+    }
   },
   {
     type: "enemy",

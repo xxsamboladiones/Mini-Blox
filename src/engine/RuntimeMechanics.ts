@@ -10,6 +10,7 @@ import { PhysicsSystem } from "./PhysicsSystem";
 import { PlayerController } from "./PlayerController";
 import { RuntimeHud, type VictoryActions } from "./RuntimeHud";
 import { LogicRuntime } from "./LogicRuntime";
+import { ObjectiveRuntime } from "./ObjectiveRuntime";
 import type { GameMap } from "../shared/types/MapSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
 import type { InventoryItem, ItemPickupObject, ItemSpawnMode } from "../shared/types/ItemSchema";
@@ -61,6 +62,13 @@ type EquippedWeapon = {
   cooldown: number;
 };
 
+type DialogueState = {
+  objectId: string;
+  speaker: string;
+  lines: string[];
+  index: number;
+};
+
 const DEFAULT_VOID_DEATH_OFFSET = 25;
 const RESPAWN_VERTICAL_OFFSET = 0.25;
 const DEFAULT_WEAPON: EquippedWeapon = {
@@ -86,6 +94,7 @@ export class RuntimeMechanics {
   private readonly messageZoneInsideIds = new Set<string>();
   private readonly logicInsideObjectIds = new Set<string>();
   private readonly logicDisabledObjectIds = new Set<string>();
+  private readonly defeatedEnemyIds = new Set<string>();
   private readonly inventory = new Map<string, InventoryItem>();
   private readonly itemSpawnerStates = new Map<string, ItemSpawnerRuntimeState>();
   private readonly runtimePickups = new Map<string, ItemPickupObject>();
@@ -100,9 +109,12 @@ export class RuntimeMechanics {
   private messageCooldown = 0;
   private attackCooldown = 0;
   private equippedWeapon: EquippedWeapon | null = null;
+  private activeDialogue: DialogueState | null = null;
+  private allEnemiesDefeatedDispatched = false;
   private isGameFinished = false;
   private readonly initialDoorPositions = new Map<string, THREE.Vector3>();
   private readonly logicRuntime: LogicRuntime;
+  private readonly objectiveRuntime: ObjectiveRuntime;
 
   constructor(
     private readonly map: GameMap,
@@ -139,7 +151,29 @@ export class RuntimeMechanics {
       setCheckpoint: (objectId) => this.setCheckpointFromObject(objectId),
       finishMap: () => this.finishMap(),
       setObjectEnabled: (objectId, enabled) => this.setObjectEnabled(objectId, enabled),
+      isEnemyDefeated: (objectId) => this.defeatedEnemyIds.has(objectId),
+      getDefeatedEnemyCount: () => this.defeatedEnemyIds.size,
+      hasWeapon: (weaponId) => this.hasWeapon(weaponId),
+      getHealth: () => this.player.getHealth(),
+      spawnEnemy: (objectId) => this.spawnEnemy(objectId),
+      healPlayer: (amount) => {
+        const healed = this.healPlayer(amount);
+        this.hud.showMessage(healed > 0 ? `Vida +${Math.round(healed)}` : "Vida ja esta cheia");
+      },
+      damagePlayer: (amount) => this.damagePlayer(amount, "Logica causou dano", this.player.getPosition(), false),
+      giveWeapon: (weaponId) => {
+        this.equipWeapon(weaponId);
+        this.updateInventoryHud();
+        this.hud.showMessage("Arma Basica equipada");
+      },
+      completeObjective: (objectiveId) => this.objectiveRuntime.completeObjective(objectiveId),
+      showDialogue: (objectId, message) => this.showDialogueLine(objectId, message),
       getObjectById: (objectId) => this.map.objects.find((mapObject) => mapObject.id === objectId) ?? null
+    });
+    this.objectiveRuntime = new ObjectiveRuntime(this.map, this.hud, this.audio, this.feedback, {
+      onObjectiveCompleted: (objective) => {
+        this.logicRuntime.dispatch({ type: "onObjectiveCompleted", objectiveId: objective.id });
+      }
     });
     this.logicRuntime.start();
   }
@@ -220,7 +254,16 @@ export class RuntimeMechanics {
     }
 
     if (target.type === "npc") {
-      return "NPC";
+      const range = Math.max(1, getNumber(target.properties?.interactionRange, 4));
+      const playerPosition = toThreeVector(this.player.getPosition());
+      const targetPosition = toThreeVector(target.position);
+
+      if (distance2DVector(playerPosition, targetPosition) > range) {
+        return null;
+      }
+
+      const name = getString(target.properties?.npcName, target.name ?? "NPC");
+      return `Falar com ${name}`;
     }
 
     if (target.type === "itemPickup") {
@@ -247,11 +290,7 @@ export class RuntimeMechanics {
     }
 
     if (target.type === "npc") {
-      const dialog = getString(target.properties?.dialog, "Ola!");
-      this.audio.play("message");
-      this.feedback.spawn("message", target.position);
-      this.hud.showMessage(dialog, 2600);
-      return true;
+      return this.interactWithNpc(target);
     }
 
     if (target.type === "itemPickup") {
@@ -260,6 +299,56 @@ export class RuntimeMechanics {
     }
 
     return false;
+  }
+
+  private interactWithNpc(target: MapObject): boolean {
+    if (this.activeDialogue?.objectId === target.id) {
+      if (this.activeDialogue.index < this.activeDialogue.lines.length - 1) {
+        this.activeDialogue.index += 1;
+        this.hud.showDialogue(
+          this.activeDialogue.speaker,
+          this.activeDialogue.lines[this.activeDialogue.index],
+          this.activeDialogue.index < this.activeDialogue.lines.length - 1
+        );
+      } else {
+        this.activeDialogue = null;
+        this.hud.hideDialogue();
+      }
+
+      return true;
+    }
+
+    const speaker = getString(target.properties?.npcName, target.name ?? "NPC");
+    const lines = getNpcDialogueLines(target, target.properties?.showQuestHint !== false ? this.objectiveRuntime.getCurrentHint() : null);
+    this.activeDialogue = {
+      objectId: target.id,
+      speaker,
+      lines,
+      index: 0
+    };
+    this.audio.play("message");
+    this.feedback.spawn("npc", target.position, speaker);
+    this.hud.showDialogue(speaker, lines[0], lines.length > 1);
+    this.logicRuntime.dispatch({ type: "onNpcInteracted", objectId: target.id });
+    return true;
+  }
+
+  private showDialogueLine(objectId: string, message: string): void {
+    const target = this.map.objects.find((mapObject) => mapObject.id === objectId);
+    const speaker = target ? getString(target.properties?.npcName, target.name ?? "NPC") : "Sistema";
+    this.activeDialogue = {
+      objectId,
+      speaker,
+      lines: [message],
+      index: 0
+    };
+    this.audio.play("message");
+
+    if (target) {
+      this.feedback.spawn("npc", target.position, speaker);
+    }
+
+    this.hud.showDialogue(speaker, message, false);
   }
 
   attack(): boolean {
@@ -283,6 +372,8 @@ export class RuntimeMechanics {
     const weapon = this.equippedWeapon;
     this.attackCooldown = weapon.cooldown;
     this.audio.play("attack");
+    this.player.playAttackFeedback();
+    this.feedback.spawn("attack", this.player.getPosition());
 
     const hit = this.findEnemyInAttackRange(weapon.range);
 
@@ -306,6 +397,7 @@ export class RuntimeMechanics {
     this.messageZoneInsideIds.clear();
     this.logicInsideObjectIds.clear();
     this.logicDisabledObjectIds.clear();
+    this.defeatedEnemyIds.clear();
     this.jumpPadCooldowns.clear();
     this.teleporterCooldowns.clear();
     this.inventory.clear();
@@ -315,9 +407,12 @@ export class RuntimeMechanics {
     this.messageCooldown = 0;
     this.attackCooldown = 0;
     this.equippedWeapon = null;
+    this.activeDialogue = null;
+    this.allEnemiesDefeatedDispatched = false;
     this.isGameFinished = false;
     this.currentRespawnPoint = { ...this.map.spawnPoint };
     this.hud.hideVictory();
+    this.hud.hideDialogue();
     this.hud.setCoins(0, this.getTotalCoinObjects());
     this.player.resetHealth();
     this.hud.setHealth(this.player.getHealth(), this.player.getMaxHealth());
@@ -344,6 +439,7 @@ export class RuntimeMechanics {
     this.player.setPosition(this.currentRespawnPoint);
     this.player.resetVelocity();
     this.logicRuntime.reset();
+    this.objectiveRuntime.reset();
     this.logicRuntime.start();
   }
 
@@ -413,7 +509,7 @@ export class RuntimeMechanics {
     this.audio.play("coin");
   }
 
-  private damagePlayer(amount: number, message: string, position?: Vector3): void {
+  private damagePlayer(amount: number, message: string, position?: Vector3, emitLogicEvent = true): void {
     const previousHealth = this.player.getHealth();
     const currentHealth = this.player.damage(Math.max(0, amount));
     const damageDone = Math.max(0, previousHealth - currentHealth);
@@ -421,6 +517,10 @@ export class RuntimeMechanics {
     this.hud.setHealth(currentHealth, this.player.getMaxHealth());
     this.audio.play("damage");
     this.feedback.spawn("damage", position ?? this.player.getPosition());
+
+    if (emitLogicEvent && damageDone > 0) {
+      this.logicRuntime.dispatch({ type: "onPlayerDamaged", amount: damageDone });
+    }
 
     if (currentHealth <= 0) {
       this.killPlayer("Voce morreu", position ?? this.player.getPosition());
@@ -440,10 +540,12 @@ export class RuntimeMechanics {
   }
 
   private equipWeapon(itemId: string): void {
-    const definition = getItemDefinition(itemId);
+    const normalizedWeaponId = normalizeWeaponId(itemId);
+    const catalogItemId = normalizedWeaponId === "basic_sword" ? "weapon_basic" : itemId;
+    const definition = getItemDefinition(catalogItemId);
     const weapon = definition && "damage" in definition
       ? {
-        id: itemId,
+        id: normalizedWeaponId,
         label: definition.name === "Sword" ? "Basica" : definition.name,
         damage: definition.damage,
         range: definition.range,
@@ -454,19 +556,48 @@ export class RuntimeMechanics {
     this.equippedWeapon = weapon;
     this.hud.setWeapon(weapon.label);
 
-    const existingItem = this.inventory.get(itemId);
+    const inventoryItemId = normalizedWeaponId === "basic_sword" ? "weapon_basic" : itemId;
+    const existingItem = this.inventory.get(inventoryItemId);
     const now = new Date().toISOString();
 
     if (existingItem) {
       existingItem.quantity = Math.max(1, existingItem.quantity);
       existingItem.collectedAt = now;
     } else {
-      this.inventory.set(itemId, {
-        itemId,
+      this.inventory.set(inventoryItemId, {
+        itemId: inventoryItemId,
         quantity: 1,
         collectedAt: now
       });
     }
+  }
+
+  private hasWeapon(weaponId: string): boolean {
+    return this.equippedWeapon?.id === normalizeWeaponId(weaponId);
+  }
+
+  private spawnEnemy(objectId: string): boolean {
+    const state = this.enemyStates.get(objectId);
+    const view = this.objectViews.get(objectId);
+
+    if (!state || !view) {
+      return false;
+    }
+
+    const maxHealth = Math.max(1, getNumber(state.mapObject.properties?.health, state.maxHealth));
+    state.health = maxHealth;
+    state.maxHealth = maxHealth;
+    state.attackCooldown = 0;
+    state.patrolTarget = 1;
+    view.visible = true;
+    applyObjectTransformToThree(view, state.mapObject);
+    applyObjectAppearanceToThree(view, state.mapObject);
+    this.logicDisabledObjectIds.delete(objectId);
+    this.defeatedEnemyIds.delete(objectId);
+    this.allEnemiesDefeatedDispatched = false;
+    this.feedback.spawn("item", state.mapObject.position, "Inimigo");
+    this.hud.showMessage("Inimigo reativado");
+    return true;
   }
 
   setCheckpointFromObject(objectId: string): boolean {
@@ -502,6 +633,17 @@ export class RuntimeMechanics {
 
   finishMap(message = "Voce venceu!"): void {
     if (this.isGameFinished) {
+      return;
+    }
+
+    if (this.map.gameplaySettings?.requireObjectivesToFinish && !this.objectiveRuntime.areRequiredObjectivesComplete()) {
+      const summary = this.objectiveRuntime.getRequiredSummary();
+
+      if (this.messageCooldown <= 0) {
+        this.hud.showMessage(`Conclua os objetivos: ${summary.completed}/${summary.total}.`);
+        this.messageCooldown = 1.5;
+      }
+
       return;
     }
 
@@ -606,6 +748,7 @@ export class RuntimeMechanics {
     this.hud.showMessage("Moeda coletada");
     this.audio.play("coin");
     this.feedback.spawn("coinCollect", mapObject.position, `+${value}`);
+    this.objectiveRuntime.onCoinCollected(this.coinCount);
     this.logicRuntime.dispatch({ type: "onCoinCollected", objectId: mapObject.id });
   }
 
@@ -630,6 +773,7 @@ export class RuntimeMechanics {
     this.hud.showMessage(`Chave coletada: ${label}`);
     this.audio.play("key");
     this.feedback.spawn("key", mapObject.position, label);
+    this.objectiveRuntime.onKeyCollected(keyId);
     this.logicRuntime.dispatch({ type: "onKeyCollected", objectId: mapObject.id, keyId });
   }
 
@@ -766,6 +910,7 @@ export class RuntimeMechanics {
       }
 
       this.logicInsideObjectIds.add(mapObject.id);
+      this.objectiveRuntime.onObjectReached(mapObject.id);
       this.logicRuntime.dispatch({ type: "onPlayerEnterObject", objectId: mapObject.id });
     }
   }
@@ -818,6 +963,7 @@ export class RuntimeMechanics {
 
     this.audio.play("button");
     this.feedback.spawn("button", mapObject.position);
+    this.objectiveRuntime.onButtonActivated(mapObject.id);
     this.logicRuntime.dispatch({ type: "onButtonActivated", objectId: mapObject.id });
     return true;
   }
@@ -826,6 +972,8 @@ export class RuntimeMechanics {
     if (!this.intersects(mapObject, playerBounds)) {
       return;
     }
+
+    this.objectiveRuntime.onObjectReached(mapObject.id);
 
     if (mapObject.properties?.requiresAllCoins && this.collectedCoinIds.size < this.getTotalCoinObjects()) {
       if (this.messageCooldown <= 0) {
@@ -1063,8 +1211,26 @@ export class RuntimeMechanics {
     }
 
     this.physicsSystem.removeCollider(state.mapObject.id);
+    this.defeatedEnemyIds.add(state.mapObject.id);
     this.hud.showMessage("Inimigo derrotado");
     this.feedback.spawn("item", hitPosition, "Derrotado");
+    this.dispatchEnemyDefeated(state.mapObject.id);
+  }
+
+  private dispatchEnemyDefeated(objectId: string): void {
+    const totalEnemies = this.getTotalEnemyObjects();
+    this.objectiveRuntime.onEnemyDefeated(this.defeatedEnemyIds.size, totalEnemies);
+    this.logicRuntime.dispatch({ type: "onEnemyDefeated", objectId });
+    this.logicRuntime.dispatch({ type: "onAnyEnemyDefeated", objectId });
+
+    if (
+      totalEnemies > 0 &&
+      !this.allEnemiesDefeatedDispatched &&
+      this.defeatedEnemyIds.size >= totalEnemies
+    ) {
+      this.allEnemiesDefeatedDispatched = true;
+      this.logicRuntime.dispatch({ type: "onAllEnemiesDefeated" });
+    }
   }
 
   private updateCooldownMap(cooldowns: Map<string, number>, deltaSeconds: number): void {
@@ -1205,6 +1371,7 @@ export class RuntimeMechanics {
     }
 
     if (itemId === "health_pack" || itemId === "health") {
+      this.dispatchItemCollected("health");
       const healed = this.healPlayer(amount);
       label = `Cura +${Math.round(healed)}`;
       feedbackLabel = `+${Math.round(healed)} vida`;
@@ -1217,6 +1384,7 @@ export class RuntimeMechanics {
     if (itemId === "coin") {
       const coinAmount = Math.max(1, Math.floor(amount));
       this.giveCoins(coinAmount);
+      this.dispatchItemCollected("coin");
       this.hud.showMessage(`Moeda +${coinAmount}`);
       this.feedback.spawn("coinCollect", pickup.position, `+${coinAmount}`);
       return;
@@ -1224,9 +1392,11 @@ export class RuntimeMechanics {
 
     if (itemId === "weapon_basic" || itemId === "sword") {
       this.equipWeapon(itemId);
+      this.dispatchItemCollected("weapon_basic");
       label = "Arma Basica";
       feedbackLabel = "Arma";
     } else {
+      this.dispatchItemCollected(itemId);
       const existingItem = this.inventory.get(itemId);
       const now = new Date().toISOString();
 
@@ -1246,6 +1416,10 @@ export class RuntimeMechanics {
     this.hud.showMessage(`${label} coletado`);
     this.audio.play("item");
     this.feedback.spawn("item", pickup.position, feedbackLabel);
+  }
+
+  private dispatchItemCollected(itemType: string): void {
+    this.logicRuntime.dispatch({ type: "onItemCollected", itemType });
   }
 
   private clearRuntimePickups(): void {
@@ -1377,6 +1551,7 @@ export class RuntimeMechanics {
     view.position.add(new THREE.Vector3(offset.x, offset.y, offset.z));
     this.physicsSystem.removeCollider(door.id);
     this.openedDoorIds.add(doorId);
+    this.objectiveRuntime.onDoorOpened(doorId);
     if (showMessage) {
       this.hud.showMessage("Porta aberta");
       this.audio.play("door");
@@ -1424,6 +1599,10 @@ export class RuntimeMechanics {
     return this.map.objects.filter((mapObject) => mapObject.type === "coin").length;
   }
 
+  private getTotalEnemyObjects(): number {
+    return this.map.objects.filter((mapObject) => mapObject.type === "enemy").length;
+  }
+
   private getDoorById(doorId: string): MapObject | null {
     return this.map.objects.find((candidate) => (
       candidate.type === "door" &&
@@ -1464,6 +1643,22 @@ function getStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
 }
 
+function getNpcDialogueLines(mapObject: MapObject, objectiveHint: string | null): string[] {
+  const dialogue = getStringArray(mapObject.properties?.dialogue);
+  const legacyDialog = getString(mapObject.properties?.dialog, "");
+  const lines = dialogue.length > 0
+    ? dialogue
+    : legacyDialog.trim().length > 0
+      ? [legacyDialog]
+      : ["Ola!"];
+
+  if (!objectiveHint) {
+    return lines;
+  }
+
+  return [...lines, `Objetivo atual: ${objectiveHint}`];
+}
+
 function getSpawnMode(value: unknown): ItemSpawnMode {
   return value === "random" ? "random" : "fixed";
 }
@@ -1502,6 +1697,10 @@ function chooseItemId(spawner: MapObject): string | null {
   }
 
   return itemPool[0];
+}
+
+function normalizeWeaponId(weaponId: string): string {
+  return weaponId === "weapon_basic" || weaponId === "sword" ? "basic_sword" : weaponId;
 }
 
 function getSpawnerAmount(spawner: MapObject, itemId: string): number {

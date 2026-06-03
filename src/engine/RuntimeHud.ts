@@ -16,6 +16,16 @@ export type HudInventoryItem = {
   quantity: number;
 };
 
+export type HudObjectiveState = {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  progress?: number;
+  target?: number;
+  required: boolean;
+};
+
 export class RuntimeHud {
   private readonly root = document.createElement("div");
   private readonly mapLabel = document.createElement("div");
@@ -24,6 +34,8 @@ export class RuntimeHud {
   private readonly coinCounter = document.createElement("div");
   private readonly keyInventory = document.createElement("div");
   private readonly inventory = document.createElement("div");
+  private readonly objectivesPanel = document.createElement("div");
+  private readonly dialoguePanel = document.createElement("div");
   private readonly actionBar = document.createElement("div");
   private readonly message = document.createElement("div");
   private readonly victoryPanel = document.createElement("div");
@@ -39,6 +51,8 @@ export class RuntimeHud {
     this.coinCounter.className = "runtime-coin-counter";
     this.keyInventory.className = "runtime-key-inventory";
     this.inventory.className = "runtime-inventory";
+    this.objectivesPanel.className = "runtime-objectives hidden";
+    this.dialoguePanel.className = "runtime-dialogue hidden";
     this.actionBar.className = "runtime-action-bar";
     this.message.className = "runtime-message";
     this.victoryPanel.className = "runtime-victory hidden";
@@ -51,6 +65,8 @@ export class RuntimeHud {
       this.coinCounter,
       this.keyInventory,
       this.inventory,
+      this.objectivesPanel,
+      this.dialoguePanel,
       this.actionBar,
       this.message,
       this.victoryPanel,
@@ -63,6 +79,7 @@ export class RuntimeHud {
     this.setCoins(0);
     this.setKeys([]);
     this.setInventory([]);
+    this.setObjectives([]);
   }
 
   setActions(actions: RuntimeHudActions): void {
@@ -149,6 +166,49 @@ export class RuntimeHud {
       : `Itens: ${items.map((item) => `${item.label} x${item.quantity}`).join(" - ")}`;
   }
 
+  setObjectives(objectives: HudObjectiveState[]): void {
+    const visibleObjectives = objectives.filter((objective) => objective.required || !objective.completed);
+    this.objectivesPanel.classList.toggle("hidden", visibleObjectives.length === 0);
+
+    if (visibleObjectives.length === 0) {
+      this.objectivesPanel.replaceChildren();
+      return;
+    }
+
+    this.objectivesPanel.innerHTML = `
+      <div class="runtime-objectives-title">Objetivos</div>
+      <div class="runtime-objectives-list">
+        ${visibleObjectives.map((objective) => `
+          <div class="runtime-objective-row ${objective.completed ? "completed" : ""}">
+            <span>${objective.completed ? "OK" : "-"}</span>
+            <div>
+              <strong>${escapeHtml(objective.title)}</strong>
+              ${objective.progress !== undefined && objective.target !== undefined ? `
+                <small>${Math.min(objective.progress, objective.target)}/${objective.target}</small>
+              ` : objective.description ? `
+                <small>${escapeHtml(objective.description)}</small>
+              ` : ""}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  showDialogue(speaker: string, line: string, hasNext: boolean): void {
+    this.dialoguePanel.classList.remove("hidden");
+    this.dialoguePanel.innerHTML = `
+      <div class="runtime-dialogue-speaker">${escapeHtml(speaker)}</div>
+      <div class="runtime-dialogue-line">${escapeHtml(line)}</div>
+      <div class="runtime-dialogue-hint">${hasNext ? "Pressione E para continuar" : "Pressione E para fechar"}</div>
+    `;
+  }
+
+  hideDialogue(): void {
+    this.dialoguePanel.classList.add("hidden");
+    this.dialoguePanel.replaceChildren();
+  }
+
   setKeys(labels: string[]): void {
     this.keyInventory.textContent = labels.length === 0
       ? "Chaves: nenhuma"
@@ -214,6 +274,7 @@ export class RuntimeHud {
     window.clearTimeout(this.messageTimeout);
     this.message.classList.remove("visible");
     this.hidePause();
+    this.hideDialogue();
     this.victoryPanel.classList.remove("hidden");
     this.victoryPanel.innerHTML = `
       <div class="runtime-victory-content">
@@ -252,6 +313,7 @@ export class RuntimeHud {
 
   dispose(): void {
     window.clearTimeout(this.messageTimeout);
+    this.hideDialogue();
     this.root.remove();
   }
 }

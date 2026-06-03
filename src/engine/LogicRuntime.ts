@@ -21,6 +21,33 @@ export type LogicRuntimeEvent =
     keyId: string;
   }
   | {
+    type: "onEnemyDefeated";
+    objectId: string;
+  }
+  | {
+    type: "onAnyEnemyDefeated";
+    objectId: string;
+  }
+  | {
+    type: "onAllEnemiesDefeated";
+  }
+  | {
+    type: "onPlayerDamaged";
+    amount: number;
+  }
+  | {
+    type: "onItemCollected";
+    itemType: string;
+  }
+  | {
+    type: "onNpcInteracted";
+    objectId: string;
+  }
+  | {
+    type: "onObjectiveCompleted";
+    objectiveId: string;
+  }
+  | {
     type: "onMapStart";
   };
 
@@ -36,6 +63,16 @@ export type LogicRuntimeContext = {
   setCheckpoint: (objectId: string) => boolean;
   finishMap: () => void;
   setObjectEnabled: (objectId: string, enabled: boolean) => boolean;
+  isEnemyDefeated: (objectId: string) => boolean;
+  getDefeatedEnemyCount: () => number;
+  hasWeapon: (weaponId: string) => boolean;
+  getHealth: () => number;
+  spawnEnemy: (objectId: string) => boolean;
+  healPlayer: (amount: number) => void;
+  damagePlayer: (amount: number) => void;
+  giveWeapon: (weaponId: string) => void;
+  completeObjective: (objectiveId: string) => boolean;
+  showDialogue: (objectId: string, message: string) => void;
   getObjectById: (objectId: string) => MapObject | null;
 };
 
@@ -103,13 +140,35 @@ export class LogicRuntime {
     if (
       trigger.type === "onPlayerEnterObject" ||
       trigger.type === "onButtonActivated" ||
-      trigger.type === "onCoinCollected"
+      trigger.type === "onCoinCollected" ||
+      trigger.type === "onEnemyDefeated" ||
+      trigger.type === "onNpcInteracted"
     ) {
       return "objectId" in event && trigger.objectId === event.objectId;
     }
 
     if (trigger.type === "onKeyCollected") {
       return event.type === "onKeyCollected" && trigger.keyId === event.keyId;
+    }
+
+    if (trigger.type === "onItemCollected") {
+      return event.type === "onItemCollected" && trigger.itemType === event.itemType;
+    }
+
+    if (trigger.type === "onObjectiveCompleted") {
+      return event.type === "onObjectiveCompleted" && trigger.objectiveId === event.objectiveId;
+    }
+
+    if (trigger.type === "onAnyEnemyDefeated") {
+      return event.type === "onAnyEnemyDefeated";
+    }
+
+    if (trigger.type === "onAllEnemiesDefeated") {
+      return event.type === "onAllEnemiesDefeated";
+    }
+
+    if (trigger.type === "onPlayerDamaged") {
+      return event.type === "onPlayerDamaged";
     }
 
     return event.type === "onMapStart";
@@ -130,6 +189,22 @@ export class LogicRuntime {
 
     if (condition.type === "doorIsOpen") {
       return this.context.isDoorOpen(condition.doorId);
+    }
+
+    if (condition.type === "enemyDefeated") {
+      return this.context.isEnemyDefeated(condition.objectId);
+    }
+
+    if (condition.type === "enemiesDefeatedAtLeast") {
+      return this.context.getDefeatedEnemyCount() >= condition.amount;
+    }
+
+    if (condition.type === "hasWeapon") {
+      return this.context.hasWeapon(condition.weaponId);
+    }
+
+    if (condition.type === "healthBelow") {
+      return this.context.getHealth() < condition.amount;
     }
 
     return !this.executedOnceRuleIds.has(rule.id);
@@ -154,6 +229,18 @@ export class LogicRuntime {
       this.context.setObjectEnabled(action.objectId, true);
     } else if (action.type === "disableObject") {
       this.context.setObjectEnabled(action.objectId, false);
+    } else if (action.type === "spawnEnemy") {
+      this.context.spawnEnemy(action.objectId);
+    } else if (action.type === "healPlayer") {
+      this.context.healPlayer(action.amount);
+    } else if (action.type === "damagePlayer") {
+      this.context.damagePlayer(action.amount);
+    } else if (action.type === "giveWeapon") {
+      this.context.giveWeapon(action.weaponId);
+    } else if (action.type === "completeObjective") {
+      this.context.completeObjective(action.objectiveId);
+    } else if (action.type === "showDialogue") {
+      this.context.showDialogue(action.objectId, action.message);
     }
   }
 
@@ -185,16 +272,29 @@ function isLogicTrigger(value: unknown): value is LogicTrigger {
   if (
     value.type === "onPlayerEnterObject" ||
     value.type === "onButtonActivated" ||
-    value.type === "onCoinCollected"
+    value.type === "onCoinCollected" ||
+    value.type === "onEnemyDefeated" ||
+    value.type === "onNpcInteracted"
   ) {
     return typeof value.objectId === "string";
+  }
+
+  if (value.type === "onObjectiveCompleted") {
+    return typeof value.objectiveId === "string";
   }
 
   if (value.type === "onKeyCollected") {
     return typeof value.keyId === "string";
   }
 
-  return value.type === "onMapStart";
+  if (value.type === "onItemCollected") {
+    return typeof value.itemType === "string";
+  }
+
+  return value.type === "onMapStart" ||
+    value.type === "onAnyEnemyDefeated" ||
+    value.type === "onAllEnemiesDefeated" ||
+    value.type === "onPlayerDamaged";
 }
 
 function isLogicCondition(value: unknown): value is LogicCondition {
@@ -212,6 +312,18 @@ function isLogicCondition(value: unknown): value is LogicCondition {
 
   if (value.type === "doorIsOpen") {
     return typeof value.doorId === "string";
+  }
+
+  if (value.type === "enemyDefeated") {
+    return typeof value.objectId === "string";
+  }
+
+  if (value.type === "enemiesDefeatedAtLeast" || value.type === "healthBelow") {
+    return typeof value.amount === "number" && Number.isFinite(value.amount);
+  }
+
+  if (value.type === "hasWeapon") {
+    return typeof value.weaponId === "string";
   }
 
   return value.type === "once";
@@ -242,6 +354,26 @@ function isLogicAction(value: unknown): value is LogicAction {
     return typeof value.objectId === "string";
   }
 
+  if (value.type === "spawnEnemy") {
+    return typeof value.objectId === "string";
+  }
+
+  if (value.type === "healPlayer" || value.type === "damagePlayer") {
+    return typeof value.amount === "number" && Number.isFinite(value.amount);
+  }
+
+  if (value.type === "giveWeapon") {
+    return typeof value.weaponId === "string";
+  }
+
+  if (value.type === "completeObjective") {
+    return typeof value.objectiveId === "string";
+  }
+
+  if (value.type === "showDialogue") {
+    return typeof value.objectId === "string" && typeof value.message === "string";
+  }
+
   return value.type === "finishMap";
 }
 
@@ -250,8 +382,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function describeEvent(event: LogicRuntimeEvent): string {
+  if (event.type === "onItemCollected") {
+    return `${event.type} ${event.itemType}`;
+  }
+
+  if (event.type === "onPlayerDamaged") {
+    return `${event.type} ${event.amount}`;
+  }
+
   if (event.type === "onKeyCollected") {
     return `${event.type} ${event.keyId}`;
+  }
+
+  if (event.type === "onObjectiveCompleted") {
+    return `${event.type} ${event.objectiveId}`;
   }
 
   if ("objectId" in event) {
@@ -272,6 +416,22 @@ function describeCondition(condition: LogicCondition): string {
 
   if (condition.type === "doorIsOpen") {
     return `doorIsOpen ${condition.doorId}`;
+  }
+
+  if (condition.type === "enemyDefeated") {
+    return `enemyDefeated ${condition.objectId}`;
+  }
+
+  if (condition.type === "enemiesDefeatedAtLeast") {
+    return `enemiesDefeatedAtLeast ${condition.amount}`;
+  }
+
+  if (condition.type === "hasWeapon") {
+    return `hasWeapon ${condition.weaponId}`;
+  }
+
+  if (condition.type === "healthBelow") {
+    return `healthBelow ${condition.amount}`;
   }
 
   return "once";
@@ -296,6 +456,26 @@ function describeAction(action: LogicAction): string {
 
   if (action.type === "setCheckpoint" || action.type === "enableObject" || action.type === "disableObject") {
     return `${action.type} ${action.objectId}`;
+  }
+
+  if (action.type === "spawnEnemy") {
+    return `spawnEnemy ${action.objectId}`;
+  }
+
+  if (action.type === "healPlayer" || action.type === "damagePlayer") {
+    return `${action.type} ${action.amount}`;
+  }
+
+  if (action.type === "giveWeapon") {
+    return `giveWeapon ${action.weaponId}`;
+  }
+
+  if (action.type === "completeObjective") {
+    return `completeObjective ${action.objectiveId}`;
+  }
+
+  if (action.type === "showDialogue") {
+    return `showDialogue ${action.objectId}`;
   }
 
   return "finishMap";

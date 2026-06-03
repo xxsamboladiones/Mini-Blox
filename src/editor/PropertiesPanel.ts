@@ -192,7 +192,16 @@ export class PropertiesPanel {
           ${this.renderCheckboxField("requiresAllCoins", "Exigir todas as moedas", Boolean(object.properties?.requiresAllCoins))}
         `;
       case "npc":
-        return this.renderTextField("dialog", "Dialogo", String(object.properties?.dialog ?? ""));
+        return `
+          ${this.renderTextField("npcName", "Nome do NPC", String(object.properties?.npcName ?? object.name ?? "Guia"))}
+          ${this.renderTextareaPropertyField(
+            "dialogue",
+            "Falas",
+            getDialogueLines(object.properties?.dialogue, String(object.properties?.dialog ?? "Ola!")).join("\n")
+          )}
+          ${this.renderNumberField("interactionRange", "Alcance interacao", Number(object.properties?.interactionRange ?? 4), 0.5)}
+          ${this.renderCheckboxField("showQuestHint", "Mostrar dica de objetivo", object.properties?.showQuestHint !== false)}
+        `;
       case "enemy":
         return `
           <label class="field">
@@ -316,6 +325,15 @@ export class PropertiesPanel {
     `;
   }
 
+  private renderTextareaPropertyField(property: string, label: string, value: string): string {
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <textarea data-property-lines="${property}" rows="3">${escapeHtml(value)}</textarea>
+      </label>
+    `;
+  }
+
   private renderColorPropertyField(property: string, label: string, value: string): string {
     return `
       <label class="field">
@@ -381,6 +399,10 @@ export class PropertiesPanel {
 
     this.root.querySelectorAll<HTMLInputElement>("[data-property-list]").forEach((input) => {
       input.addEventListener("input", () => this.handlePropertyListInput(input));
+    });
+
+    this.root.querySelectorAll<HTMLTextAreaElement>("[data-property-lines]").forEach((textarea) => {
+      textarea.addEventListener("input", () => this.handlePropertyLinesInput(textarea));
     });
 
     this.root.querySelector<HTMLButtonElement>("[data-duplicate]")?.addEventListener("click", this.onDuplicate);
@@ -474,6 +496,35 @@ export class PropertiesPanel {
       : null;
     this.onChange({ properties: { [property]: values } });
   }
+
+  private handlePropertyLinesInput(textarea: HTMLTextAreaElement): void {
+    const property = textarea.dataset.propertyLines;
+
+    if (!property) {
+      return;
+    }
+
+    const values = textarea.value
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    const properties: Record<string, unknown> = { [property]: values };
+
+    if (property === "dialogue") {
+      properties.dialog = values[0] ?? "";
+    }
+
+    this.selectedObject = this.selectedObject
+      ? {
+        ...this.selectedObject,
+        properties: {
+          ...this.selectedObject.properties,
+          ...properties
+        }
+      }
+      : null;
+    this.onChange({ properties });
+  }
 }
 
 function radiansToDegreesVector(vector: Vector3): Vector3 {
@@ -497,6 +548,10 @@ function round(value: number): number {
 }
 
 function escapeAttribute(value: string): string {
+  return escapeHtml(value);
+}
+
+function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll('"', "&quot;")
@@ -536,6 +591,18 @@ function getStringArrayProperty(value: unknown, fallback: string[]): string[] {
   }
 
   return [...fallback];
+}
+
+function getDialogueLines(value: unknown, fallback: string): string[] {
+  if (Array.isArray(value)) {
+    const lines = value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+
+    if (lines.length > 0) {
+      return lines;
+    }
+  }
+
+  return fallback.trim().length > 0 ? [fallback] : ["Ola!"];
 }
 
 function getDefaultCollisionValue(object: MapObject): boolean {

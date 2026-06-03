@@ -8,11 +8,14 @@ export type FeedbackCue =
   | "teleport"
   | "door"
   | "button"
+  | "attack"
   | "damage"
   | "death"
   | "victory"
   | "key"
   | "item"
+  | "npc"
+  | "objective"
   | "disappearingBlock"
   | "message";
 
@@ -60,6 +63,10 @@ export class FeedbackSystem {
       this.spawnFloatingText(label ?? "Chave", "key");
     } else if (cue === "item") {
       this.spawnFloatingText(label ?? "Item", "item");
+    } else if (cue === "objective") {
+      this.spawnFloatingText(label ?? "Objetivo", "objective");
+    } else if (cue === "npc") {
+      this.spawnFloatingText(label ?? "NPC", "item");
     } else if (cue === "death") {
       this.spawnFloatingText("Respawn", "danger");
     } else if (cue === "victory") {
@@ -159,7 +166,7 @@ export class FeedbackSystem {
       return sphere;
     }
 
-    if (cue === "door" || cue === "button" || cue === "disappearingBlock") {
+    if (cue === "door" || cue === "button" || cue === "disappearingBlock" || cue === "attack") {
       const box = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), material);
       box.position.copy(origin).add(new THREE.Vector3(0, 0.5, 0));
       return box;
@@ -178,7 +185,7 @@ export class FeedbackSystem {
     window.setTimeout(() => element.remove(), 360);
   }
 
-  private spawnFloatingText(text: string, kind: "coin" | "key" | "item" | "danger" | "victory"): void {
+  private spawnFloatingText(text: string, kind: "coin" | "key" | "item" | "objective" | "danger" | "victory"): void {
     const element = document.createElement("div");
     element.className = `runtime-floating-feedback ${kind}`;
     element.textContent = text;
@@ -206,6 +213,8 @@ function getCueColor(cue: FeedbackCue): string {
       return "#60a5fa";
     case "button":
       return "#f97316";
+    case "attack":
+      return "#f8fafc";
     case "damage":
     case "death":
       return "#ef4444";
@@ -215,6 +224,10 @@ function getCueColor(cue: FeedbackCue): string {
       return "#3b82f6";
     case "item":
       return "#06b6d4";
+    case "npc":
+      return "#4ecdc4";
+    case "objective":
+      return "#22c55e";
     case "disappearingBlock":
       return "#f59e0b";
     case "message":
@@ -225,11 +238,11 @@ function getCueColor(cue: FeedbackCue): string {
 }
 
 function getDuration(cue: FeedbackCue): number {
-  return cue === "teleport" || cue === "victory" ? 0.65 : 0.48;
+  return cue === "teleport" || cue === "victory" || cue === "objective" ? 0.65 : 0.48;
 }
 
 function getStartScale(cue: FeedbackCue): number {
-  return cue === "coinCollect" || cue === "key" || cue === "item" ? 0.4 : 0.65;
+  return cue === "coinCollect" || cue === "key" || cue === "item" || cue === "objective" ? 0.4 : 0.65;
 }
 
 function getEndScale(cue: FeedbackCue): number {

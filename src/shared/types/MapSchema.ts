@@ -28,6 +28,30 @@ export type AudioSettings = {
 export type GameplaySettings = {
   voidDeathEnabled?: boolean;
   voidDeathY?: number;
+  requireObjectivesToFinish?: boolean;
+};
+
+export type ObjectiveType =
+  | "collectCoins"
+  | "reachObject"
+  | "collectKey"
+  | "activateButton"
+  | "openDoor"
+  | "defeatEnemies"
+  | "customLogic";
+
+export type MapObjective = {
+  id: string;
+  title: string;
+  description?: string;
+  type: ObjectiveType;
+  targetObjectId?: string;
+  targetKeyId?: string;
+  targetDoorId?: string;
+  targetAmount?: number;
+  required?: boolean;
+  visible?: boolean;
+  completedMessage?: string;
 };
 
 export type GameMap = {
@@ -39,6 +63,7 @@ export type GameMap = {
   creatorName?: string;
   spawnPoint: Vector3;
   objects: MapObject[];
+  objectives?: MapObjective[];
   logic?: LogicRule[];
   logicDebug?: boolean;
   visualSettings?: VisualSettings;
@@ -63,6 +88,7 @@ export function createEmptyGameMap(name = "Novo mapa"): GameMap {
     creatorName: "Criador local",
     spawnPoint: { x: 0, y: 1, z: 0 },
     objects: [],
+    objectives: [],
     logic: [],
     logicDebug: false,
     visualSettings: {
@@ -112,6 +138,8 @@ export function isGameMap(value: unknown): value is GameMap {
     isVector3(value.spawnPoint) &&
     Array.isArray(value.objects) &&
     value.objects.every(isMapObject) &&
+    (value.objectives === undefined ||
+      (Array.isArray(value.objectives) && value.objectives.every(isMapObjective))) &&
     (value.logic === undefined ||
       (Array.isArray(value.logic) && value.logic.every(isLogicRule))) &&
     (value.logicDebug === undefined || typeof value.logicDebug === "boolean") &&
@@ -141,6 +169,26 @@ function isMapObject(value: unknown): value is MapObject {
     isVector3(value.position) &&
     (value.rotation === undefined || isVector3(value.rotation)) &&
     (value.scale === undefined || isVector3(value.scale))
+  );
+}
+
+function isMapObjective(value: unknown): value is MapObjective {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.id === "string" &&
+    typeof value.title === "string" &&
+    isObjectiveType(value.type) &&
+    (value.description === undefined || typeof value.description === "string") &&
+    (value.targetObjectId === undefined || typeof value.targetObjectId === "string") &&
+    (value.targetKeyId === undefined || typeof value.targetKeyId === "string") &&
+    (value.targetDoorId === undefined || typeof value.targetDoorId === "string") &&
+    (value.targetAmount === undefined || Number.isFinite(value.targetAmount)) &&
+    (value.required === undefined || typeof value.required === "boolean") &&
+    (value.visible === undefined || typeof value.visible === "boolean") &&
+    (value.completedMessage === undefined || typeof value.completedMessage === "string")
   );
 }
 
@@ -229,8 +277,19 @@ function isGameplaySettings(value: unknown): value is GameplaySettings {
 
   return (
     (value.voidDeathEnabled === undefined || typeof value.voidDeathEnabled === "boolean") &&
-    (value.voidDeathY === undefined || Number.isFinite(value.voidDeathY))
+    (value.voidDeathY === undefined || Number.isFinite(value.voidDeathY)) &&
+    (value.requireObjectivesToFinish === undefined || typeof value.requireObjectivesToFinish === "boolean")
   );
+}
+
+function isObjectiveType(value: unknown): value is ObjectiveType {
+  return value === "collectCoins" ||
+    value === "reachObject" ||
+    value === "collectKey" ||
+    value === "activateButton" ||
+    value === "openDoor" ||
+    value === "defeatEnemies" ||
+    value === "customLogic";
 }
 
 function isVector3(value: unknown): value is Vector3 {

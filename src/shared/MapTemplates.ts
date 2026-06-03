@@ -1,5 +1,5 @@
 import { createMapObject } from "./ObjectCatalog";
-import { createEmptyGameMap, type AmbientMusic, type GameMap, type VisualTheme } from "./types/MapSchema";
+import { createEmptyGameMap, type AmbientMusic, type GameMap, type MapObjective, type VisualTheme } from "./types/MapSchema";
 import { getThemeVisualSettings } from "./VisualSettings";
 import type { BuiltInObjectType, MapObject, MapObjectProperties, Vector3 } from "./types/ObjectSchema";
 import type { LogicAction, LogicCondition, LogicRule, LogicTrigger } from "./types/ScriptSchema";
@@ -243,7 +243,7 @@ const TEMPLATE_CONFIGS = [
     sections: 4,
     areas: 3,
     coins: 18,
-    doors: 0,
+    doors: 1,
     buttons: 0,
     keys: 0,
     checkpoints: 1,
@@ -253,8 +253,60 @@ const TEMPLATE_CONFIGS = [
     movingPlatforms: 0,
     disappearingBlocks: 0,
     messageZones: 4,
-    logicRules: 1,
+    logicRules: 3,
     decorations: 92
+  },
+  {
+    id: "combatDungeon",
+    name: "Dungeon de Combate",
+    description: "Dungeon compacta com arma basica, salas de inimigos, curas, portas por logica e boss final.",
+    icon: "swords",
+    style: "dungeon",
+    theme: "dark",
+    ambientMusic: "dark",
+    tags: ["combate", "dungeon", "acao"],
+    minObjects: 240,
+    sections: 5,
+    areas: 5,
+    coins: 30,
+    doors: 3,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 4,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 5,
+    logicRules: 6,
+    decorations: 92
+  },
+  {
+    id: "guideMission",
+    name: "Missao do Guia",
+    description: "Missao curta com NPC guia, objetivos no HUD, moedas, chave, inimigos e final.",
+    icon: "user-round",
+    style: "forest",
+    theme: "grass",
+    ambientMusic: "calm",
+    tags: ["missao", "npc", "objetivos"],
+    minObjects: 180,
+    sections: 5,
+    areas: 5,
+    coins: 24,
+    doors: 1,
+    buttons: 1,
+    keys: 1,
+    checkpoints: 2,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 5,
+    logicRules: 5,
+    decorations: 82
   },
   {
     id: "keyPuzzle",
@@ -623,7 +675,9 @@ const PALETTES: Record<VisualTheme, Palette> = {
 
 export function createMapFromTemplate(templateId: MapTemplateId = "empty"): GameMap {
   const config = TEMPLATE_BY_ID[templateId] ?? TEMPLATE_BY_ID.empty;
-  return createGeneratedMap(config);
+  const map = createGeneratedMap(config);
+  applyObjectivePreset(map, config);
+  return map;
 }
 
 function createGeneratedMap(config: TemplateConfig): GameMap {
@@ -647,6 +701,14 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
     return createDesignedCombatArenaMap(config);
   }
 
+  if (config.id === "combatDungeon") {
+    return createDesignedCombatDungeonMap(config);
+  }
+
+  if (config.id === "guideMission") {
+    return createDesignedGuideMissionMap(config);
+  }
+
   if (isDesignedGuidedTemplate(config.id)) {
     return createDesignedGuidedMap(config);
   }
@@ -663,6 +725,184 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
   ensureObjectCount(builder, config.minObjects, config.style, route);
 
   return builder.map;
+}
+
+function applyObjectivePreset(map: GameMap, config: TemplateConfig): void {
+  if ((map.objectives ?? []).length > 0) {
+    return;
+  }
+
+  const final = map.objects.find((object) => object.type === "finish" || object.type === "goal");
+  const coins = map.objects.filter((object) => object.type === "coin");
+  const keys = map.objects.filter((object) => object.type === "key");
+  const buttons = map.objects.filter((object) => object.type === "button");
+  const doors = map.objects.filter((object) => object.type === "door");
+  const enemies = map.objects.filter((object) => object.type === "enemy");
+  const objectives: MapObjective[] = [];
+
+  const addReachFinal = (id: string, title = "Chegue ao final"): void => {
+    if (!final) {
+      return;
+    }
+
+    objectives.push({
+      id,
+      title,
+      type: "reachObject",
+      targetObjectId: final.id,
+      required: true,
+      visible: true,
+      completedMessage: "Final encontrado."
+    });
+  };
+
+  if (config.id === "obby") {
+    objectives.push({
+      id: "obby_collect_guides",
+      title: "Colete moedas guia",
+      description: "Moedas mostram a linha segura do obby.",
+      type: "collectCoins",
+      targetAmount: Math.min(18, Math.max(1, coins.length)),
+      required: false,
+      visible: true,
+      completedMessage: "Boa coleta pelo caminho."
+    });
+    addReachFinal("obby_finish", "Complete o Obby Basico");
+  } else if (config.id === "coin") {
+    objectives.push({
+      id: "coin_collect_main",
+      title: "Colete 35 moedas",
+      description: "Siga a rota principal e explore laterais.",
+      type: "collectCoins",
+      targetAmount: Math.min(35, Math.max(1, coins.length)),
+      required: true,
+      visible: true,
+      completedMessage: "Moedas principais coletadas."
+    });
+
+    const rewardKey = keys.find((key) => getKeyObjectId(key) === "coin_ruin_key") ?? keys[0];
+
+    if (rewardKey) {
+      objectives.push({
+        id: "coin_optional_key",
+        title: "Pegue a chave da ruina",
+        description: "Ela libera uma recompensa lateral.",
+        type: "collectKey",
+        targetKeyId: getKeyObjectId(rewardKey),
+        required: false,
+        visible: true,
+        completedMessage: "Chave opcional encontrada."
+      });
+    }
+
+    addReachFinal("coin_finish", "Finalize a coleta");
+  } else if (config.id === "combatArena") {
+    objectives.push({
+      id: "arena_weapon",
+      title: "Pegue a arma basica",
+      description: "O spawner azul fica na entrada.",
+      type: "customLogic",
+      required: true,
+      visible: true,
+      completedMessage: "Arma pronta."
+    });
+    objectives.push({
+      id: "arena_defeat_all",
+      title: "Derrote os inimigos",
+      type: "defeatEnemies",
+      targetAmount: Math.max(1, enemies.length),
+      required: true,
+      visible: true,
+      completedMessage: "Arena limpa."
+    });
+    addReachFinal("arena_finish", "Entre no final da arena");
+  } else if (config.id === "logic") {
+    objectives.push({
+      id: "logic_collect_room",
+      title: "Colete 8 moedas da sala",
+      type: "collectCoins",
+      targetAmount: 8,
+      required: true,
+      visible: true,
+      completedMessage: "Condição coinsAtLeast cumprida."
+    });
+
+    const masterKey = keys.find((key) => getKeyObjectId(key) === "logic_master_key") ?? keys.at(-1);
+
+    if (masterKey) {
+      objectives.push({
+        id: "logic_master_key",
+        title: "Pegue a chave master",
+        type: "collectKey",
+        targetKeyId: getKeyObjectId(masterKey),
+        required: true,
+        visible: true,
+        completedMessage: "Chave master coletada."
+      });
+    }
+
+    const finalDoor = doors.find((door) => getDoorId(door) === "logic_lab_door_8") ?? doors.at(-1);
+
+    if (finalDoor) {
+      objectives.push({
+        id: "logic_open_final_door",
+        title: "Abra a porta final",
+        type: "openDoor",
+        targetDoorId: getDoorId(finalDoor),
+        required: true,
+        visible: true,
+        completedMessage: "Porta final aberta."
+      });
+    }
+
+    addReachFinal("logic_finish", "Use finishMap no terminal");
+  } else if (config.id === "mechanics") {
+    objectives.push({
+      id: "mechanics_collect",
+      title: "Colete 10 moedas",
+      type: "collectCoins",
+      targetAmount: Math.min(10, Math.max(1, coins.length)),
+      required: false,
+      visible: true,
+      completedMessage: "Moedas de teste coletadas."
+    });
+
+    if (buttons[0]) {
+      objectives.push({
+        id: "mechanics_press_button",
+        title: "Teste um botao",
+        type: "activateButton",
+        targetObjectId: buttons[0].id,
+        required: false,
+        visible: true,
+        completedMessage: "Botao testado."
+      });
+    }
+
+    if (keys[0]) {
+      objectives.push({
+        id: "mechanics_get_key",
+        title: "Pegue uma chave",
+        type: "collectKey",
+        targetKeyId: getKeyObjectId(keys[0]),
+        required: false,
+        visible: true,
+        completedMessage: "Chave testada."
+      });
+    }
+
+    addReachFinal("mechanics_finish", "Passe pelo laboratorio");
+  }
+
+  if (objectives.length === 0) {
+    return;
+  }
+
+  map.objectives = objectives;
+  map.gameplaySettings = {
+    ...(map.gameplaySettings ?? {}),
+    requireObjectivesToFinish: true
+  };
 }
 
 function isDesignedGuidedTemplate(templateId: string): boolean {
@@ -1596,12 +1836,29 @@ function createDesignedCombatArenaMap(config: TemplateConfig): GameMap {
     scale: { x: 0.6, y: 1, z: 16 },
     properties: { color: "#111827", collision: true }
   });
-  createBlock(builder, { x: 0, y: 0.7, z: -15.8 }, {
-    name: "Barreira baixa final da arena",
-    scale: { x: 18, y: 1, z: 0.6 },
+  createBlock(builder, { x: -6.6, y: 0.9, z: -15.8 }, {
+    name: "Muro final esquerdo da arena",
+    scale: { x: 5.8, y: 1.4, z: 0.6 },
     properties: { color: "#111827", collision: true }
   });
-  createSign(builder, { x: 7.6, y: 0.2, z: -14.2 }, "Final liberado para teste. Reinicie para resetar inimigos.");
+  createBlock(builder, { x: 6.6, y: 0.9, z: -15.8 }, {
+    name: "Muro final direito da arena",
+    scale: { x: 5.8, y: 1.4, z: 0.6 },
+    properties: { color: "#111827", collision: true }
+  });
+  const finalDoor = createDoor(builder, { x: 0, y: 1.65, z: -15.8 }, {
+    name: "Porta final da arena",
+    scale: { x: 3.2, y: 3.2, z: 0.35 },
+    properties: {
+      doorId: "arena_final_door",
+      color: "#22c55e",
+      doorState: "closed",
+      startsOpen: false,
+      openOffset: { x: 0, y: 4, z: 0 },
+      collision: true
+    }
+  });
+  createSign(builder, { x: 7.6, y: 0.2, z: -14.2 }, "Derrote todos os inimigos para abrir a porta final.");
 
   const finalPad = addDesignedPlatform(builder, { x: 0, y: 0.2, z: -23 }, {
     name: "Plataforma final da arena",
@@ -1625,7 +1882,467 @@ function createDesignedCombatArenaMap(config: TemplateConfig): GameMap {
   builder.addLogic("Mensagem inicial da arena", { type: "onMapStart" }, [], [
     { type: "showMessage", message: "Arena de Combate: pegue a arma, lute e teste as curas." }
   ]);
+  builder.addLogic("Arma coletada na arena", { type: "onItemCollected", itemType: "weapon_basic" }, [{ type: "once" }], [
+    { type: "showMessage", message: "Arma equipada. Clique esquerdo para atacar." },
+    { type: "completeObjective", objectiveId: "arena_weapon" }
+  ]);
+  builder.addLogic("Todos inimigos abrem porta final", { type: "onAllEnemiesDefeated" }, [{ type: "once" }], [
+    { type: "showMessage", message: "Todos os inimigos foram derrotados. Porta final aberta!" },
+    { type: "openDoor", doorId: getDoorId(finalDoor) }
+  ]);
   builder.addLogic("Finaliza arena de combate", { type: "onPlayerEnterObject", objectId: final.id }, [{ type: "once" }], [
+    { type: "finishMap" }
+  ]);
+
+  return builder.map;
+}
+
+function createDesignedCombatDungeonMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const route: RoutePoint[] = [];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 8 });
+  const entrance = addDesignedPlatform(builder, { x: 0, y: 0.2, z: 6 }, {
+    name: "Entrada da dungeon de combate",
+    width: 12,
+    length: 8,
+    color: "#334155",
+    edgeCount: 5,
+    supports: 2
+  });
+  route.push({ ...entrance.position, label: "Entrada" });
+  createSign(builder, { x: -4.6, y: 0.2, z: 8.4 }, "Pegue a arma antes da primeira sala.");
+  createMessageZone(builder, { x: 0, y: 1.1, z: 7.1 }, "Dungeon de Combate: pegue a arma e limpe cada sala para abrir a proxima porta.", {
+    name: "Mensagem inicial da dungeon de combate",
+    scale: { x: 7, y: 1.4, z: 2 }
+  });
+  createItemSpawner(builder, { x: 0, y: 0.55, z: 5.2 }, {
+    name: "Arma inicial da dungeon",
+    properties: {
+      spawnItemType: "weapon_basic",
+      itemPool: ["weapon_basic"],
+      respawnTime: 0,
+      amount: 1,
+      color: "#38bdf8",
+      collision: false
+    }
+  });
+  createCheckpoint(builder, { x: 4.6, y: 0.75, z: 6.2 }, "Checkpoint da entrada da dungeon");
+
+  const rooms = [
+    {
+      label: "Sala 1",
+      center: { x: 0, y: 0.2, z: -6 },
+      color: "#1f2937",
+      enemies: [
+        { x: -4, y: 0.45, z: -5.5 },
+        { x: 0, y: 0.45, z: -9 },
+        { x: 4, y: 0.45, z: -5.5 }
+      ],
+      doorZ: -13,
+      doorId: "dungeon_combat_door_1",
+      reward: "Porta 1 aberta."
+    },
+    {
+      label: "Sala 2",
+      center: { x: 0, y: 0.2, z: -22 },
+      color: "#2d1f32",
+      enemies: [
+        { x: -4.8, y: 0.45, z: -20.5 },
+        { x: 0, y: 0.45, z: -24.8 },
+        { x: 4.8, y: 0.45, z: -20.5 }
+      ],
+      doorZ: -29,
+      doorId: "dungeon_combat_door_2",
+      reward: "Porta 2 aberta."
+    },
+    {
+      label: "Sala do boss",
+      center: { x: 0, y: 0.2, z: -38 },
+      color: "#311b1b",
+      enemies: [
+        { x: -5, y: 0.45, z: -36 },
+        { x: 5, y: 0.45, z: -36 },
+        { x: -3, y: 0.45, z: -41 },
+        { x: 3, y: 0.45, z: -41 }
+      ],
+      doorZ: -45,
+      doorId: "dungeon_combat_final_door",
+      reward: "Boss derrotado. Porta final aberta."
+    }
+  ];
+  const roomEnemies: MapObject[][] = [];
+  const doors: MapObject[] = [];
+
+  rooms.forEach((room, roomIndex) => {
+    const platform = addDesignedPlatform(builder, room.center, {
+      name: `${room.label} da dungeon de combate`,
+      width: roomIndex === 2 ? 18 : 16,
+      length: 12,
+      color: room.color,
+      edgeCount: 6,
+      supports: 2
+    });
+    route.push({ ...platform.position, label: room.label });
+
+    const previous = roomIndex === 0 ? entrance.position : rooms[roomIndex - 1].center;
+    createTrailBridge(builder, previous, room.center, `Corredor para ${room.label}`, "#475569");
+    createSign(builder, { x: -6.3, y: 0.2, z: room.center.z + 4.2 }, `${room.label}: derrote todos para abrir a porta.`);
+    createMessageZone(builder, { x: 0, y: 1.1, z: room.center.z + 3 }, `${room.label}: inimigos contam para a logica da porta.`, {
+      name: `Mensagem ${room.label}`,
+      scale: { x: 7, y: 1.35, z: 2 }
+    });
+    createCheckpoint(builder, { x: 6, y: 0.75, z: room.center.z + 4.2 }, `Checkpoint ${room.label}`);
+    createItemSpawner(builder, { x: -6, y: 0.55, z: room.center.z - 3.6 }, {
+      name: `Cura ${room.label}`,
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 10,
+        amount: roomIndex === 2 ? 45 : 30,
+        color: "#ef4444",
+        collision: false
+      }
+    });
+
+    const enemies = room.enemies.map((position, enemyIndex) => createEnemy(builder, position, {
+      name: roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? "Boss da dungeon" : `${room.label} inimigo ${enemyIndex + 1}`,
+      properties: {
+        behavior: enemyIndex === 0 ? "patrol" : "chase",
+        patrolOffset: enemyIndex === 0 ? { x: 4, y: 0, z: 0 } : { x: 0, y: 0, z: 0 },
+        health: roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? 120 : 50 + roomIndex * 10,
+        damage: roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? 16 : 10 + roomIndex * 2,
+        speed: roomIndex === 2 ? 2.2 : 1.9,
+        detectionRange: 10,
+        attackRange: 1.55,
+        attackCooldown: 1,
+        color: roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? "#b91c1c" : "#ef4444",
+        collision: false
+      }
+    }));
+    roomEnemies.push(enemies);
+
+    createCoinLine(builder, { x: -4.5, y: 1.1, z: room.center.z }, { x: 4.5, y: 1.1, z: room.center.z }, 6, `Recompensa ${room.label}`);
+
+    const door = createDoor(builder, { x: 0, y: 1.65, z: room.doorZ }, {
+      name: `${room.label} porta de saida`,
+      scale: { x: 3.2, y: 3.2, z: 0.35 },
+      properties: {
+        doorId: room.doorId,
+        color: roomIndex === 2 ? "#22c55e" : "#8b5cf6",
+        doorState: "closed",
+        startsOpen: false,
+        openOffset: { x: 0, y: 4, z: 0 },
+        collision: true
+      }
+    });
+    doors.push(door);
+    createBlock(builder, { x: -5.8, y: 0.9, z: room.doorZ }, {
+      name: `${room.label} muro esquerdo`,
+      scale: { x: 5, y: 1.4, z: 0.6 },
+      properties: { color: "#111827", collision: true }
+    });
+    createBlock(builder, { x: 5.8, y: 0.9, z: room.doorZ }, {
+      name: `${room.label} muro direito`,
+      scale: { x: 5, y: 1.4, z: 0.6 },
+      properties: { color: "#111827", collision: true }
+    });
+  });
+
+  const finalPad = addDesignedPlatform(builder, { x: 0, y: 0.2, z: -54 }, {
+    name: "Camara final da dungeon de combate",
+    width: 14,
+    length: 9,
+    color: "#14532d",
+    edgeCount: 5,
+    supports: 2
+  });
+  route.push({ ...finalPad.position, label: "Camara final" });
+  createTrailBridge(builder, rooms[2].center, finalPad.position, "Corredor para camara final", "#22c55e");
+  createSign(builder, { x: -5.2, y: 0.2, z: -50.4 }, "A porta final abre quando a dungeon estiver limpa.");
+  createMessageZone(builder, { x: 0, y: 1.1, z: -52.2 }, "Camara final: entre no trofeu para concluir a dungeon.", {
+    name: "Mensagem final da dungeon de combate",
+    scale: { x: 7, y: 1.35, z: 2 }
+  });
+  createCoinLine(builder, { x: -4, y: 1.1, z: -53 }, { x: 4, y: 1.1, z: -53 }, 8, "Tesouro final da dungeon");
+  const final = createFinish(builder, { x: 0, y: 1.25, z: -56 }, {
+    name: "Final da dungeon de combate",
+    properties: { message: "Dungeon de combate concluida!" }
+  });
+
+  addPathPosts(builder, entrance.position, finalPad.position, 10, "Marcador da dungeon de combate", "#a78bfa");
+  addDesignedTemplateDecor(builder, config, route);
+  ensureObjectCount(builder, config.minObjects, config.style, route);
+
+  builder.addLogic("Arma coletada na dungeon", { type: "onItemCollected", itemType: "weapon_basic" }, [{ type: "once" }], [
+    { type: "showMessage", message: "Arma equipada. Limpe a primeira sala." }
+  ]);
+  roomEnemies.forEach((enemies, index) => {
+    builder.addLogic(`${rooms[index].label} abre porta`, { type: "onAnyEnemyDefeated" }, [
+      { type: "once" },
+      ...enemies.map((enemy) => ({ type: "enemyDefeated" as const, objectId: enemy.id }))
+    ], [
+      { type: "showMessage", message: rooms[index].reward },
+      { type: "openDoor", doorId: getDoorId(doors[index]) }
+    ]);
+  });
+  builder.addLogic("Todos inimigos da dungeon derrotados", { type: "onAllEnemiesDefeated" }, [{ type: "once" }], [
+    { type: "showMessage", message: "Dungeon limpa. Siga para a vitoria!" }
+  ]);
+  builder.addLogic("Finaliza dungeon de combate", { type: "onPlayerEnterObject", objectId: final.id }, [{ type: "once" }], [
+    { type: "finishMap" }
+  ]);
+
+  return builder.map;
+}
+
+function createDesignedGuideMissionMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const route: RoutePoint[] = [];
+
+  builder.map.gameplaySettings = {
+    ...(builder.map.gameplaySettings ?? {}),
+    requireObjectivesToFinish: true
+  };
+
+  addSpawn(builder, { x: 0, y: 0.72, z: 5 });
+  const village = addDesignedPlatform(builder, { x: 0, y: 0.2, z: 2 }, {
+    name: "Aldeia inicial da missao",
+    width: 16,
+    length: 12,
+    color: "#86efac",
+    edgeCount: 6,
+    supports: 2
+  });
+  route.push({ ...village.position, label: "Aldeia inicial" });
+  createSign(builder, { x: -6.4, y: 0.2, z: 5.2 }, "Fale com o Guia e siga o HUD.");
+  const guide = createNpc(builder, { x: 2.2, y: 0.35, z: 2.8 }, {
+    id: "guide_mission_npc",
+    name: "Guia da Missao",
+    properties: {
+      npcName: "Guia",
+      color: "#14b8a6",
+      dialog: "Bem-vindo! Complete os objetivos no HUD.",
+      dialogue: [
+        "Bem-vindo! Complete os objetivos no HUD.",
+        "Primeiro colete moedas na trilha.",
+        "Depois encontre a chave azul e abra o portao."
+      ],
+      interactionRange: 4.5,
+      showQuestHint: true,
+      collision: false
+    }
+  });
+  createMessageZone(builder, { x: 0, y: 1.05, z: 2.2 }, "Missao do Guia: pressione E olhando para o NPC para falar.", {
+    name: "Mensagem inicial da missao",
+    scale: { x: 7, y: 1.4, z: 2.2 }
+  });
+  createCheckpoint(builder, { x: -5.6, y: 0.65, z: 4.8 }, "Checkpoint da aldeia");
+
+  const coinTrail = addDesignedPlatform(builder, { x: -12, y: 0.2, z: -12 }, {
+    name: "Trilha de moedas da missao",
+    width: 14,
+    length: 12,
+    color: "#bbf7d0",
+    edgeCount: 5,
+    supports: 2
+  });
+  route.push({ ...coinTrail.position, label: "Trilha de moedas" });
+  createTrailBridge(builder, village.position, coinTrail.position, "Ponte da aldeia para trilha", "#bbf7d0");
+  createSign(builder, { x: -17.6, y: 0.2, z: -8.2 }, "Colete 10 moedas para cumprir a etapa.");
+  createCoinLine(builder, { x: -2, y: 1.12, z: 0 }, { x: -12, y: 1.12, z: -12 }, 10, "Moeda da trilha guiada");
+  createCoinCluster(builder, { x: -15, y: 1.1, z: -15 }, 6, 3.4, "Moeda extra da trilha");
+
+  const keyArea = addDesignedPlatform(builder, { x: 10, y: 0.2, z: -24 }, {
+    name: "Clareira da chave azul",
+    width: 14,
+    length: 12,
+    color: "#dbeafe",
+    edgeCount: 5,
+    supports: 2
+  });
+  route.push({ ...keyArea.position, label: "Clareira da chave" });
+  createTrailBridge(builder, coinTrail.position, keyArea.position, "Ponte para chave azul", "#bfdbfe");
+  createSign(builder, { x: 4.5, y: 0.2, z: -20 }, "A chave azul abre o portao.");
+  const keyId = "guide_blue_key";
+  createKey(builder, { x: 10, y: 1.25, z: -24 }, {
+    name: "Chave azul da missao",
+    properties: { keyId, label: "Chave Azul", color: "#3b82f6" }
+  });
+  createCheckpoint(builder, { x: 15, y: 0.65, z: -21 }, "Checkpoint da chave azul");
+
+  const gateArea = addDesignedPlatform(builder, { x: 0, y: 0.2, z: -40 }, {
+    name: "Portao da missao",
+    width: 16,
+    length: 12,
+    color: "#e0f2fe",
+    edgeCount: 5,
+    supports: 2
+  });
+  route.push({ ...gateArea.position, label: "Portao" });
+  createTrailBridge(builder, keyArea.position, gateArea.position, "Ponte para portao", "#93c5fd");
+  createSign(builder, { x: -6.2, y: 0.2, z: -36.4 }, "Encoste na porta com a chave.");
+  const door = createDoor(builder, { x: 0, y: 1.65, z: -43.7 }, {
+    name: "Portao azul da missao",
+    properties: {
+      doorId: "guide_gate",
+      requiredKeyId: keyId,
+      color: "#3b82f6",
+      doorState: "closed",
+      startsOpen: false,
+      collision: true
+    }
+  });
+  createButton(builder, { x: 5.4, y: 0.35, z: -39 }, {
+    name: "Botao de dica do portao",
+    properties: {
+      targetDoorId: getDoorId(door),
+      buttonTargetId: getDoorId(door),
+      oneTime: true,
+      color: "#3b82f6"
+    }
+  });
+
+  const combatArea = addDesignedPlatform(builder, { x: 0, y: 0.2, z: -56 }, {
+    name: "Arena pequena da missao",
+    width: 18,
+    length: 14,
+    color: "#bbf7d0",
+    edgeCount: 6,
+    supports: 2
+  });
+  route.push({ ...combatArea.position, label: "Arena pequena" });
+  createTrailBridge(builder, gateArea.position, combatArea.position, "Ponte para arena pequena", "#86efac");
+  createSign(builder, { x: -7.4, y: 0.2, z: -51.6 }, "Pegue a arma e derrote 2 inimigos.");
+  createItemSpawner(builder, { x: -4, y: 0.55, z: -54 }, {
+    name: "Arma basica da missao",
+    properties: {
+      spawnItemType: "weapon_basic",
+      itemPool: ["weapon_basic"],
+      respawnTime: 0,
+      amount: 1,
+      color: "#38bdf8",
+      collision: false
+    }
+  });
+  createItemSpawner(builder, { x: 5.8, y: 0.55, z: -58 }, {
+    name: "Cura da missao",
+    properties: {
+      spawnItemType: "health",
+      itemPool: ["health_pack"],
+      respawnTime: 8,
+      amount: 25,
+      color: "#ef4444",
+      collision: false
+    }
+  });
+  [
+    { x: -1.5, y: 0.45, z: -58 },
+    { x: 3.5, y: 0.45, z: -60 }
+  ].forEach((position, index) => {
+    createEnemy(builder, position, {
+      name: `Inimigo da missao ${index + 1}`,
+      properties: {
+        behavior: "chase",
+        health: 40,
+        damage: 8,
+        speed: 1.6,
+        detectionRange: 9,
+        color: "#ef4444",
+        collision: false
+      }
+    });
+  });
+
+  const finalPad = addDesignedPlatform(builder, { x: 0, y: 0.2, z: -72 }, {
+    name: "Final da missao guiada",
+    width: 14,
+    length: 10,
+    color: "#fde68a",
+    edgeCount: 5,
+    supports: 2
+  });
+  route.push({ ...finalPad.position, label: "Final" });
+  createTrailBridge(builder, combatArea.position, finalPad.position, "Ponte para final da missao", "#fde68a");
+  createSign(builder, { x: -5.6, y: 0.2, z: -68.2 }, "Final: conclua todos os objetivos.");
+  const final = createFinish(builder, { x: 0, y: 1.25, z: -74.5 }, {
+    name: "Final da Missao do Guia",
+    properties: { message: "Missao do Guia concluida!" }
+  });
+
+  createForestPocket(builder, village.position, "Aldeia decorada da missao");
+  createForestPocket(builder, keyArea.position, "Clareira decorada da missao");
+  addPathPosts(builder, village.position, finalPad.position, 8, "Marcador verde da missao", "#22c55e");
+  addDesignedTemplateDecor(builder, config, route);
+  ensureObjectCount(builder, config.minObjects, config.style, route);
+
+  builder.addObjective({
+    id: "guide_talk",
+    title: "Fale com o Guia",
+    description: "Olhe para o NPC e pressione E.",
+    type: "customLogic",
+    required: true,
+    visible: true,
+    completedMessage: "Guia encontrado."
+  });
+  builder.addObjective({
+    id: "guide_collect_coins",
+    title: "Colete 10 moedas",
+    description: "A trilha dourada leva ate a chave.",
+    type: "collectCoins",
+    targetAmount: 10,
+    required: true,
+    visible: true,
+    completedMessage: "Moedas coletadas."
+  });
+  builder.addObjective({
+    id: "guide_key",
+    title: "Pegue a chave azul",
+    type: "collectKey",
+    targetKeyId: keyId,
+    required: true,
+    visible: true,
+    completedMessage: "Chave azul obtida."
+  });
+  builder.addObjective({
+    id: "guide_gate_open",
+    title: "Abra o portao azul",
+    type: "openDoor",
+    targetDoorId: getDoorId(door),
+    required: true,
+    visible: true,
+    completedMessage: "Portao aberto."
+  });
+  builder.addObjective({
+    id: "guide_defeat_enemies",
+    title: "Derrote 2 inimigos",
+    type: "defeatEnemies",
+    targetAmount: 2,
+    required: true,
+    visible: true,
+    completedMessage: "Arena limpa."
+  });
+  builder.addObjective({
+    id: "guide_finish",
+    title: "Entre no final",
+    type: "reachObject",
+    targetObjectId: final.id,
+    required: true,
+    visible: true,
+    completedMessage: "Missao completa."
+  });
+
+  builder.addLogic("Boas-vindas Missao do Guia", { type: "onMapStart" }, [], [
+    { type: "showMessage", message: "Missao do Guia: fale com o NPC e siga os objetivos." }
+  ]);
+  builder.addLogic("Falar com Guia completa objetivo", { type: "onNpcInteracted", objectId: guide.id }, [{ type: "once" }], [
+    { type: "completeObjective", objectiveId: "guide_talk" },
+    { type: "showMessage", message: "O Guia marcou sua missao no HUD." }
+  ]);
+  builder.addLogic("Arma coletada na missao", { type: "onItemCollected", itemType: "weapon_basic" }, [{ type: "once" }], [
+    { type: "showMessage", message: "Arma equipada. Clique esquerdo para atacar." }
+  ]);
+  builder.addLogic("Finaliza Missao do Guia", { type: "onPlayerEnterObject", objectId: final.id }, [{ type: "once" }], [
     { type: "finishMap" }
   ]);
 
@@ -3758,6 +4475,7 @@ class TemplateBuilder {
       ambientMusic: config.ambientMusic
     };
     this.map.logic = [];
+    this.map.objectives = [];
   }
 
   add(type: BuiltInObjectType, position: Vector3, options: ObjectOptions = {}): MapObject {
@@ -3790,6 +4508,15 @@ class TemplateBuilder {
     return rule;
   }
 
+  addObjective(objective: Omit<MapObjective, "id"> & { id?: string }): MapObjective {
+    const nextObjective: MapObjective = {
+      ...objective,
+      id: objective.id ?? this.nextObjectiveId()
+    };
+    this.map.objectives = [...(this.map.objectives ?? []), nextObjective];
+    return nextObjective;
+  }
+
   private nextObjectId(type: string): string {
     this.objectIndex += 1;
     return `${this.config.id}_${sanitizeId(type)}_${String(this.objectIndex).padStart(5, "0")}`;
@@ -3798,6 +4525,10 @@ class TemplateBuilder {
   private nextLogicId(): string {
     this.logicIndex += 1;
     return `${this.config.id}_logic_${String(this.logicIndex).padStart(3, "0")}`;
+  }
+
+  private nextObjectiveId(): string {
+    return `${this.config.id}_objective_${String((this.map.objectives ?? []).length + 1).padStart(3, "0")}`;
   }
 }
 
@@ -4042,6 +4773,24 @@ function createEnemy(builder: TemplateBuilder, position: Vector3, options: Objec
       attackCooldown: 1,
       behavior: "chase",
       patrolOffset: { x: 4, y: 0, z: 0 },
+      collision: false
+    }
+  }, options));
+}
+
+function createNpc(builder: TemplateBuilder, position: Vector3, options: ObjectOptions = {}): MapObject {
+  return builder.add("npc", position, mergeObjectOptions({
+    name: "NPC Guia",
+    properties: {
+      color: "#4ecdc4",
+      npcName: "Guia",
+      dialog: "Ola! Siga os objetivos no HUD.",
+      dialogue: [
+        "Ola! Siga os objetivos no HUD.",
+        "Pegue moedas, encontre a chave e avance para o final."
+      ],
+      interactionRange: 4,
+      showQuestHint: true,
       collision: false
     }
   }, options));

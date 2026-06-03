@@ -12,6 +12,8 @@ const MIN_OBJECTS = {
   checkpoint: 300,
   mechanics: 400,
   combatArena: 150,
+  combatDungeon: 220,
+  guideMission: 160,
   keyPuzzle: 350,
   logic: 250,
   forest: 500,
@@ -31,7 +33,9 @@ const REQUIRED_MINIMUMS = {
   door: { doors: 10, buttons: 10, keys: 3, logic: 8 },
   checkpoint: { checkpoints: 12, damage: 15, jumpPads: 8, disappearingBlocks: 8, movingPlatforms: 6 },
   mechanics: { checkpoints: 1, damage: 1, jumpPads: 1, teleporters: 2, movingPlatforms: 1, disappearingBlocks: 1, doors: 1, buttons: 1, keys: 1 },
-  combatArena: { coins: 12, checkpoints: 1, enemies: 3, itemSpawners: 3, messageZones: 3 },
+  combatArena: { coins: 12, checkpoints: 1, enemies: 3, itemSpawners: 3, messageZones: 3, doors: 1, logic: 3 },
+  combatDungeon: { coins: 25, checkpoints: 4, enemies: 8, itemSpawners: 4, messageZones: 5, doors: 3, logic: 6 },
+  guideMission: { coins: 16, npcs: 1, objectives: 6, enemies: 2, itemSpawners: 2, keys: 1, doors: 1, logic: 4 },
   keyPuzzle: { keys: 6, doors: 10, buttons: 8, logic: 10 },
   logic: { logic: 20, coins: 20, doors: 6, buttons: 6, keys: 2, checkpoints: 5, teleporters: 2 },
   forest: { coins: 80, checkpoints: 5, keys: 3, doors: 4, teleporters: 4 },
@@ -97,8 +101,10 @@ async function main() {
       botoes: summary.buttons,
       chaves: summary.keys,
       checkpoints: summary.checkpoints,
+      npcs: summary.npcs,
       inimigos: summary.enemies,
       spawners: summary.itemSpawners,
+      objetivos: summary.objectives,
       dano: summary.damage,
       jumpPads: summary.jumpPads,
       teleportes: summary.teleporters,
@@ -148,7 +154,9 @@ function summarizeMap(template, map) {
     keys: count("key"),
     checkpoints: count("checkpoint"),
     enemies: count("enemy"),
+    npcs: count("npc"),
     itemSpawners: count("itemSpawner"),
+    objectives: Array.isArray(map.objectives) ? map.objectives.length : 0,
     damage: count("damage"),
     jumpPads: count("jumpPad"),
     teleporters: count("teleporter"),
@@ -169,6 +177,9 @@ function validateTemplate(template, map, summary) {
   const doorIds = new Set();
   const keyIds = new Set();
   const teleporterIds = new Set();
+  const enemyIds = new Set();
+  const npcIds = new Set();
+  const objectiveIds = new Set();
   const expectedMin = MIN_OBJECTS[template.id];
 
   if (!template.id) {
@@ -237,6 +248,14 @@ function validateTemplate(template, map, summary) {
       keyIds.add(getString(object.properties?.keyId, object.id));
     }
 
+    if (object.type === "enemy") {
+      enemyIds.add(object.id);
+    }
+
+    if (object.type === "npc") {
+      npcIds.add(object.id);
+    }
+
     if (object.type === "teleporter") {
       const teleporterId = getString(object.properties?.teleporterId, object.id);
 
@@ -274,11 +293,72 @@ function validateTemplate(template, map, summary) {
     }
   }
 
+  errors.push(...validateObjectives(template.id, map, {
+    objectIds,
+    doorIds,
+    keyIds,
+    enemyIds,
+    objectiveIds
+  }));
+
   for (const rule of map.logic ?? []) {
-    errors.push(...validateLogicRule(template.id, rule, objectIds, doorIds, keyIds, map));
+    errors.push(...validateLogicRule(template.id, rule, objectIds, doorIds, keyIds, enemyIds, npcIds, objectiveIds, map));
   }
 
   errors.push(...validateLevelDesign(template, map, summary, { doorIds, keyIds, teleporterIds }));
+
+  return errors;
+}
+
+function validateObjectives(templateId, map, refs) {
+  const errors = [];
+  const objectives = Array.isArray(map.objectives) ? map.objectives : [];
+
+  for (const objective of objectives) {
+    if (!objective.id || typeof objective.id !== "string") {
+      errors.push(`${templateId}: objetivo sem id.`);
+      continue;
+    }
+
+    if (refs.objectiveIds.has(objective.id)) {
+      errors.push(`${templateId}: objetivo duplicado ${objective.id}.`);
+    }
+
+    refs.objectiveIds.add(objective.id);
+
+    if (!objective.title || typeof objective.title !== "string") {
+      errors.push(`${templateId}: objetivo ${objective.id} sem titulo.`);
+    }
+
+    if (!isValidObjectiveType(objective.type)) {
+      errors.push(`${templateId}: objetivo ${objective.id} tem tipo invalido ${objective.type}.`);
+      continue;
+    }
+
+    if ((objective.type === "collectCoins" || objective.type === "defeatEnemies") &&
+      (!Number.isFinite(objective.targetAmount) || objective.targetAmount < 1)
+    ) {
+      errors.push(`${templateId}: objetivo ${objective.id} precisa de targetAmount positivo.`);
+    }
+
+    if ((objective.type === "reachObject" || objective.type === "activateButton") &&
+      !refs.objectIds.has(objective.targetObjectId)
+    ) {
+      errors.push(`${templateId}: objetivo ${objective.id} aponta objeto inexistente ${objective.targetObjectId}.`);
+    }
+
+    if (objective.type === "collectKey" && !refs.keyIds.has(objective.targetKeyId)) {
+      errors.push(`${templateId}: objetivo ${objective.id} aponta chave inexistente ${objective.targetKeyId}.`);
+    }
+
+    if (objective.type === "openDoor" && !refs.doorIds.has(objective.targetDoorId)) {
+      errors.push(`${templateId}: objetivo ${objective.id} aponta porta inexistente ${objective.targetDoorId}.`);
+    }
+  }
+
+  if (map.gameplaySettings?.requireObjectivesToFinish && objectives.every((objective) => objective.required === false)) {
+    errors.push(`${templateId}: exige objetivos para finalizar, mas nenhum objetivo e obrigatorio.`);
+  }
 
   return errors;
 }
@@ -777,7 +857,7 @@ function getTeleporterId(object) {
   return getString(object.properties?.teleporterId, object.id);
 }
 
-function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, map) {
+function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, enemyIds, npcIds, objectiveIds, map) {
   const errors = [];
 
   if (!rule.id || !rule.name) {
@@ -792,15 +872,33 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, map) {
   if (
     rule.trigger.type === "onPlayerEnterObject" ||
     rule.trigger.type === "onButtonActivated" ||
-    rule.trigger.type === "onCoinCollected"
+    rule.trigger.type === "onCoinCollected" ||
+    rule.trigger.type === "onEnemyDefeated" ||
+    rule.trigger.type === "onNpcInteracted"
   ) {
     if (!objectIds.has(rule.trigger.objectId)) {
       errors.push(`${templateId}: regra ${rule.id} trigger aponta objeto inexistente ${rule.trigger.objectId}.`);
     }
+
+    if (rule.trigger.type === "onEnemyDefeated" && !enemyIds.has(rule.trigger.objectId)) {
+      errors.push(`${templateId}: regra ${rule.id} onEnemyDefeated aponta inimigo inexistente ${rule.trigger.objectId}.`);
+    }
+
+    if (rule.trigger.type === "onNpcInteracted" && !npcIds.has(rule.trigger.objectId)) {
+      errors.push(`${templateId}: regra ${rule.id} onNpcInteracted aponta NPC inexistente ${rule.trigger.objectId}.`);
+    }
+  }
+
+  if (rule.trigger.type === "onObjectiveCompleted" && !objectiveIds.has(rule.trigger.objectiveId)) {
+    errors.push(`${templateId}: regra ${rule.id} onObjectiveCompleted aponta objetivo inexistente ${rule.trigger.objectiveId}.`);
   }
 
   if (rule.trigger.type === "onKeyCollected" && !keyIds.has(rule.trigger.keyId)) {
     errors.push(`${templateId}: regra ${rule.id} trigger aponta chave inexistente ${rule.trigger.keyId}.`);
+  }
+
+  if (rule.trigger.type === "onItemCollected" && !isValidItemType(rule.trigger.itemType)) {
+    errors.push(`${templateId}: regra ${rule.id} onItemCollected usa item invalido ${rule.trigger.itemType}.`);
   }
 
   for (const condition of rule.conditions ?? []) {
@@ -814,6 +912,22 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, map) {
 
     if (condition.type === "coinsAtLeast" && !Number.isFinite(condition.amount)) {
       errors.push(`${templateId}: regra ${rule.id} coinsAtLeast invalido.`);
+    }
+
+    if (condition.type === "enemyDefeated" && !enemyIds.has(condition.objectId)) {
+      errors.push(`${templateId}: regra ${rule.id} enemyDefeated aponta inimigo inexistente ${condition.objectId}.`);
+    }
+
+    if (condition.type === "enemiesDefeatedAtLeast" && !Number.isFinite(condition.amount)) {
+      errors.push(`${templateId}: regra ${rule.id} enemiesDefeatedAtLeast invalido.`);
+    }
+
+    if (condition.type === "hasWeapon" && !isValidWeaponId(condition.weaponId)) {
+      errors.push(`${templateId}: regra ${rule.id} hasWeapon invalido ${condition.weaponId}.`);
+    }
+
+    if (condition.type === "healthBelow" && !Number.isFinite(condition.amount)) {
+      errors.push(`${templateId}: regra ${rule.id} healthBelow invalido.`);
     }
   }
 
@@ -838,12 +952,56 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, map) {
       errors.push(`${templateId}: regra ${rule.id} ${action.type} aponta objeto inexistente ${action.objectId}.`);
     }
 
+    if (action.type === "spawnEnemy" && !enemyIds.has(action.objectId)) {
+      errors.push(`${templateId}: regra ${rule.id} spawnEnemy aponta inimigo inexistente ${action.objectId}.`);
+    }
+
     if (action.type === "giveCoins" && !Number.isFinite(action.amount)) {
       errors.push(`${templateId}: regra ${rule.id} giveCoins invalido.`);
+    }
+
+    if ((action.type === "healPlayer" || action.type === "damagePlayer") && !Number.isFinite(action.amount)) {
+      errors.push(`${templateId}: regra ${rule.id} ${action.type} invalido.`);
+    }
+
+    if (action.type === "giveWeapon" && !isValidWeaponId(action.weaponId)) {
+      errors.push(`${templateId}: regra ${rule.id} giveWeapon invalido ${action.weaponId}.`);
+    }
+
+    if (action.type === "completeObjective" && !objectiveIds.has(action.objectiveId)) {
+      errors.push(`${templateId}: regra ${rule.id} completeObjective aponta objetivo inexistente ${action.objectiveId}.`);
+    }
+
+    if (action.type === "showDialogue") {
+      if (!npcIds.has(action.objectId)) {
+        errors.push(`${templateId}: regra ${rule.id} showDialogue aponta NPC inexistente ${action.objectId}.`);
+      }
+
+      if (typeof action.message !== "string" || action.message.length === 0) {
+        errors.push(`${templateId}: regra ${rule.id} showDialogue sem mensagem.`);
+      }
     }
   }
 
   return errors;
+}
+
+function isValidItemType(value) {
+  return value === "health" || value === "coin" || value === "weapon_basic";
+}
+
+function isValidWeaponId(value) {
+  return value === "basic_sword";
+}
+
+function isValidObjectiveType(value) {
+  return value === "collectCoins" ||
+    value === "reachObject" ||
+    value === "collectKey" ||
+    value === "activateButton" ||
+    value === "openDoor" ||
+    value === "defeatEnemies" ||
+    value === "customLogic";
 }
 
 function isVector(value) {

@@ -4,6 +4,7 @@ import { ObjectOutliner } from "./ObjectOutliner";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { AssetPanel } from "./AssetPanel";
 import { LogicPanel } from "./LogicPanel";
+import { ObjectivesPanel } from "./ObjectivesPanel";
 import { SaveMapButton } from "./SaveMapButton";
 import { EditorScene } from "./EditorScene";
 import { ToolManager, type EditorTool } from "./ToolManager";
@@ -41,6 +42,7 @@ export class EditorApp {
   private propertiesPanel: PropertiesPanel | null = null;
   private assetPanel: AssetPanel | null = null;
   private logicPanel: LogicPanel | null = null;
+  private objectivesPanel: ObjectivesPanel | null = null;
   private objectOutliner: ObjectOutliner | null = null;
   private saveButtons: SaveMapButton | null = null;
   private testRuntime: GameRuntime | null = null;
@@ -71,6 +73,7 @@ export class EditorApp {
     const viewport = this.getElement("scene-root");
     const objectPanelRoot = this.getElement("object-panel");
     const outlinerRoot = this.getElement("outliner-panel");
+    const objectivesPanelRoot = this.getElement("objectives-panel");
     const logicPanelRoot = this.getElement("logic-panel");
     const assetPanelRoot = this.getElement("asset-panel");
     const propertiesPanelRoot = this.getElement("properties-panel");
@@ -107,6 +110,12 @@ export class EditorApp {
       onDebugChange: (logicDebug) => this.editorScene?.updateMapInfo({ logicDebug })
     });
     this.logicPanel.setMap(this.currentMap);
+
+    this.objectivesPanel = new ObjectivesPanel(objectivesPanelRoot, {
+      onChange: (objectives) => this.editorScene?.updateMapInfo({ objectives }),
+      onGameplayChange: (gameplaySettings) => this.editorScene?.updateMapInfo({ gameplaySettings })
+    });
+    this.objectivesPanel.setMap(this.currentMap);
 
     this.propertiesPanel = new PropertiesPanel(
       propertiesPanelRoot,
@@ -197,6 +206,7 @@ export class EditorApp {
             </section>
             <section id="object-panel"></section>
             <section id="outliner-panel"></section>
+            <section id="objectives-panel"></section>
             <section id="logic-panel"></section>
             <section id="asset-panel"></section>
           </aside>
@@ -734,6 +744,7 @@ export class EditorApp {
     this.currentMap = nextMap;
     MapStorage.saveMap(nextMap);
     this.assetPanel?.setAssets(nextMap.assets ?? []);
+    this.objectivesPanel?.setMap(nextMap);
     this.logicPanel?.setMap(nextMap);
     this.refreshOutliner(nextMap);
     this.updateStats(nextMap);
@@ -846,6 +857,7 @@ export class EditorApp {
       this.syncMetadataInputs(importedMap);
       this.propertiesPanel?.setObject(null);
       this.assetPanel?.setAssets(importedMap.assets ?? []);
+      this.objectivesPanel?.setMap(importedMap);
       this.logicPanel?.setMap(importedMap);
       this.refreshOutliner(importedMap);
       this.updateStats(importedMap);

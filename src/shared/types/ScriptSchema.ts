@@ -24,6 +24,31 @@ export type LogicTrigger =
     keyId: string;
   }
   | {
+    type: "onEnemyDefeated";
+    objectId: string;
+  }
+  | {
+    type: "onAnyEnemyDefeated";
+  }
+  | {
+    type: "onAllEnemiesDefeated";
+  }
+  | {
+    type: "onPlayerDamaged";
+  }
+  | {
+    type: "onItemCollected";
+    itemType: "health" | "coin" | "weapon_basic" | string;
+  }
+  | {
+    type: "onNpcInteracted";
+    objectId: string;
+  }
+  | {
+    type: "onObjectiveCompleted";
+    objectiveId: string;
+  }
+  | {
     type: "onMapStart";
   };
 
@@ -39,6 +64,22 @@ export type LogicCondition =
   | {
     type: "doorIsOpen";
     doorId: string;
+  }
+  | {
+    type: "enemyDefeated";
+    objectId: string;
+  }
+  | {
+    type: "enemiesDefeatedAtLeast";
+    amount: number;
+  }
+  | {
+    type: "hasWeapon";
+    weaponId: "basic_sword" | string;
+  }
+  | {
+    type: "healthBelow";
+    amount: number;
   }
   | {
     type: "once";
@@ -79,6 +120,31 @@ export type LogicAction =
   | {
     type: "disableObject";
     objectId: string;
+  }
+  | {
+    type: "spawnEnemy";
+    objectId: string;
+  }
+  | {
+    type: "healPlayer";
+    amount: number;
+  }
+  | {
+    type: "damagePlayer";
+    amount: number;
+  }
+  | {
+    type: "giveWeapon";
+    weaponId: "basic_sword" | string;
+  }
+  | {
+    type: "completeObjective";
+    objectiveId: string;
+  }
+  | {
+    type: "showDialogue";
+    objectId: string;
+    message: string;
   };
 
 export type LogicRule = {

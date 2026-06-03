@@ -580,18 +580,60 @@ function createFinishObject(mapObject: MapObject): THREE.Object3D {
 
 function createNpcObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
-  const material = createMaterial(mapObject);
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 0.7, 6, 12), material);
-  body.position.y = 0.52;
+  const material = createMaterial(mapObject, { roughness: 0.58 });
+  const darkMaterial = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.62 });
+  darkMaterial.userData.fixedColor = true;
+  const skinMaterial = new THREE.MeshStandardMaterial({ color: "#f3d1b0", roughness: 0.55 });
+  skinMaterial.userData.fixedColor = true;
+  const bubbleMaterial = new THREE.MeshStandardMaterial({
+    color: "#ffffff",
+    roughness: 0.42,
+    transparent: true,
+    opacity: 0.9
+  });
+  bubbleMaterial.userData.fixedColor = true;
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.5, 0.56, 0.08, 18),
+    new THREE.MeshStandardMaterial({ color: "#0f766e", roughness: 0.72 })
+  );
+  base.material.userData.fixedColor = true;
+  base.position.y = 0.04;
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.78, 0.46), material);
+  body.position.y = 0.8;
 
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.24, 20, 14),
-    new THREE.MeshStandardMaterial({ color: "#f3d1b0", roughness: 0.55 })
+    new THREE.BoxGeometry(0.56, 0.52, 0.56),
+    skinMaterial
   );
-  head.material.userData.fixedColor = true;
-  head.position.y = 1.25;
+  head.position.y = 1.36;
 
-  group.add(body, head);
+  const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.035), darkMaterial);
+  leftEye.position.set(-0.13, 1.42, -0.3);
+  const rightEye = leftEye.clone();
+  rightEye.position.x = 0.13;
+  const smile = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.035, 0.035), darkMaterial);
+  smile.position.set(0, 1.26, -0.3);
+
+  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.62, 0.22), material);
+  leftArm.position.set(-0.46, 0.78, -0.02);
+  leftArm.rotation.z = 0.1;
+  const rightArm = leftArm.clone();
+  rightArm.position.x = 0.46;
+  rightArm.rotation.z = -0.1;
+  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.58, 0.24), darkMaterial);
+  leftLeg.position.set(-0.18, 0.32, 0);
+  const rightLeg = leftLeg.clone();
+  rightLeg.position.x = 0.18;
+
+  const bubble = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.32, 0.04), bubbleMaterial);
+  bubble.position.set(0.42, 1.82, -0.18);
+  const bubbleTail = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.16, 3), bubbleMaterial);
+  bubbleTail.position.set(0.18, 1.62, -0.18);
+  bubbleTail.rotation.z = Math.PI;
+
+  group.add(base, body, head, leftEye, rightEye, smile, leftArm, rightArm, leftLeg, rightLeg, bubble, bubbleTail);
   return group;
 }
 

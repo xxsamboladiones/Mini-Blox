@@ -72,6 +72,10 @@ export type MapObjectProperties = Record<string, unknown> & {
   requiresAllCoins?: boolean;
   message?: string;
   dialog?: string;
+  npcName?: string;
+  dialogue?: string[];
+  interactionRange?: number;
+  showQuestHint?: boolean;
   enemyType?: "basic";
   health?: number;
   detectionRange?: number;
