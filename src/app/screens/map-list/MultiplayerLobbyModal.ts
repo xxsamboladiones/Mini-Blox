@@ -1,8 +1,11 @@
 import { createIcons, icons } from "lucide";
-import type { RoomSummary } from "../../../shared/types/MultiplayerSchema.js";
+import type { GetRoomResponse, RoomSummary } from "../../../shared/types/MultiplayerSchema.js";
 import { multiplayerService } from "../../../services/MultiplayerService.js";
 
 type MaybePromise<T> = T | Promise<T>;
+type LobbyRoomView = RoomSummary & {
+  details?: GetRoomResponse;
+};
 
 export class MultiplayerLobbyModal {
   private readonly modal: HTMLElement;
@@ -93,11 +96,9 @@ export class MultiplayerLobbyModal {
       .querySelector('[data-action="back"]')
       ?.addEventListener("click", () => this.handleBack());
 
-    this.modal
-      .querySelector('[data-action="create-room"]')
-      ?.addEventListener("click", () => {
-        void this.handleCreateRoom();
-      });
+    this.modal.querySelector('[data-action="create-room"]')?.addEventListener("click", () => {
+      void this.handleCreateRoom();
+    });
   }
 
   private handleBack(): void {
@@ -158,7 +159,20 @@ export class MultiplayerLobbyModal {
         return;
       }
 
-      roomsList.innerHTML = rooms.map((room) => this.renderRoom(room)).join("");
+      const detailedRooms = await Promise.all(
+        rooms.map(async (room): Promise<LobbyRoomView> => {
+          try {
+            return {
+              ...room,
+              details: await multiplayerService.getRoom(room.roomId),
+            };
+          } catch {
+            return room;
+          }
+        })
+      );
+
+      roomsList.innerHTML = detailedRooms.map((room) => this.renderRoom(room)).join("");
 
       roomsList.querySelectorAll<HTMLButtonElement>('[data-action="join-room"]').forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -181,13 +195,23 @@ export class MultiplayerLobbyModal {
     }
   }
 
-  private renderRoom(room: RoomSummary): string {
+  private renderRoom(room: LobbyRoomView): string {
     const isFull = room.playerCount >= room.maxPlayers;
+    const players = room.details?.players ?? [];
+    const hostName =
+      players.find((player) => player.id === room.hostPlayerId)?.name ??
+      (room.hostPlayerId ? shortId(room.hostPlayerId) : "aguardando");
     return `
       <div class="room-card">
         <div class="room-info">
           <span class="room-code">${escapeHtml(room.roomId)}</span>
           <span class="room-players">${room.playerCount}/${room.maxPlayers} jogadores</span>
+          <span class="room-host">Host: ${escapeHtml(hostName)}</span>
+          ${
+            players.length > 0
+              ? `<span class="room-roster">${players.map((player) => escapeHtml(player.name)).join(", ")}</span>`
+              : ""
+          }
         </div>
         <button class="btn btn-sm" type="button" data-action="copy-room" data-room-id="${escapeAttribute(room.roomId)}">
           Copiar

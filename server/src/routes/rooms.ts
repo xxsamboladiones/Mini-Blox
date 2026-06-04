@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import type { CreateRoomRequest, CreateRoomResponse } from "../multiplayer/types.js";
 import type { RoomManager } from "../multiplayer/RoomManager.js";
+import { createRoomMapIndex } from "../multiplayer/RoomMapIndex.js";
+import { onlineMapStorage } from "../storage/OnlineMapStorage.js";
 
 export function createRoomRoute(roomManager: RoomManager) {
   return async (req: Request, res: Response): Promise<void> => {
@@ -12,8 +14,16 @@ export function createRoomRoute(roomManager: RoomManager) {
         return;
       }
 
-      const mapId = body.onlineMapId;
-      const room = roomManager.createRoom(body.onlineMapId, mapId);
+      await onlineMapStorage.load();
+      const onlineMap = onlineMapStorage.getMap(body.onlineMapId);
+
+      if (!onlineMap) {
+        res.status(404).json({ ok: false, error: "Online map not found" });
+        return;
+      }
+
+      const mapIndex = createRoomMapIndex(onlineMap.map);
+      const room = roomManager.createRoom(body.onlineMapId, onlineMap.map.id, mapIndex);
 
       const response: CreateRoomResponse = {
         ok: true,
@@ -57,6 +67,7 @@ export function getRoomRoute(roomManager: RoomManager) {
         roomId: room.roomId,
         onlineMapId: room.onlineMapId,
         playerCount: players.length,
+        hostPlayerId: room.hostPlayerId,
         players: players.map((p) => ({
           id: p.id,
           name: p.name,

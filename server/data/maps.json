@@ -1,6 +1,4127 @@
 {
   "maps": [
     {
+      "id": "online-1780592497628-vj4p2iqzuu",
+      "ownerClientId": "client-1780519881047-991nh38g94d",
+      "map": {
+        "version": 1,
+        "id": "map-b82799d1-bf4c-4835-ad98-573f204df447",
+        "name": "Arena Multiplayer PvP",
+        "authorId": "local-builder",
+        "description": "Arena pequena publicada para testar PvP basico, respawn e times em sala online.",
+        "creatorName": "Criador",
+        "spawnPoint": {
+          "x": -12,
+          "y": 0.75,
+          "z": 8
+        },
+        "objects": [
+          {
+            "id": "multiplayerPvpArena_spawn",
+            "type": "spawn",
+            "name": "Spawn principal",
+            "position": {
+              "x": -12,
+              "y": 0.75,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#19c37d",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_platform_00001",
+            "type": "platform",
+            "name": "Base vermelha PvP",
+            "position": {
+              "x": -12,
+              "y": 0.2,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 11,
+              "y": 0.4,
+              "z": 8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00002",
+            "type": "cube",
+            "name": "Base vermelha PvP guia esquerda 1",
+            "position": {
+              "x": -17.15,
+              "y": 0.75,
+              "z": 4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00003",
+            "type": "cube",
+            "name": "Base vermelha PvP guia direita 1",
+            "position": {
+              "x": -6.85,
+              "y": 0.75,
+              "z": 4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00004",
+            "type": "cube",
+            "name": "Base vermelha PvP guia esquerda 2",
+            "position": {
+              "x": -17.15,
+              "y": 0.75,
+              "z": 6.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00005",
+            "type": "cube",
+            "name": "Base vermelha PvP guia direita 2",
+            "position": {
+              "x": -6.85,
+              "y": 0.75,
+              "z": 6.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00006",
+            "type": "cube",
+            "name": "Base vermelha PvP guia esquerda 3",
+            "position": {
+              "x": -17.15,
+              "y": 0.75,
+              "z": 9.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00007",
+            "type": "cube",
+            "name": "Base vermelha PvP guia direita 3",
+            "position": {
+              "x": -6.85,
+              "y": 0.75,
+              "z": 9.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00008",
+            "type": "cube",
+            "name": "Base vermelha PvP guia esquerda 4",
+            "position": {
+              "x": -17.15,
+              "y": 0.75,
+              "z": 12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00009",
+            "type": "cube",
+            "name": "Base vermelha PvP guia direita 4",
+            "position": {
+              "x": -6.85,
+              "y": 0.75,
+              "z": 12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fee2e2",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00010",
+            "type": "cube",
+            "name": "Base vermelha PvP suporte 1",
+            "position": {
+              "x": -15.96,
+              "y": -0.55,
+              "z": 5.12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00011",
+            "type": "cube",
+            "name": "Base vermelha PvP suporte 2",
+            "position": {
+              "x": -8.04,
+              "y": -0.55,
+              "z": 5.12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_platform_00012",
+            "type": "platform",
+            "name": "Base azul PvP",
+            "position": {
+              "x": 12,
+              "y": 0.2,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 11,
+              "y": 0.4,
+              "z": 8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00013",
+            "type": "cube",
+            "name": "Base azul PvP guia esquerda 1",
+            "position": {
+              "x": 6.85,
+              "y": 0.75,
+              "z": 4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00014",
+            "type": "cube",
+            "name": "Base azul PvP guia direita 1",
+            "position": {
+              "x": 17.15,
+              "y": 0.75,
+              "z": 4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00015",
+            "type": "cube",
+            "name": "Base azul PvP guia esquerda 2",
+            "position": {
+              "x": 6.85,
+              "y": 0.75,
+              "z": 6.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00016",
+            "type": "cube",
+            "name": "Base azul PvP guia direita 2",
+            "position": {
+              "x": 17.15,
+              "y": 0.75,
+              "z": 6.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00017",
+            "type": "cube",
+            "name": "Base azul PvP guia esquerda 3",
+            "position": {
+              "x": 6.85,
+              "y": 0.75,
+              "z": 9.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00018",
+            "type": "cube",
+            "name": "Base azul PvP guia direita 3",
+            "position": {
+              "x": 17.15,
+              "y": 0.75,
+              "z": 9.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00019",
+            "type": "cube",
+            "name": "Base azul PvP guia esquerda 4",
+            "position": {
+              "x": 6.85,
+              "y": 0.75,
+              "z": 12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00020",
+            "type": "cube",
+            "name": "Base azul PvP guia direita 4",
+            "position": {
+              "x": 17.15,
+              "y": 0.75,
+              "z": 12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00021",
+            "type": "cube",
+            "name": "Base azul PvP suporte 1",
+            "position": {
+              "x": 8.04,
+              "y": -0.55,
+              "z": 5.12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00022",
+            "type": "cube",
+            "name": "Base azul PvP suporte 2",
+            "position": {
+              "x": 15.96,
+              "y": -0.55,
+              "z": 5.12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_platform_00023",
+            "type": "platform",
+            "name": "Arena central PvP",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 26,
+              "y": 0.4,
+              "z": 22
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00024",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 1",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": -15
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00025",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 1",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": -15
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00026",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 2",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": -11.857
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00027",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 2",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": -11.857
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00028",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 3",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": -8.714
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00029",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 3",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": -8.714
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00030",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 4",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": -5.571
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00031",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 4",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": -5.571
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00032",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 5",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": -2.429
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00033",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 5",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": -2.429
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00034",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 6",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": 0.714
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00035",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 6",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": 0.714
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00036",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 7",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": 3.857
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00037",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 7",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": 3.857
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00038",
+            "type": "cube",
+            "name": "Arena central PvP guia esquerda 8",
+            "position": {
+              "x": -12.65,
+              "y": 0.75,
+              "z": 7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00039",
+            "type": "cube",
+            "name": "Arena central PvP guia direita 8",
+            "position": {
+              "x": 12.65,
+              "y": 0.75,
+              "z": 7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e5e7eb",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00040",
+            "type": "cube",
+            "name": "Arena central PvP suporte 1",
+            "position": {
+              "x": -9.36,
+              "y": -0.55,
+              "z": -11.92
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00041",
+            "type": "cube",
+            "name": "Arena central PvP suporte 2",
+            "position": {
+              "x": 9.36,
+              "y": -0.55,
+              "z": -11.92
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00042",
+            "type": "cube",
+            "name": "Arena central PvP suporte 3",
+            "position": {
+              "x": -9.36,
+              "y": -0.55,
+              "z": 3.92
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00043",
+            "type": "cube",
+            "name": "Arena central PvP suporte 4",
+            "position": {
+              "x": 9.36,
+              "y": -0.55,
+              "z": 3.92
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_teamspawn_00044",
+            "type": "teamSpawn",
+            "name": "Spawn PvP vermelho",
+            "position": {
+              "x": -12,
+              "y": 0.55,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.1,
+              "y": 1,
+              "z": 1.1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "teamId": "red"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_teamspawn_00045",
+            "type": "teamSpawn",
+            "name": "Spawn PvP azul",
+            "position": {
+              "x": 12,
+              "y": 0.55,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.1,
+              "y": 1,
+              "z": 1.1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "teamId": "blue"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_platform_00046",
+            "type": "platform",
+            "name": "Ponte PvP vermelha",
+            "position": {
+              "x": -6,
+              "y": 0.2,
+              "z": 2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 2.3562,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 16.971
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": true
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00047",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 1.E",
+            "position": {
+              "x": -12.268,
+              "y": 0.72,
+              "z": 4.732
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00048",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 1.D",
+            "position": {
+              "x": -8.732,
+              "y": 0.72,
+              "z": 8.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00049",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 2.E",
+            "position": {
+              "x": -9.268,
+              "y": 0.72,
+              "z": 1.732
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00050",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 2.D",
+            "position": {
+              "x": -5.732,
+              "y": 0.72,
+              "z": 5.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00051",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 3.E",
+            "position": {
+              "x": -6.268,
+              "y": 0.72,
+              "z": -1.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00052",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 3.D",
+            "position": {
+              "x": -2.732,
+              "y": 0.72,
+              "z": 2.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00053",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 4.E",
+            "position": {
+              "x": -3.268,
+              "y": 0.72,
+              "z": -4.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00054",
+            "type": "cube",
+            "name": "Ponte PvP vermelha marcador 4.D",
+            "position": {
+              "x": 0.268,
+              "y": 0.72,
+              "z": -0.732
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_platform_00055",
+            "type": "platform",
+            "name": "Ponte PvP azul",
+            "position": {
+              "x": 6,
+              "y": 0.2,
+              "z": 2
+            },
+            "rotation": {
+              "x": 0,
+              "y": -2.3562,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 16.971
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": true
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00056",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 1.E",
+            "position": {
+              "x": 8.732,
+              "y": 0.72,
+              "z": 8.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00057",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 1.D",
+            "position": {
+              "x": 12.268,
+              "y": 0.72,
+              "z": 4.732
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00058",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 2.E",
+            "position": {
+              "x": 5.732,
+              "y": 0.72,
+              "z": 5.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00059",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 2.D",
+            "position": {
+              "x": 9.268,
+              "y": 0.72,
+              "z": 1.732
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00060",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 3.E",
+            "position": {
+              "x": 2.732,
+              "y": 0.72,
+              "z": 2.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00061",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 3.D",
+            "position": {
+              "x": 6.268,
+              "y": 0.72,
+              "z": -1.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00062",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 4.E",
+            "position": {
+              "x": -0.268,
+              "y": 0.72,
+              "z": -0.732
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00063",
+            "type": "cube",
+            "name": "Ponte PvP azul marcador 4.D",
+            "position": {
+              "x": 3.268,
+              "y": 0.72,
+              "z": -4.268
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#3b82f6",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_itemspawner_00064",
+            "type": "itemSpawner",
+            "name": "Arma vermelha PvP",
+            "position": {
+              "x": -12,
+              "y": 0.65,
+              "z": 4.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#06b6d4",
+              "collision": false,
+              "itemPool": [
+                "weapon_basic"
+              ],
+              "spawnItemType": "weapon_basic",
+              "spawnMode": "fixed",
+              "respawnTime": 10,
+              "spawnOnStart": true,
+              "maxSpawnedItems": 1,
+              "amount": 25
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_itemspawner_00065",
+            "type": "itemSpawner",
+            "name": "Arma azul PvP",
+            "position": {
+              "x": 12,
+              "y": 0.65,
+              "z": 4.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#06b6d4",
+              "collision": false,
+              "itemPool": [
+                "weapon_basic"
+              ],
+              "spawnItemType": "weapon_basic",
+              "spawnMode": "fixed",
+              "respawnTime": 10,
+              "spawnOnStart": true,
+              "maxSpawnedItems": 1,
+              "amount": 25
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_itemspawner_00066",
+            "type": "itemSpawner",
+            "name": "Cura esquerda PvP",
+            "position": {
+              "x": -4,
+              "y": 0.65,
+              "z": -6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "itemPool": [
+                "health_pack"
+              ],
+              "spawnItemType": "health",
+              "spawnMode": "fixed",
+              "respawnTime": 12,
+              "spawnOnStart": true,
+              "maxSpawnedItems": 1,
+              "amount": 30
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_itemspawner_00067",
+            "type": "itemSpawner",
+            "name": "Cura direita PvP",
+            "position": {
+              "x": 4,
+              "y": 0.65,
+              "z": -6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "itemPool": [
+                "health_pack"
+              ],
+              "spawnItemType": "health",
+              "spawnMode": "fixed",
+              "respawnTime": 12,
+              "spawnOnStart": true,
+              "maxSpawnedItems": 1,
+              "amount": 30
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_jumppad_00068",
+            "type": "jumpPad",
+            "name": "Jump PvP vermelho",
+            "position": {
+              "x": -8,
+              "y": 0.55,
+              "z": -2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 0.28,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "force": 12,
+              "cooldown": 0.4
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_jumppad_00069",
+            "type": "jumpPad",
+            "name": "Jump PvP azul",
+            "position": {
+              "x": 8,
+              "y": 0.55,
+              "z": -2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 0.28,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "force": 12,
+              "cooldown": 0.4
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00070",
+            "type": "coin",
+            "name": "Moeda PvP 1",
+            "position": {
+              "x": -6,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00071",
+            "type": "coin",
+            "name": "Moeda PvP 2",
+            "position": {
+              "x": -4.286,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00072",
+            "type": "coin",
+            "name": "Moeda PvP 3",
+            "position": {
+              "x": -2.571,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00073",
+            "type": "coin",
+            "name": "Moeda PvP 4",
+            "position": {
+              "x": -0.857,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00074",
+            "type": "coin",
+            "name": "Moeda PvP 5",
+            "position": {
+              "x": 0.857,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00075",
+            "type": "coin",
+            "name": "Moeda PvP 6",
+            "position": {
+              "x": 2.571,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00076",
+            "type": "coin",
+            "name": "Moeda PvP 7",
+            "position": {
+              "x": 4.286,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_coin_00077",
+            "type": "coin",
+            "name": "Moeda PvP 8",
+            "position": {
+              "x": 6,
+              "y": 1.1,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_checkpoint_00078",
+            "type": "checkpoint",
+            "name": "Checkpoint PvP vermelho",
+            "position": {
+              "x": -12,
+              "y": 0.75,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_pvp_vermelho",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_checkpoint_00079",
+            "type": "checkpoint",
+            "name": "Checkpoint PvP azul",
+            "position": {
+              "x": 12,
+              "y": 0.75,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_pvp_azul",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_messagezone_00080",
+            "type": "messageZone",
+            "name": "Mensagem PvP",
+            "position": {
+              "x": 0,
+              "y": 1.05,
+              "z": 1.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 12,
+              "y": 1.4,
+              "z": 2.4
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "message": "PvP ligado: acerte jogadores do outro time.",
+              "oneTime": true,
+              "opacity": 0.35
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_sign_00081",
+            "type": "sign",
+            "name": "Placa - PvP usa espada basic",
+            "position": {
+              "x": -5.8,
+              "y": 0.2,
+              "z": -12.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "PvP usa espada basica e respawn de 2s.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_sign_00082",
+            "type": "sign",
+            "name": "Placa - Friendly fire deslig",
+            "position": {
+              "x": 4.9,
+              "y": 0.2,
+              "z": -12.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Friendly fire desligado.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_finish_00083",
+            "type": "finish",
+            "name": "Final PvP",
+            "position": {
+              "x": 0,
+              "y": 1.25,
+              "z": -11.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#22c55e",
+              "message": "Arena Multiplayer PvP concluida!",
+              "requiresAllCoins": false,
+              "collision": false
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_sign_00084",
+            "type": "sign",
+            "name": "Placa - Entrada: Siga o cami",
+            "position": {
+              "x": -7.8,
+              "y": 0.32,
+              "z": 4.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Entrada: Siga o caminho principal e procure moedas opcionais.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_sign_00085",
+            "type": "sign",
+            "name": "Placa - Desafio principal: C",
+            "position": {
+              "x": 7.8,
+              "y": 0.32,
+              "z": 4.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Desafio principal: Checkpoint proximo: arrisque apenas depois de ativar.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_sign_00086",
+            "type": "sign",
+            "name": "Placa - Rota opcional: Botoe",
+            "position": {
+              "x": 16.2,
+              "y": 0.32,
+              "z": 4.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Rota opcional: Botoes podem abrir atalhos e portas.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_sign_00087",
+            "type": "sign",
+            "name": "Placa - Chave antes da porta",
+            "position": {
+              "x": -4.2,
+              "y": 0.32,
+              "z": -7.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Chave antes da porta: Chaves ficam antes das portas importantes.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00088",
+            "type": "cube",
+            "name": "Marcador decorativo 1",
+            "position": {
+              "x": -6.5,
+              "y": 0.45,
+              "z": 5.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00089",
+            "type": "cube",
+            "name": "Marcador decorativo 2",
+            "position": {
+              "x": -17.5,
+              "y": 0.45,
+              "z": 6.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00090",
+            "type": "cube",
+            "name": "Marcador decorativo 3",
+            "position": {
+              "x": -6.5,
+              "y": 0.45,
+              "z": 7.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00091",
+            "type": "cube",
+            "name": "Marcador decorativo 4",
+            "position": {
+              "x": -19.3,
+              "y": 0.45,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00092",
+            "type": "cube",
+            "name": "Marcador decorativo 5",
+            "position": {
+              "x": -4.7,
+              "y": 0.45,
+              "z": 8.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00093",
+            "type": "cube",
+            "name": "Marcador decorativo 6",
+            "position": {
+              "x": -19.3,
+              "y": 0.45,
+              "z": 9.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00094",
+            "type": "cube",
+            "name": "Marcador decorativo 7",
+            "position": {
+              "x": -2.9,
+              "y": 0.45,
+              "z": 10.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00095",
+            "type": "cube",
+            "name": "Marcador decorativo 8",
+            "position": {
+              "x": -21.1,
+              "y": 0.45,
+              "z": 5.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00096",
+            "type": "cube",
+            "name": "Marcador decorativo 9",
+            "position": {
+              "x": -2.9,
+              "y": 0.45,
+              "z": 6.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00097",
+            "type": "cube",
+            "name": "Marcador decorativo 10",
+            "position": {
+              "x": -22.9,
+              "y": 0.45,
+              "z": 7.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00098",
+            "type": "cube",
+            "name": "Marcador decorativo 11",
+            "position": {
+              "x": -1.1,
+              "y": 0.45,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00099",
+            "type": "cube",
+            "name": "Marcador decorativo 12",
+            "position": {
+              "x": -22.9,
+              "y": 0.45,
+              "z": 8.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00100",
+            "type": "cube",
+            "name": "Marcador decorativo 13",
+            "position": {
+              "x": 0.7,
+              "y": 0.45,
+              "z": 9.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00101",
+            "type": "cube",
+            "name": "Marcador decorativo 14",
+            "position": {
+              "x": -0.7,
+              "y": 0.45,
+              "z": 10.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00102",
+            "type": "cube",
+            "name": "Marcador decorativo 15",
+            "position": {
+              "x": 24.7,
+              "y": 0.45,
+              "z": 5.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00103",
+            "type": "cube",
+            "name": "Marcador decorativo 16",
+            "position": {
+              "x": 6.5,
+              "y": 0.45,
+              "z": 6.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00104",
+            "type": "cube",
+            "name": "Marcador decorativo 17",
+            "position": {
+              "x": 17.5,
+              "y": 0.45,
+              "z": 7.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00105",
+            "type": "cube",
+            "name": "Marcador decorativo 18",
+            "position": {
+              "x": 6.5,
+              "y": 0.45,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00106",
+            "type": "cube",
+            "name": "Marcador decorativo 19",
+            "position": {
+              "x": 19.3,
+              "y": 0.45,
+              "z": 8.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00107",
+            "type": "cube",
+            "name": "Marcador decorativo 20",
+            "position": {
+              "x": 4.7,
+              "y": 0.45,
+              "z": 9.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00108",
+            "type": "cube",
+            "name": "Marcador decorativo 21",
+            "position": {
+              "x": 19.3,
+              "y": 0.45,
+              "z": 10.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00109",
+            "type": "cube",
+            "name": "Marcador decorativo 22",
+            "position": {
+              "x": 2.9,
+              "y": 0.45,
+              "z": 5.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00110",
+            "type": "cube",
+            "name": "Marcador decorativo 23",
+            "position": {
+              "x": 21.1,
+              "y": 0.45,
+              "z": 6.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00111",
+            "type": "cube",
+            "name": "Marcador decorativo 24",
+            "position": {
+              "x": 2.9,
+              "y": 0.45,
+              "z": 7.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00112",
+            "type": "cube",
+            "name": "Marcador decorativo 25",
+            "position": {
+              "x": 22.9,
+              "y": 0.45,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00113",
+            "type": "cube",
+            "name": "Marcador decorativo 26",
+            "position": {
+              "x": 1.1,
+              "y": 0.45,
+              "z": 8.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00114",
+            "type": "cube",
+            "name": "Marcador decorativo 27",
+            "position": {
+              "x": 22.9,
+              "y": 0.45,
+              "z": 9.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00115",
+            "type": "cube",
+            "name": "Marcador decorativo 28",
+            "position": {
+              "x": -0.7,
+              "y": 0.45,
+              "z": 10.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00116",
+            "type": "cube",
+            "name": "Marcador decorativo 29",
+            "position": {
+              "x": 24.7,
+              "y": 0.45,
+              "z": 5.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00117",
+            "type": "cube",
+            "name": "Marcador decorativo 30",
+            "position": {
+              "x": -0.7,
+              "y": 0.45,
+              "z": 6.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00118",
+            "type": "cube",
+            "name": "Marcador decorativo 31",
+            "position": {
+              "x": 17.5,
+              "y": 0.45,
+              "z": 7.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00119",
+            "type": "cube",
+            "name": "Marcador decorativo 32",
+            "position": {
+              "x": 6.5,
+              "y": 0.45,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00120",
+            "type": "cube",
+            "name": "Marcador decorativo 33",
+            "position": {
+              "x": 17.5,
+              "y": 0.45,
+              "z": 8.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00121",
+            "type": "cube",
+            "name": "Marcador decorativo 34",
+            "position": {
+              "x": 4.7,
+              "y": 0.45,
+              "z": 9.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00122",
+            "type": "cube",
+            "name": "Marcador decorativo 35",
+            "position": {
+              "x": 19.3,
+              "y": 0.45,
+              "z": 10.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00123",
+            "type": "cube",
+            "name": "Marcador decorativo 36",
+            "position": {
+              "x": 4.7,
+              "y": 0.45,
+              "z": 5.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00124",
+            "type": "cube",
+            "name": "Marcador decorativo 37",
+            "position": {
+              "x": 21.1,
+              "y": 0.45,
+              "z": 6.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00125",
+            "type": "cube",
+            "name": "Marcador decorativo 38",
+            "position": {
+              "x": 2.9,
+              "y": 0.45,
+              "z": 7.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00126",
+            "type": "cube",
+            "name": "Marcador decorativo 39",
+            "position": {
+              "x": 21.1,
+              "y": 0.45,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00127",
+            "type": "cube",
+            "name": "Marcador decorativo 40",
+            "position": {
+              "x": -10.9,
+              "y": 0.45,
+              "z": -3.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00128",
+            "type": "cube",
+            "name": "Marcador decorativo 41",
+            "position": {
+              "x": 10.9,
+              "y": 0.45,
+              "z": -2.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00129",
+            "type": "cube",
+            "name": "Marcador decorativo 42",
+            "position": {
+              "x": -10.9,
+              "y": 0.45,
+              "z": -1.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00130",
+            "type": "cube",
+            "name": "Marcador decorativo 43",
+            "position": {
+              "x": 12.7,
+              "y": 0.45,
+              "z": -6.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00131",
+            "type": "cube",
+            "name": "Marcador decorativo 44",
+            "position": {
+              "x": -12.7,
+              "y": 0.45,
+              "z": -5.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00132",
+            "type": "cube",
+            "name": "Marcador decorativo 45",
+            "position": {
+              "x": 12.7,
+              "y": 0.45,
+              "z": -4.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00133",
+            "type": "cube",
+            "name": "Marcador decorativo 46",
+            "position": {
+              "x": -5.5,
+              "y": 0.45,
+              "z": -4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00134",
+            "type": "cube",
+            "name": "Marcador decorativo 47",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": -3.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00135",
+            "type": "cube",
+            "name": "Marcador decorativo 48",
+            "position": {
+              "x": -5.5,
+              "y": 0.45,
+              "z": -2.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00136",
+            "type": "cube",
+            "name": "Marcador decorativo 49",
+            "position": {
+              "x": 7.3,
+              "y": 0.45,
+              "z": -1.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00137",
+            "type": "cube",
+            "name": "Marcador decorativo 50",
+            "position": {
+              "x": -7.3,
+              "y": 0.45,
+              "z": -6.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00138",
+            "type": "cube",
+            "name": "Marcador decorativo 51",
+            "position": {
+              "x": 7.3,
+              "y": 0.45,
+              "z": -5.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "multiplayerPvpArena_cube_00139",
+            "type": "cube",
+            "name": "Marcador decorativo 52",
+            "position": {
+              "x": -9.1,
+              "y": 0.45,
+              "z": -4.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          }
+        ],
+        "objectives": [],
+        "logic": [
+          {
+            "id": "multiplayerPvpArena_logic_001",
+            "name": "Inicio PvP Multiplayer",
+            "enabled": true,
+            "trigger": {
+              "type": "onMapStart"
+            },
+            "conditions": [],
+            "actions": [
+              {
+                "type": "showMessage",
+                "message": "Arena PvP: entre em dois clientes e ataque o outro time."
+              }
+            ]
+          },
+          {
+            "id": "multiplayerPvpArena_logic_002",
+            "name": "Final PvP Multiplayer",
+            "enabled": true,
+            "trigger": {
+              "type": "onPlayerEnterObject",
+              "objectId": "multiplayerPvpArena_finish_00083"
+            },
+            "conditions": [
+              {
+                "type": "once"
+              }
+            ],
+            "actions": [
+              {
+                "type": "finishMap"
+              }
+            ]
+          }
+        ],
+        "logicDebug": false,
+        "visualSettings": {
+          "theme": "classic",
+          "skyColor": "#d8ecff",
+          "groundColor": "#eef5f8",
+          "fogEnabled": false,
+          "fogColor": "#d8ecff",
+          "fogNear": 18,
+          "fogFar": 90,
+          "ambientLightIntensity": 1.65,
+          "sunLightIntensity": 2.35
+        },
+        "audioSettings": {
+          "masterVolume": 0.8,
+          "sfxVolume": 0.9,
+          "musicVolume": 0.36,
+          "muted": false,
+          "ambientMusic": "adventure"
+        },
+        "gameplaySettings": {
+          "voidDeathEnabled": true
+        },
+        "multiplayerSettings": {
+          "pvpEnabled": true,
+          "friendlyFire": false
+        },
+        "gameModeSettings": {
+          "mode": "teamBattle",
+          "roundEnabled": true,
+          "respawnDelay": 2,
+          "teamsEnabled": true,
+          "winCondition": {
+            "type": "score",
+            "targetAmount": 8,
+            "requireAll": false
+          },
+          "scoring": {
+            "coinScore": 10,
+            "enemyDefeatScore": 100,
+            "objectiveScore": 250,
+            "deathPenalty": 25
+          },
+          "requireObjectivesToFinish": false,
+          "roundTimeLimit": 300
+        },
+        "teams": [
+          {
+            "id": "red",
+            "name": "Time Vermelho",
+            "color": "#ef4444",
+            "spawnPoint": {
+              "x": -12,
+              "y": 0.8,
+              "z": 8
+            }
+          },
+          {
+            "id": "blue",
+            "name": "Time Azul",
+            "color": "#3b82f6",
+            "spawnPoint": {
+              "x": 12,
+              "y": 0.8,
+              "z": 8
+            }
+          }
+        ],
+        "tags": [
+          "multiplayer",
+          "pvp",
+          "times"
+        ],
+        "isPublished": false
+      },
+      "createdAt": "2026-06-04T17:01:37.628Z",
+      "updatedAt": "2026-06-04T17:01:37.628Z",
+      "publishedAt": "2026-06-04T17:01:37.628Z",
+      "playCount": 0,
+      "likedBy": []
+    },
+    {
       "id": "online-1780539189409-xhyxw228sve",
       "ownerClientId": "client-1780519881047-991nh38g94d",
       "map": {

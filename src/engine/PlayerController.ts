@@ -144,6 +144,11 @@ export class PlayerController {
       return;
     }
 
+    if (this.dead) {
+      this.resetVelocity();
+      return;
+    }
+
     const delta = Math.min(deltaSeconds, 0.05);
     const direction = this.getMovementDirection();
     const moving = direction.lengthSq() > 0;
@@ -252,6 +257,16 @@ export class PlayerController {
     this.maxHealth = DEFAULT_MAX_HEALTH;
     this.health = this.maxHealth;
     this.dead = false;
+  }
+
+  setHealth(health: number, maxHealth = this.maxHealth): void {
+    if (!Number.isFinite(health) || !Number.isFinite(maxHealth)) {
+      return;
+    }
+
+    this.maxHealth = Math.max(1, maxHealth);
+    this.health = Math.max(0, Math.min(this.maxHealth, health));
+    this.dead = this.health <= 0;
   }
 
   isDead(): boolean {
@@ -503,6 +518,10 @@ export class PlayerController {
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
+    if (isEditableTarget(event.target)) {
+      return;
+    }
+
     const code = event.code.toLowerCase();
 
     if (MOVEMENT_KEYS.has(code)) {
@@ -517,6 +536,10 @@ export class PlayerController {
   };
 
   private readonly handleKeyUp = (event: KeyboardEvent): void => {
+    if (isEditableTarget(event.target)) {
+      return;
+    }
+
     this.keys.delete(event.code.toLowerCase());
   };
 
@@ -628,3 +651,12 @@ const MOVEMENT_KEYS = new Set([
   "shiftright",
   "space",
 ]);
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  );
+}

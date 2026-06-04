@@ -6,6 +6,8 @@ export class RemotePlayerView {
   private targetPosition: THREE.Vector3;
   private targetRotationY: number;
   private nameLabel: THREE.Sprite;
+  private damagePulse = 0;
+  private respawnPulse = 0;
 
   constructor(
     private readonly playerId: string,
@@ -121,6 +123,11 @@ export class RemotePlayerView {
       this.targetRotationY,
       lerpFactor
     );
+    this.damagePulse = THREE.MathUtils.damp(this.damagePulse, 0, 8, deltaTime);
+    this.respawnPulse = THREE.MathUtils.damp(this.respawnPulse, 0, 5, deltaTime);
+    const pulse =
+      Math.sin(this.damagePulse * Math.PI) * 0.18 + Math.sin(this.respawnPulse * Math.PI) * 0.12;
+    this.mesh.scale.setScalar(1 + Math.max(0, pulse));
 
     this.nameLabel.position.copy(this.mesh.position);
     this.nameLabel.position.y += 2.2;
@@ -129,6 +136,16 @@ export class RemotePlayerView {
   updateState(state: PlayerNetState): void {
     this.targetPosition.set(state.position.x, state.position.y, state.position.z);
     this.targetRotationY = state.rotationY;
+    this.mesh.visible = state.isAlive;
+  }
+
+  playDamageFeedback(): void {
+    this.damagePulse = 1;
+  }
+
+  playRespawnFeedback(): void {
+    this.respawnPulse = 1;
+    this.mesh.visible = true;
   }
 
   addToScene(scene: THREE.Scene): void {

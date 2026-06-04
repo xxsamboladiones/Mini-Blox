@@ -14,6 +14,55 @@ export type PlayerNetState = {
   isAlive: boolean;
 };
 
+export type EnemyNetState = {
+  objectId: string;
+  enemyGroupId?: string;
+  isBoss?: boolean;
+  position: Vector3;
+  rotationY: number;
+  health: number;
+  maxHealth: number;
+  alive: boolean;
+  targetPlayerId?: string;
+  state: "idle" | "patrol" | "chase" | "dead";
+  updatedAt: number;
+};
+
+export type PlayerCombatState = {
+  playerId: string;
+  health: number;
+  maxHealth: number;
+  alive: boolean;
+  lastDamageAt?: number;
+  lastRespawnAt?: number;
+};
+
+export type ChatMessage = {
+  id: string;
+  playerId: string;
+  playerName: string;
+  text: string;
+  createdAt: number;
+  type: "player" | "system";
+};
+
+export type EnemyPositionUpdate = {
+  objectId: string;
+  position: Vector3;
+  rotationY: number;
+  state: "idle" | "patrol" | "chase" | "dead";
+  targetPlayerId?: string;
+};
+
+export type PlayerAttackPayload = {
+  weaponId: "basic_sword" | string;
+  origin: Vector3;
+  direction: Vector3;
+  range: number;
+  damage: number;
+  targetPlayerId?: string;
+};
+
 export type SharedWorldState = {
   openedDoorIds: string[];
   activatedButtonIds: string[];
@@ -53,10 +102,23 @@ export type GameNetworkEvent =
   | { type: "playerJoined"; player: PlayerNetState }
   | { type: "playerLeft"; playerId: string }
   | { type: "playerMoved"; playerId: string; position: Vector3; rotationY: number }
-  | { type: "playerDamaged"; playerId: string; damage: number; attackerId: string | null }
+  | {
+      type: "playerDamaged";
+      targetPlayerId: string;
+      attackerPlayerId?: string;
+      damage: number;
+      health: number;
+    }
   | { type: "playerDied"; playerId: string; killerId: string | null }
-  | { type: "playerRespawned"; playerId: string; position: Vector3 }
-  | { type: "enemyDefeated"; enemyId: string; killerId: string }
+  | { type: "playerDefeated"; playerId: string; defeatedByPlayerId?: string }
+  | { type: "playerRespawned"; playerId: string; health: number; position: Vector3 }
+  | { type: "enemyState"; enemies: Record<string, EnemyNetState> }
+  | { type: "enemyUpdated"; enemy: EnemyNetState }
+  | { type: "enemyDefeated"; enemyObjectId: string; defeatedByPlayerId?: string }
+  | { type: "combatState"; players: Record<string, PlayerCombatState> }
+  | { type: "chatHistory"; messages: ChatMessage[] }
+  | { type: "chatMessage"; message: ChatMessage }
+  | { type: "hostChanged"; hostPlayerId: string | null }
   | { type: "itemCollected"; playerId: string; itemId: string; itemType: string }
   | { type: "doorOpened"; doorId: string; playerId: string }
   | { type: "scoreChanged"; playerId: string; score: number }
@@ -89,13 +151,50 @@ export type MultiplayerClientMessage =
       score: number;
     }
   | { type: "ping" }
-  | { type: "worldEvent"; event: WorldEvent };
+  | { type: "worldEvent"; event: WorldEvent }
+  | {
+      type: "enemyHit";
+      enemyObjectId: string;
+      damage: number;
+      weaponId?: string;
+    }
+  | { type: "enemyStateRequest" }
+  | { type: "enemyPositionUpdate"; enemies: EnemyPositionUpdate[] }
+  | ({ type: "playerAttack" } & PlayerAttackPayload)
+  | {
+      type: "playerDamaged";
+      damage: number;
+      source: "enemy" | "hazard" | "logic";
+      targetPlayerId?: string;
+    }
+  | { type: "chatMessage"; text: string };
 
 export type MultiplayerServerMessage =
-  | { type: "welcome"; roomId: string; playerId: string }
-  | { type: "roomState"; players: Record<string, PlayerNetState> }
+  | { type: "welcome"; roomId: string; playerId: string; hostPlayerId: string | null }
+  | {
+      type: "roomState";
+      players: Record<string, PlayerNetState>;
+      hostPlayerId: string | null;
+      playerCombatStates: Record<string, PlayerCombatState>;
+    }
   | { type: "worldState"; state: SharedWorldState }
   | { type: "worldEvent"; event: WorldEvent }
+  | { type: "enemyState"; enemies: Record<string, EnemyNetState> }
+  | { type: "enemyUpdated"; enemy: EnemyNetState }
+  | { type: "enemyDefeated"; enemyObjectId: string; defeatedByPlayerId?: string }
+  | {
+      type: "playerDamaged";
+      targetPlayerId: string;
+      attackerPlayerId?: string;
+      damage: number;
+      health: number;
+    }
+  | { type: "playerDefeated"; playerId: string; defeatedByPlayerId?: string }
+  | { type: "playerRespawned"; playerId: string; health: number; position: Vector3 }
+  | { type: "combatState"; players: Record<string, PlayerCombatState> }
+  | { type: "chatHistory"; messages: ChatMessage[] }
+  | { type: "chatMessage"; message: ChatMessage }
+  | { type: "hostChanged"; hostPlayerId: string | null }
   | { type: "playerJoined"; player: PlayerNetState }
   | { type: "playerLeft"; playerId: string }
   | { type: "playerUpdated"; playerId: string; player: PlayerNetState }
@@ -121,6 +220,7 @@ export type RoomSummary = {
   maxPlayers: number;
   createdAt: string;
   lastActivityAt: string;
+  hostPlayerId: string | null;
 };
 
 export type ListRoomsResponse = {
@@ -133,6 +233,7 @@ export type GetRoomResponse = {
   roomId: string;
   onlineMapId: string;
   playerCount: number;
+  hostPlayerId: string | null;
   players: Array<{
     id: string;
     name: string;

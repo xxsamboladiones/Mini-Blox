@@ -129,6 +129,11 @@ export type GameplaySettings = {
   requireObjectivesToFinish?: boolean;
 };
 
+export type MultiplayerSettings = {
+  pvpEnabled?: boolean;
+  friendlyFire?: boolean;
+};
+
 export type GameMode =
   | "freeplay"
   | "obby"
@@ -293,6 +298,7 @@ export type GameMap = {
   visualSettings?: VisualSettings;
   audioSettings?: AudioSettings;
   gameplaySettings?: GameplaySettings;
+  multiplayerSettings?: MultiplayerSettings;
   assets?: MapAsset[];
   createdAt?: string;
   updatedAt?: string;

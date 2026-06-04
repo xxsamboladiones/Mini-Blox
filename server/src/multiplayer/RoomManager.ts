@@ -1,4 +1,5 @@
 import { GameRoom } from "./Room.js";
+import { createEmptyRoomMapIndex, type RoomMapIndex } from "./RoomMapIndex.js";
 import type { RoomSummary } from "./types.js";
 import { createId } from "../utils/createId.js";
 
@@ -13,8 +14,14 @@ export class RoomManager {
     this.startCleanupInterval();
   }
 
-  createRoom(onlineMapId: string, mapId: string): GameRoom {
-    const room = new GameRoom(createId("room"), mapId, onlineMapId, this.maxPlayers);
+  createRoom(onlineMapId: string, mapId: string, mapIndex?: RoomMapIndex): GameRoom {
+    const room = new GameRoom(
+      createId("room"),
+      mapId,
+      onlineMapId,
+      this.maxPlayers,
+      mapIndex ?? createEmptyRoomMapIndex(onlineMapId)
+    );
     this.rooms.set(room.roomId, room);
     return room;
   }
@@ -31,6 +38,7 @@ export class RoomManager {
       maxPlayers: this.maxPlayers,
       createdAt: room.createdAt,
       lastActivityAt: room.lastActivityAt,
+      hostPlayerId: room.hostPlayerId,
     }));
   }
 

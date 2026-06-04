@@ -1,10 +1,15 @@
 import type {
+  ChatMessage,
   CreateRoomRequest,
   CreateRoomResponse,
+  EnemyNetState,
+  EnemyPositionUpdate,
   GetRoomResponse,
   ListRoomsResponse,
   MultiplayerClientMessage,
   MultiplayerServerMessage,
+  PlayerAttackPayload,
+  PlayerCombatState,
   PlayerNetState,
   SharedWorldState,
   WorldEvent,
@@ -15,12 +20,32 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 const CONNECT_TIMEOUT_MS = 8000;
 
 type MultiplayerCallbacks = {
-  onRoomState: ((players: Record<string, PlayerNetState>) => void) | null;
+  onRoomState:
+    | ((
+        players: Record<string, PlayerNetState>,
+        hostPlayerId: string | null,
+        playerCombatStates: Record<string, PlayerCombatState>
+      ) => void)
+    | null;
   onPlayerJoined: ((player: PlayerNetState) => void) | null;
   onPlayerLeft: ((playerId: string) => void) | null;
   onPlayerUpdated: ((playerId: string, player: PlayerNetState) => void) | null;
   onWorldState: ((state: SharedWorldState) => void) | null;
   onWorldEvent: ((event: WorldEvent) => void) | null;
+  onEnemyState: ((enemies: Record<string, EnemyNetState>) => void) | null;
+  onEnemyUpdated: ((enemy: EnemyNetState) => void) | null;
+  onEnemyDefeated: ((enemyObjectId: string, defeatedByPlayerId?: string) => void) | null;
+  onCombatState: ((players: Record<string, PlayerCombatState>) => void) | null;
+  onPlayerDamaged:
+    | ((targetPlayerId: string, damage: number, health: number, attackerPlayerId?: string) => void)
+    | null;
+  onPlayerDefeated: ((playerId: string, defeatedByPlayerId?: string) => void) | null;
+  onPlayerRespawned:
+    | ((playerId: string, health: number, position: PlayerNetState["position"]) => void)
+    | null;
+  onChatHistory: ((messages: ChatMessage[]) => void) | null;
+  onChatMessage: ((message: ChatMessage) => void) | null;
+  onHostChanged: ((hostPlayerId: string | null) => void) | null;
   onError: ((message: string) => void) | null;
 };
 
@@ -29,6 +54,7 @@ export class MultiplayerService {
   private roomId: string | null = null;
   private readonly clientId: string;
   private playerId: string | null = null;
+  private hostPlayerId: string | null = null;
   private callbacks: MultiplayerCallbacks = createEmptyCallbacks();
 
   constructor() {
@@ -135,6 +161,7 @@ export class MultiplayerService {
         if (this.ws === ws) {
           this.ws = null;
           this.playerId = null;
+          this.hostPlayerId = null;
         }
 
         if (!settled) {
@@ -184,7 +211,60 @@ export class MultiplayerService {
     });
   }
 
-  onRoomState(callback: (players: Record<string, PlayerNetState>) => void): void {
+  sendEnemyHit(enemyObjectId: string, damage: number, weaponId?: string): void {
+    this.send({
+      type: "enemyHit",
+      enemyObjectId,
+      damage,
+      weaponId,
+    });
+  }
+
+  sendEnemyStateRequest(): void {
+    this.send({ type: "enemyStateRequest" });
+  }
+
+  sendEnemyPositionUpdate(enemies: EnemyPositionUpdate[]): void {
+    this.send({
+      type: "enemyPositionUpdate",
+      enemies,
+    });
+  }
+
+  sendPlayerAttack(payload: PlayerAttackPayload): void {
+    this.send({
+      type: "playerAttack",
+      ...payload,
+    });
+  }
+
+  sendPlayerDamageReport(
+    damage: number,
+    source: "enemy" | "hazard" | "logic",
+    targetPlayerId?: string
+  ): void {
+    this.send({
+      type: "playerDamaged",
+      damage,
+      source,
+      targetPlayerId,
+    });
+  }
+
+  sendChatMessage(text: string): void {
+    this.send({
+      type: "chatMessage",
+      text,
+    });
+  }
+
+  onRoomState(
+    callback: (
+      players: Record<string, PlayerNetState>,
+      hostPlayerId: string | null,
+      playerCombatStates: Record<string, PlayerCombatState>
+    ) => void
+  ): void {
     this.callbacks.onRoomState = callback;
   }
 
@@ -208,6 +288,55 @@ export class MultiplayerService {
     this.callbacks.onWorldEvent = callback;
   }
 
+  onEnemyState(callback: (enemies: Record<string, EnemyNetState>) => void): void {
+    this.callbacks.onEnemyState = callback;
+  }
+
+  onEnemyUpdated(callback: (enemy: EnemyNetState) => void): void {
+    this.callbacks.onEnemyUpdated = callback;
+  }
+
+  onEnemyDefeated(callback: (enemyObjectId: string, defeatedByPlayerId?: string) => void): void {
+    this.callbacks.onEnemyDefeated = callback;
+  }
+
+  onCombatState(callback: (players: Record<string, PlayerCombatState>) => void): void {
+    this.callbacks.onCombatState = callback;
+  }
+
+  onPlayerDamaged(
+    callback: (
+      targetPlayerId: string,
+      damage: number,
+      health: number,
+      attackerPlayerId?: string
+    ) => void
+  ): void {
+    this.callbacks.onPlayerDamaged = callback;
+  }
+
+  onPlayerDefeated(callback: (playerId: string, defeatedByPlayerId?: string) => void): void {
+    this.callbacks.onPlayerDefeated = callback;
+  }
+
+  onPlayerRespawned(
+    callback: (playerId: string, health: number, position: PlayerNetState["position"]) => void
+  ): void {
+    this.callbacks.onPlayerRespawned = callback;
+  }
+
+  onChatHistory(callback: (messages: ChatMessage[]) => void): void {
+    this.callbacks.onChatHistory = callback;
+  }
+
+  onChatMessage(callback: (message: ChatMessage) => void): void {
+    this.callbacks.onChatMessage = callback;
+  }
+
+  onHostChanged(callback: (hostPlayerId: string | null) => void): void {
+    this.callbacks.onHostChanged = callback;
+  }
+
   onError(callback: (message: string) => void): void {
     this.callbacks.onError = callback;
   }
@@ -224,6 +353,7 @@ export class MultiplayerService {
 
     this.roomId = null;
     this.playerId = null;
+    this.hostPlayerId = null;
     this.ws = null;
   }
 
@@ -243,6 +373,10 @@ export class MultiplayerService {
     return this.roomId;
   }
 
+  getHostPlayerId(): string | null {
+    return this.hostPlayerId;
+  }
+
   private send(message: MultiplayerClientMessage): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return;
@@ -255,10 +389,17 @@ export class MultiplayerService {
     switch (message.type) {
       case "welcome":
         this.playerId = message.playerId;
+        this.hostPlayerId = message.hostPlayerId;
+        this.callbacks.onHostChanged?.(message.hostPlayerId);
         break;
 
       case "roomState":
-        this.callbacks.onRoomState?.(message.players);
+        this.hostPlayerId = message.hostPlayerId;
+        this.callbacks.onRoomState?.(
+          message.players,
+          message.hostPlayerId,
+          message.playerCombatStates
+        );
         break;
 
       case "worldState":
@@ -267,6 +408,52 @@ export class MultiplayerService {
 
       case "worldEvent":
         this.callbacks.onWorldEvent?.(message.event);
+        break;
+
+      case "enemyState":
+        this.callbacks.onEnemyState?.(message.enemies);
+        break;
+
+      case "enemyUpdated":
+        this.callbacks.onEnemyUpdated?.(message.enemy);
+        break;
+
+      case "enemyDefeated":
+        this.callbacks.onEnemyDefeated?.(message.enemyObjectId, message.defeatedByPlayerId);
+        break;
+
+      case "combatState":
+        this.callbacks.onCombatState?.(message.players);
+        break;
+
+      case "playerDamaged":
+        this.callbacks.onPlayerDamaged?.(
+          message.targetPlayerId,
+          message.damage,
+          message.health,
+          message.attackerPlayerId
+        );
+        break;
+
+      case "playerDefeated":
+        this.callbacks.onPlayerDefeated?.(message.playerId, message.defeatedByPlayerId);
+        break;
+
+      case "playerRespawned":
+        this.callbacks.onPlayerRespawned?.(message.playerId, message.health, message.position);
+        break;
+
+      case "chatHistory":
+        this.callbacks.onChatHistory?.(message.messages);
+        break;
+
+      case "chatMessage":
+        this.callbacks.onChatMessage?.(message.message);
+        break;
+
+      case "hostChanged":
+        this.hostPlayerId = message.hostPlayerId;
+        this.callbacks.onHostChanged?.(message.hostPlayerId);
         break;
 
       case "playerJoined":
@@ -303,6 +490,16 @@ function createEmptyCallbacks(): MultiplayerCallbacks {
     onPlayerUpdated: null,
     onWorldState: null,
     onWorldEvent: null,
+    onEnemyState: null,
+    onEnemyUpdated: null,
+    onEnemyDefeated: null,
+    onCombatState: null,
+    onPlayerDamaged: null,
+    onPlayerDefeated: null,
+    onPlayerRespawned: null,
+    onChatHistory: null,
+    onChatMessage: null,
+    onHostChanged: null,
     onError: null,
   };
 }

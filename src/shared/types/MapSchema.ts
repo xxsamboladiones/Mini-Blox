@@ -31,6 +31,11 @@ export type GameplaySettings = {
   requireObjectivesToFinish?: boolean;
 };
 
+export type MultiplayerSettings = {
+  pvpEnabled?: boolean;
+  friendlyFire?: boolean;
+};
+
 export type GameMode =
   | "freeplay"
   | "obby"
@@ -120,6 +125,7 @@ export type GameMap = {
   visualSettings?: VisualSettings;
   audioSettings?: AudioSettings;
   gameplaySettings?: GameplaySettings;
+  multiplayerSettings?: MultiplayerSettings;
   assets?: MapAsset[];
   createdAt?: string;
   updatedAt?: string;
@@ -168,6 +174,10 @@ export function createEmptyGameMap(name = "Novo mapa"): GameMap {
     },
     gameplaySettings: {
       voidDeathEnabled: true,
+    },
+    multiplayerSettings: {
+      pvpEnabled: false,
+      friendlyFire: false,
     },
     gameModeSettings: {
       mode: "freeplay",
@@ -219,6 +229,7 @@ export function isGameMap(value: unknown): value is GameMap {
     (value.visualSettings === undefined || isVisualSettings(value.visualSettings)) &&
     (value.audioSettings === undefined || isAudioSettings(value.audioSettings)) &&
     (value.gameplaySettings === undefined || isGameplaySettings(value.gameplaySettings)) &&
+    (value.multiplayerSettings === undefined || isMultiplayerSettings(value.multiplayerSettings)) &&
     (value.assets === undefined ||
       (Array.isArray(value.assets) && value.assets.every(isMapAsset))) &&
     (value.createdAt === undefined || typeof value.createdAt === "string") &&
@@ -353,6 +364,17 @@ function isGameplaySettings(value: unknown): value is GameplaySettings {
     (value.voidDeathY === undefined || Number.isFinite(value.voidDeathY)) &&
     (value.requireObjectivesToFinish === undefined ||
       typeof value.requireObjectivesToFinish === "boolean")
+  );
+}
+
+function isMultiplayerSettings(value: unknown): value is MultiplayerSettings {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value.pvpEnabled === undefined || typeof value.pvpEnabled === "boolean") &&
+    (value.friendlyFire === undefined || typeof value.friendlyFire === "boolean")
   );
 }
 

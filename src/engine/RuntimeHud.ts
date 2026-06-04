@@ -1,4 +1,5 @@
 import { createIcons, icons } from "lucide";
+import type { ChatMessage } from "../shared/types/MultiplayerSchema.js";
 
 export type VictoryActions = {
   onRestart: () => void;
@@ -78,6 +79,7 @@ export class RuntimeHud {
   private readonly inventory = document.createElement("div");
   private readonly objectivesPanel = document.createElement("div");
   private readonly dialoguePanel = document.createElement("div");
+  private readonly chatPanel = document.createElement("div");
   private readonly actionBar = document.createElement("div");
   private readonly message = document.createElement("div");
   private readonly victoryPanel = document.createElement("div");
@@ -86,6 +88,9 @@ export class RuntimeHud {
   private messageTimeout = 0;
   private actions: RuntimeHudActions | null = null;
   private objectivesExpanded = false;
+  private chatMessages: ChatMessage[] = [];
+  private chatSendCallback: ((text: string) => void) | null = null;
+  private chatCollapsed = true;
 
   constructor(container: HTMLElement) {
     this.root.className = "runtime-hud";
@@ -101,6 +106,7 @@ export class RuntimeHud {
     this.inventory.className = "runtime-inventory";
     this.objectivesPanel.className = "runtime-objectives hidden";
     this.dialoguePanel.className = "runtime-dialogue hidden";
+    this.chatPanel.className = "runtime-chat hidden collapsed";
     this.actionBar.className = "runtime-action-bar";
     this.message.className = "runtime-message";
     this.victoryPanel.className = "runtime-victory hidden";
@@ -122,6 +128,7 @@ export class RuntimeHud {
       this.bottomRightCluster,
       this.objectivesPanel,
       this.actionBar,
+      this.chatPanel,
       this.message,
       this.dialoguePanel,
       this.victoryPanel,
@@ -529,6 +536,114 @@ export class RuntimeHud {
     if (playerCountEl) {
       playerCountEl.textContent = `${count} jogadores`;
     }
+  }
+
+  setChatEnabled(enabled: boolean, onSend?: (text: string) => void): void {
+    this.chatSendCallback = enabled ? (onSend ?? null) : null;
+    this.chatPanel.classList.toggle("hidden", !enabled);
+
+    if (!enabled) {
+      this.chatPanel.replaceChildren();
+      return;
+    }
+
+    this.renderChat();
+  }
+
+  setChatMessages(messages: ChatMessage[]): void {
+    this.chatMessages = messages.slice(-50);
+    this.renderChatMessages();
+  }
+
+  focusChat(): void {
+    if (this.chatPanel.classList.contains("hidden")) {
+      return;
+    }
+
+    this.chatCollapsed = false;
+    this.renderChat();
+    this.chatPanel.querySelector<HTMLInputElement>("[data-chat-input]")?.focus();
+  }
+
+  blurChat(): void {
+    this.chatPanel.querySelector<HTMLInputElement>("[data-chat-input]")?.blur();
+  }
+
+  isChatFocused(): boolean {
+    return document.activeElement === this.chatPanel.querySelector("[data-chat-input]");
+  }
+
+  private renderChat(): void {
+    if (this.chatPanel.classList.contains("hidden")) {
+      return;
+    }
+
+    this.chatPanel.classList.toggle("collapsed", this.chatCollapsed);
+    this.chatPanel.innerHTML = `
+      <div class="runtime-chat-header">
+        <button class="runtime-chat-toggle" type="button" data-chat-toggle title="${this.chatCollapsed ? "Abrir chat" : "Recolher chat"}" aria-label="${this.chatCollapsed ? "Abrir chat" : "Recolher chat"}">
+          <i data-lucide="${this.chatCollapsed ? "message-circle" : "chevron-down"}"></i>
+        </button>
+        <span>Chat</span>
+      </div>
+      <div class="runtime-chat-body">
+        <div class="runtime-chat-messages" data-chat-messages></div>
+        <form class="runtime-chat-form" data-chat-form>
+          <input data-chat-input type="text" maxlength="200" autocomplete="off" placeholder="Mensagem da sala" />
+          <button class="top-action icon-runtime-action" type="submit" title="Enviar" aria-label="Enviar mensagem">
+            <i data-lucide="send"></i>
+          </button>
+        </form>
+      </div>
+    `;
+
+    this.chatPanel
+      .querySelector<HTMLButtonElement>("[data-chat-toggle]")
+      ?.addEventListener("click", () => {
+        this.chatCollapsed = !this.chatCollapsed;
+        this.renderChat();
+      });
+    this.chatPanel
+      .querySelector<HTMLFormElement>("[data-chat-form]")
+      ?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const input = this.chatPanel.querySelector<HTMLInputElement>("[data-chat-input]");
+        const text = input?.value.trim() ?? "";
+        if (!text) {
+          return;
+        }
+
+        this.chatSendCallback?.(text);
+        if (input) {
+          input.value = "";
+          input.focus();
+        }
+      });
+
+    this.renderChatMessages();
+    createIcons({ icons });
+  }
+
+  private renderChatMessages(): void {
+    const messagesEl = this.chatPanel.querySelector<HTMLElement>("[data-chat-messages]");
+    if (!messagesEl) {
+      return;
+    }
+
+    messagesEl.innerHTML =
+      this.chatMessages.length === 0
+        ? `<span class="runtime-chat-empty">Sem mensagens.</span>`
+        : this.chatMessages
+            .map(
+              (message) => `
+          <div class="runtime-chat-message ${message.type}">
+            <strong>${escapeHtml(message.playerName)}</strong>
+            <span>${escapeHtml(message.text)}</span>
+          </div>
+        `
+            )
+            .join("");
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 }
 

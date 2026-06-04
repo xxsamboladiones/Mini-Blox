@@ -379,6 +379,59 @@ const TEMPLATE_CONFIGS = [
     decorations: 80,
   },
   {
+    id: "multiplayerPvpArena",
+    name: "Arena Multiplayer PvP",
+    description: "Arena pequena publicada para testar PvP basico, respawn e times em sala online.",
+    icon: "swords",
+    style: "challenge",
+    theme: "classic",
+    ambientMusic: "adventure",
+    tags: ["multiplayer", "pvp", "times"],
+    minObjects: 120,
+    sections: 3,
+    areas: 2,
+    coins: 8,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 2,
+    damageZones: 0,
+    jumpPads: 2,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 2,
+    logicRules: 1,
+    decorations: 52,
+  },
+  {
+    id: "multiplayerCoopEnemies",
+    name: "Arena Coop Inimigos",
+    description:
+      "Arena cooperativa curta para testar inimigos sincronizados, moedas, portas e itens compartilhados.",
+    icon: "shield",
+    style: "challenge",
+    theme: "grass",
+    ambientMusic: "adventure",
+    tags: ["multiplayer", "coop", "inimigos"],
+    minObjects: 130,
+    sections: 3,
+    areas: 3,
+    coins: 12,
+    doors: 1,
+    buttons: 1,
+    keys: 0,
+    checkpoints: 2,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 3,
+    logicRules: 2,
+    decorations: 56,
+  },
+  {
     id: "competitiveCoin",
     name: "Coleta Competitiva Local",
     description: "Mapa medio de moedas com meta clara, rota principal e placar local de coleta.",
@@ -848,6 +901,14 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
     return createDesignedLocalCapturePointMap(config);
   }
 
+  if (config.id === "multiplayerPvpArena") {
+    return createDesignedMultiplayerPvpArenaMap(config);
+  }
+
+  if (config.id === "multiplayerCoopEnemies") {
+    return createDesignedMultiplayerCoopEnemiesMap(config);
+  }
+
   if (config.id === "competitiveCoin") {
     return createDesignedCompetitiveCoinMap(config);
   }
@@ -1098,6 +1159,21 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
     settings.teamsEnabled = true;
     settings.roundEnabled = true;
     settings.roundTimeLimit = 240;
+  } else if (config.id === "multiplayerPvpArena") {
+    settings = createGameModeSettings("teamBattle", "score", {
+      targetAmount: 8,
+      requireAll: false,
+    });
+    settings.teamsEnabled = true;
+    settings.roundEnabled = true;
+    settings.roundTimeLimit = 300;
+    settings.respawnDelay = 2;
+  } else if (config.id === "multiplayerCoopEnemies") {
+    settings = createGameModeSettings("combatArena", "defeatEnemies", {
+      targetAmount: Math.max(1, enemies),
+      requireAll: true,
+    });
+    settings.respawnDelay = 2;
   } else if (config.id === "localCapturePoint") {
     settings = createGameModeSettings("capturePoint", "capturePoint", {
       targetAmount: 100,
@@ -1165,7 +1241,11 @@ function createGameModeSettings(
 }
 
 function getDefaultTeamsForTemplate(templateId: string): TeamDefinition[] {
-  if (templateId !== "localTeamArena" && templateId !== "localCapturePoint") {
+  if (
+    templateId !== "localTeamArena" &&
+    templateId !== "localCapturePoint" &&
+    templateId !== "multiplayerPvpArena"
+  ) {
     return [];
   }
 
@@ -3886,6 +3966,331 @@ function createDesignedLocalCapturePointMap(config: TemplateConfig): GameMap {
   );
   builder.addLogic(
     "Finaliza Capture Point Local",
+    { type: "onPlayerEnterObject", objectId: final.id },
+    [{ type: "once" }],
+    [{ type: "finishMap" }]
+  );
+
+  return builder.map;
+}
+
+function createDesignedMultiplayerPvpArenaMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const route: RoutePoint[] = [];
+
+  builder.map.teams = getDefaultTeamsForTemplate(config.id);
+  builder.map.multiplayerSettings = {
+    pvpEnabled: true,
+    friendlyFire: false,
+  };
+  addSpawn(builder, { x: -12, y: 0.75, z: 8 });
+
+  const redBase = addDesignedPlatform(
+    builder,
+    { x: -12, y: 0.2, z: 8 },
+    {
+      name: "Base vermelha PvP",
+      width: 11,
+      length: 8,
+      color: "#fee2e2",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  const blueBase = addDesignedPlatform(
+    builder,
+    { x: 12, y: 0.2, z: 8 },
+    {
+      name: "Base azul PvP",
+      width: 11,
+      length: 8,
+      color: "#dbeafe",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  const center = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: -4 },
+    {
+      name: "Arena central PvP",
+      width: 26,
+      length: 22,
+      color: "#e5e7eb",
+      edgeCount: 8,
+      supports: 4,
+    }
+  );
+  route.push(
+    { ...redBase.position, label: "Base vermelha PvP" },
+    { ...blueBase.position, label: "Base azul PvP" },
+    { ...center.position, label: "Centro PvP" }
+  );
+
+  createTeamSpawn(builder, { x: -12, y: 0.55, z: 8 }, "red", { name: "Spawn PvP vermelho" });
+  createTeamSpawn(builder, { x: 12, y: 0.55, z: 8 }, "blue", { name: "Spawn PvP azul" });
+  createTrailBridge(builder, redBase.position, center.position, "Ponte PvP vermelha", "#ef4444");
+  createTrailBridge(builder, blueBase.position, center.position, "Ponte PvP azul", "#3b82f6");
+
+  createItemSpawner(builder, { x: -12, y: 0.65, z: 4.6 }, { name: "Arma vermelha PvP" });
+  createItemSpawner(builder, { x: 12, y: 0.65, z: 4.6 }, { name: "Arma azul PvP" });
+  createItemSpawner(
+    builder,
+    { x: -4, y: 0.65, z: -6 },
+    {
+      name: "Cura esquerda PvP",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 12,
+        amount: 30,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+  createItemSpawner(
+    builder,
+    { x: 4, y: 0.65, z: -6 },
+    {
+      name: "Cura direita PvP",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 12,
+        amount: 30,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+
+  createJumpPad(builder, { x: -8, y: 0.55, z: -2 }, { name: "Jump PvP vermelho" });
+  createJumpPad(builder, { x: 8, y: 0.55, z: -2 }, { name: "Jump PvP azul" });
+  createCoinLine(builder, { x: -6, y: 1.1, z: -9 }, { x: 6, y: 1.1, z: -9 }, 8, "Moeda PvP");
+  createCheckpoint(builder, { x: -12, y: 0.75, z: 8 }, "Checkpoint PvP vermelho");
+  createCheckpoint(builder, { x: 12, y: 0.75, z: 8 }, "Checkpoint PvP azul");
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.05, z: 1.2 },
+    "PvP ligado: acerte jogadores do outro time.",
+    {
+      name: "Mensagem PvP",
+      scale: { x: 12, y: 1.4, z: 2.4 },
+    }
+  );
+  createSign(builder, { x: -5.8, y: 0.2, z: -12.2 }, "PvP usa espada basica e respawn de 2s.");
+  createSign(builder, { x: 4.9, y: 0.2, z: -12.2 }, "Friendly fire desligado.");
+  const final = createFinish(
+    builder,
+    { x: 0, y: 1.25, z: -11.5 },
+    {
+      name: "Final PvP",
+      properties: { message: "Arena Multiplayer PvP concluida!" },
+    }
+  );
+
+  addDesignedTemplateDecor(builder, config, route);
+  ensureObjectCount(builder, config.minObjects, config.style, route);
+  builder.addLogic(
+    "Inicio PvP Multiplayer",
+    { type: "onMapStart" },
+    [],
+    [{ type: "showMessage", message: "Arena PvP: entre em dois clientes e ataque o outro time." }]
+  );
+  builder.addLogic(
+    "Final PvP Multiplayer",
+    { type: "onPlayerEnterObject", objectId: final.id },
+    [{ type: "once" }],
+    [{ type: "finishMap" }]
+  );
+
+  return builder.map;
+}
+
+function createDesignedMultiplayerCoopEnemiesMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const route: RoutePoint[] = [];
+
+  builder.map.multiplayerSettings = {
+    pvpEnabled: false,
+    friendlyFire: false,
+  };
+  addSpawn(builder, { x: 0, y: 0.75, z: 9 });
+
+  const entry = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: 9 },
+    {
+      name: "Entrada coop",
+      width: 14,
+      length: 9,
+      color: "#dcfce7",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  const arena = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: -4 },
+    {
+      name: "Arena coop central",
+      width: 26,
+      length: 22,
+      color: "#bbf7d0",
+      edgeCount: 8,
+      supports: 4,
+    }
+  );
+  const exit = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: -18 },
+    {
+      name: "Saida coop",
+      width: 12,
+      length: 8,
+      color: "#d9f99d",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  route.push(
+    { ...entry.position, label: "Entrada coop" },
+    { ...arena.position, label: "Arena coop" },
+    { ...exit.position, label: "Saida coop" }
+  );
+  createTrailBridge(builder, entry.position, arena.position, "Ponte entrada coop", "#22c55e");
+  createTrailBridge(builder, arena.position, exit.position, "Ponte saida coop", "#16a34a");
+
+  createItemSpawner(builder, { x: -4, y: 0.65, z: 7 }, { name: "Arma coop esquerda" });
+  createItemSpawner(builder, { x: 4, y: 0.65, z: 7 }, { name: "Arma coop direita" });
+  createItemSpawner(
+    builder,
+    { x: -8, y: 0.65, z: -5 },
+    {
+      name: "Cura coop esquerda",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 10,
+        amount: 35,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+  createItemSpawner(
+    builder,
+    { x: 8, y: 0.65, z: -5 },
+    {
+      name: "Cura coop direita",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 10,
+        amount: 35,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+
+  const enemyPositions: Vector3[] = [
+    { x: -7, y: 0.55, z: -1 },
+    { x: 7, y: 0.55, z: -1 },
+    { x: -5, y: 0.55, z: -9 },
+    { x: 5, y: 0.55, z: -9 },
+  ];
+  enemyPositions.forEach((position, index) => {
+    createEnemy(builder, position, {
+      name: `Inimigo coop ${index + 1}`,
+      properties: {
+        health: index >= 2 ? 70 : 50,
+        damage: 9,
+        speed: index % 2 === 0 ? 1.8 : 2.2,
+        detectionRange: 11,
+        behavior: index % 2 === 0 ? "patrol" : "chase",
+        patrolOffset: { x: index % 2 === 0 ? 5 : -5, y: 0, z: 0 },
+        color: index >= 2 ? "#b91c1c" : "#ef4444",
+        collision: false,
+      },
+    });
+  });
+
+  const door = createDoor(
+    builder,
+    { x: 0, y: 1.9, z: -13.2 },
+    {
+      name: "Porta coop compartilhada",
+      properties: {
+        doorId: "coop_exit_door",
+        color: "#15803d",
+        openOffset: { x: 0, y: 3.8, z: 0 },
+      },
+    }
+  );
+  createButton(
+    builder,
+    { x: 0, y: 0.55, z: -9.8 },
+    {
+      name: "Botao coop compartilhado",
+      properties: {
+        targetDoorId: getDoorId(door),
+        color: "#f97316",
+        oneTime: true,
+        collision: false,
+      },
+    }
+  );
+  createCoinLine(builder, { x: -6, y: 1.1, z: -3 }, { x: 6, y: 1.1, z: -3 }, 8, "Moeda coop");
+  createCoinLine(
+    builder,
+    { x: -4, y: 1.1, z: -16 },
+    { x: 4, y: 1.1, z: -16 },
+    4,
+    "Moeda saida coop"
+  );
+  createCheckpoint(builder, { x: 0, y: 0.75, z: 9 }, "Checkpoint coop entrada");
+  createCheckpoint(builder, { x: 0, y: 0.75, z: -13 }, "Checkpoint coop saida");
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.05, z: 4.6 },
+    "Coop: inimigos, moedas, porta e itens sincronizados.",
+    {
+      name: "Mensagem coop",
+      scale: { x: 12, y: 1.4, z: 2.4 },
+    }
+  );
+  createSign(builder, { x: -5.4, y: 0.2, z: -12 }, "Aperte o botao para abrir a porta para todos.");
+  createSign(
+    builder,
+    { x: 4.8, y: 0.2, z: -12 },
+    "Quem entrar depois recebe inimigos ja derrotados."
+  );
+  const final = createFinish(
+    builder,
+    { x: 0, y: 1.25, z: -20.5 },
+    {
+      name: "Final coop inimigos",
+      properties: { message: "Arena Coop Inimigos concluida!" },
+    }
+  );
+
+  addDesignedTemplateDecor(builder, config, route);
+  ensureObjectCount(builder, config.minObjects, config.style, route);
+  builder.addLogic(
+    "Inicio Coop Multiplayer",
+    { type: "onMapStart" },
+    [],
+    [
+      {
+        type: "showMessage",
+        message: "Arena Coop: derrotem inimigos e testem estado compartilhado.",
+      },
+    ]
+  );
+  builder.addLogic(
+    "Final Coop Multiplayer",
     { type: "onPlayerEnterObject", objectId: final.id },
     [{ type: "once" }],
     [{ type: "finishMap" }]

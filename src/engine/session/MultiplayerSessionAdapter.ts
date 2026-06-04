@@ -1,7 +1,11 @@
 import type { GameSessionAdapter } from "./GameSessionAdapter.js";
 import type {
+  ChatMessage,
+  EnemyNetState,
+  EnemyPositionUpdate,
   GameNetworkEvent,
   NetworkEventCallback,
+  PlayerAttackPayload,
   PlayerInput,
   PlayerNetState,
   SharedWorldState,
@@ -15,6 +19,7 @@ import type { Vector3 } from "../../shared/types/ObjectSchema.js";
 export class MultiplayerSessionAdapter implements GameSessionAdapter {
   private state: SessionState | null = null;
   private localPlayerId: string | null = null;
+  private hostPlayerId: string | null = null;
   private isRunning = false;
   private callbacks = {
     onStateChange: null as SessionStateChangeCallback | null,
@@ -57,6 +62,7 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
     multiplayerService.clearCallbacks();
     this.state = null;
     this.localPlayerId = null;
+    this.hostPlayerId = null;
   }
 
   sendInput(_input: PlayerInput): void {
@@ -85,12 +91,72 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
     multiplayerService.sendWorldEvent(event);
   }
 
+  sendEnemyHit(enemyObjectId: string, damage: number, weaponId?: string): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendEnemyHit(enemyObjectId, damage, weaponId);
+  }
+
+  sendEnemyStateRequest(): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendEnemyStateRequest();
+  }
+
+  sendEnemyPositionUpdate(enemies: EnemyPositionUpdate[]): void {
+    if (!this.isRunning || !this.isHost()) {
+      return;
+    }
+
+    multiplayerService.sendEnemyPositionUpdate(enemies);
+  }
+
+  sendPlayerAttack(payload: PlayerAttackPayload): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendPlayerAttack(payload);
+  }
+
+  sendPlayerDamageReport(
+    damage: number,
+    source: "enemy" | "hazard" | "logic",
+    targetPlayerId?: string
+  ): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendPlayerDamageReport(damage, source, targetPlayerId);
+  }
+
+  sendChatMessage(text: string): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendChatMessage(text);
+  }
+
   getState(): SessionState | null {
     return this.state;
   }
 
   getLocalPlayerId(): string | null {
     return this.localPlayerId;
+  }
+
+  getHostPlayerId(): string | null {
+    return this.hostPlayerId;
+  }
+
+  isHost(): boolean {
+    return Boolean(this.localPlayerId && this.localPlayerId === this.hostPlayerId);
   }
 
   isLocal(): boolean {
@@ -122,8 +188,9 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
   }
 
   private bindServiceCallbacks(): void {
-    multiplayerService.onRoomState((players) => {
+    multiplayerService.onRoomState((players, hostPlayerId, playerCombatStates) => {
       this.localPlayerId = multiplayerService.getPlayerId();
+      this.hostPlayerId = hostPlayerId;
       const remotePlayers = this.getRemotePlayers(players);
 
       this.state = {
@@ -138,6 +205,10 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
       };
 
       this.callbacks.onStateChange?.(this.state);
+      this.callbacks.onNetworkEvent?.({
+        type: "combatState",
+        players: playerCombatStates,
+      });
     });
 
     multiplayerService.onPlayerJoined((player) => {
@@ -177,6 +248,84 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
 
     multiplayerService.onWorldEvent((event) => {
       this.callbacks.onWorldEvent?.(event);
+    });
+
+    multiplayerService.onEnemyState((enemies: Record<string, EnemyNetState>) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "enemyState",
+        enemies,
+      });
+    });
+
+    multiplayerService.onEnemyUpdated((enemy) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "enemyUpdated",
+        enemy,
+      });
+    });
+
+    multiplayerService.onEnemyDefeated((enemyObjectId, defeatedByPlayerId) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "enemyDefeated",
+        enemyObjectId,
+        defeatedByPlayerId,
+      });
+    });
+
+    multiplayerService.onCombatState((players) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "combatState",
+        players,
+      });
+    });
+
+    multiplayerService.onPlayerDamaged((targetPlayerId, damage, health, attackerPlayerId) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "playerDamaged",
+        targetPlayerId,
+        damage,
+        health,
+        attackerPlayerId,
+      });
+    });
+
+    multiplayerService.onPlayerDefeated((playerId, defeatedByPlayerId) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "playerDefeated",
+        playerId,
+        defeatedByPlayerId,
+      });
+    });
+
+    multiplayerService.onPlayerRespawned((playerId, health, position) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "playerRespawned",
+        playerId,
+        health,
+        position,
+      });
+    });
+
+    multiplayerService.onChatHistory((messages: ChatMessage[]) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "chatHistory",
+        messages,
+      });
+    });
+
+    multiplayerService.onChatMessage((message) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "chatMessage",
+        message,
+      });
+    });
+
+    multiplayerService.onHostChanged((hostPlayerId) => {
+      this.hostPlayerId = hostPlayerId;
+      this.callbacks.onNetworkEvent?.({
+        type: "hostChanged",
+        hostPlayerId,
+      });
     });
 
     multiplayerService.onError((message) => {

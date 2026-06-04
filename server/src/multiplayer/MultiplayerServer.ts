@@ -4,9 +4,14 @@ import type { Server } from "http";
 import type { GameRoom } from "./Room.js";
 import type { RoomManager } from "./RoomManager.js";
 import type {
+  ChatMessage,
+  EnemyNetState,
+  EnemyPositionUpdate,
   MultiplayerClientMessage,
   MultiplayerServerMessage,
+  PlayerCombatState,
   RoomPlayer,
+  Vector3,
   WorldEvent,
 } from "./types.js";
 
@@ -124,6 +129,24 @@ export class MultiplayerServer {
       case "worldEvent":
         this.handleWorldEvent(connection, room, message.event);
         break;
+      case "enemyHit":
+        this.handleEnemyHit(connection, room, message.enemyObjectId, message.damage);
+        break;
+      case "enemyStateRequest":
+        this.sendEnemyState(connection.ws, room);
+        break;
+      case "enemyPositionUpdate":
+        this.handleEnemyPositionUpdate(connection, room, message.enemies);
+        break;
+      case "playerAttack":
+        this.handlePlayerAttack(connection, room, message);
+        break;
+      case "playerDamaged":
+        this.handleReportedPlayerDamage(connection, room, message.targetPlayerId, message.damage);
+        break;
+      case "chatMessage":
+        this.handleChatMessage(connection, room, message.text);
+        break;
       case "ping":
         this.sendPong(connection.ws);
         break;
@@ -145,18 +168,29 @@ export class MultiplayerServer {
     connection.playerId = player.id;
     this.roomManager.updateRoomActivity(connection.roomId);
 
-    this.sendWelcome(connection.ws, connection.roomId, player.id);
+    this.sendWelcome(connection.ws, connection.roomId, player.id, room.hostPlayerId);
     this.broadcastPlayerJoined(room, player);
     this.sendRoomState(connection.ws, room);
     this.sendWorldState(connection.ws, room);
+    this.sendEnemyState(connection.ws, room);
+    this.sendCombatState(connection.ws, room);
+    this.sendChatHistory(connection.ws, room);
+    this.broadcastChatMessage(room, room.addSystemMessage(`${player.name} entrou na sala.`));
   }
 
   private handleLeave(connection: ClientConnection, room: GameRoom): void {
     if (!connection.playerId) return;
 
     const playerId = connection.playerId;
-    room.removePlayer(playerId);
+    const player = room.getPlayer(playerId);
+    const result = room.removePlayer(playerId);
     this.broadcastPlayerLeft(room, playerId);
+    if (result.hostChanged) {
+      this.broadcastHostChanged(room);
+    }
+    if (player) {
+      this.broadcastChatMessage(room, room.addSystemMessage(`${player.name} saiu da sala.`));
+    }
     this.roomManager.updateRoomActivity(connection.roomId);
 
     connection.playerId = null;
@@ -184,11 +218,7 @@ export class MultiplayerServer {
     }
   }
 
-  private handleWorldEvent(
-    connection: ClientConnection,
-    room: GameRoom,
-    event: WorldEvent
-  ): void {
+  private handleWorldEvent(connection: ClientConnection, room: GameRoom, event: WorldEvent): void {
     if (!connection.playerId) return;
 
     const normalizedEvent = room.applyWorldEvent(event);
@@ -201,6 +231,110 @@ export class MultiplayerServer {
     this.roomManager.updateRoomActivity(connection.roomId);
   }
 
+  private handleEnemyHit(
+    connection: ClientConnection,
+    room: GameRoom,
+    enemyObjectId: string,
+    damage: number
+  ): void {
+    if (!connection.playerId) return;
+
+    const result = room.applyEnemyHit(connection.playerId, enemyObjectId, damage);
+    if (!result) {
+      return;
+    }
+
+    this.broadcastEnemyUpdated(room, result.enemy);
+
+    if (result.defeated) {
+      this.broadcastEnemyDefeated(room, result.enemy.objectId, connection.playerId);
+      this.broadcastChatMessage(
+        room,
+        room.addSystemMessage(`Inimigo ${result.enemy.objectId} derrotado.`)
+      );
+    }
+
+    this.roomManager.updateRoomActivity(connection.roomId);
+  }
+
+  private handleEnemyPositionUpdate(
+    connection: ClientConnection,
+    room: GameRoom,
+    enemies: EnemyPositionUpdate[]
+  ): void {
+    if (!connection.playerId) return;
+
+    const updatedEnemies = room.updateEnemyPositions(connection.playerId, enemies);
+    for (const enemy of updatedEnemies) {
+      this.broadcastEnemyUpdated(room, enemy, connection.playerId);
+    }
+
+    if (updatedEnemies.length > 0) {
+      this.roomManager.updateRoomActivity(connection.roomId);
+    }
+  }
+
+  private handlePlayerAttack(
+    connection: ClientConnection,
+    room: GameRoom,
+    message: MultiplayerClientMessage & { type: "playerAttack" }
+  ): void {
+    if (!connection.playerId) return;
+
+    const result = room.applyPlayerAttack(connection.playerId, message);
+    if (!result) {
+      return;
+    }
+
+    this.broadcastPlayerDamaged(room, result);
+
+    if (result.defeated) {
+      this.broadcastPlayerDefeated(room, result.targetPlayer.id, result.attackerPlayerId);
+      this.broadcastChatMessage(
+        room,
+        room.addSystemMessage(`${result.targetPlayer.name} foi derrotado.`)
+      );
+      this.scheduleRespawn(room, result.targetPlayer.id);
+    }
+
+    this.roomManager.updateRoomActivity(connection.roomId);
+  }
+
+  private handleReportedPlayerDamage(
+    connection: ClientConnection,
+    room: GameRoom,
+    targetPlayerId: string | undefined,
+    damage: number
+  ): void {
+    if (!connection.playerId) return;
+
+    const result = room.applyReportedPlayerDamage(connection.playerId, targetPlayerId, damage);
+    if (!result) {
+      return;
+    }
+
+    this.broadcastPlayerDamaged(room, result);
+
+    if (result.defeated) {
+      this.broadcastPlayerDefeated(room, result.targetPlayer.id);
+      this.scheduleRespawn(room, result.targetPlayer.id);
+    }
+
+    this.roomManager.updateRoomActivity(connection.roomId);
+  }
+
+  private handleChatMessage(connection: ClientConnection, room: GameRoom, text: string): void {
+    if (!connection.playerId) return;
+
+    const message = room.addPlayerChatMessage(connection.playerId, text);
+    if (!message) {
+      return;
+    }
+
+    this.broadcastChatMessage(room, message);
+    this.roomManager.updateRoomActivity(connection.roomId);
+  }
+
   private handleDisconnection(ws: WebSocket): void {
     const connection = this.connections.get(ws);
     if (!connection) return;
@@ -210,8 +344,15 @@ export class MultiplayerServer {
       connection.playerId = null;
       const room = this.roomManager.getRoom(connection.roomId);
       if (room) {
-        room.removePlayer(playerId);
+        const player = room.getPlayer(playerId);
+        const result = room.removePlayer(playerId);
         this.broadcastPlayerLeft(room, playerId);
+        if (result.hostChanged) {
+          this.broadcastHostChanged(room);
+        }
+        if (player) {
+          this.broadcastChatMessage(room, room.addSystemMessage(`${player.name} saiu da sala.`));
+        }
         this.roomManager.updateRoomActivity(connection.roomId);
       }
     }
@@ -219,11 +360,17 @@ export class MultiplayerServer {
     this.connections.delete(ws);
   }
 
-  private sendWelcome(ws: WebSocket, roomId: string, playerId: string): void {
+  private sendWelcome(
+    ws: WebSocket,
+    roomId: string,
+    playerId: string,
+    hostPlayerId: string | null
+  ): void {
     const message: MultiplayerServerMessage = {
       type: "welcome",
       roomId,
       playerId,
+      hostPlayerId,
     };
     this.send(ws, message);
   }
@@ -237,6 +384,8 @@ export class MultiplayerServer {
     const message: MultiplayerServerMessage = {
       type: "roomState",
       players,
+      hostPlayerId: room.hostPlayerId,
+      playerCombatStates: room.getPlayerCombatStates(),
     };
     this.send(ws, message);
   }
@@ -245,6 +394,30 @@ export class MultiplayerServer {
     const message: MultiplayerServerMessage = {
       type: "worldState",
       state: room.getSharedState(),
+    };
+    this.send(ws, message);
+  }
+
+  private sendEnemyState(ws: WebSocket, room: GameRoom): void {
+    const message: MultiplayerServerMessage = {
+      type: "enemyState",
+      enemies: room.getEnemyStates(),
+    };
+    this.send(ws, message);
+  }
+
+  private sendCombatState(ws: WebSocket, room: GameRoom): void {
+    const message: MultiplayerServerMessage = {
+      type: "combatState",
+      players: room.getPlayerCombatStates(),
+    };
+    this.send(ws, message);
+  }
+
+  private sendChatHistory(ws: WebSocket, room: GameRoom): void {
+    const message: MultiplayerServerMessage = {
+      type: "chatHistory",
+      messages: room.getChatMessages(),
     };
     this.send(ws, message);
   }
@@ -280,6 +453,116 @@ export class MultiplayerServer {
       event,
     };
     this.broadcastToRoom(room, message);
+  }
+
+  private broadcastEnemyUpdated(
+    room: GameRoom,
+    enemy: EnemyNetState,
+    excludePlayerId?: string
+  ): void {
+    const message: MultiplayerServerMessage = {
+      type: "enemyUpdated",
+      enemy,
+    };
+    this.broadcastToRoom(room, message, excludePlayerId);
+  }
+
+  private broadcastEnemyDefeated(
+    room: GameRoom,
+    enemyObjectId: string,
+    defeatedByPlayerId?: string
+  ): void {
+    const message: MultiplayerServerMessage = {
+      type: "enemyDefeated",
+      enemyObjectId,
+      defeatedByPlayerId,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
+  private broadcastPlayerDamaged(
+    room: GameRoom,
+    result: {
+      targetPlayer: RoomPlayer;
+      combatState: PlayerCombatState;
+      damage: number;
+      attackerPlayerId?: string;
+    }
+  ): void {
+    const message: MultiplayerServerMessage = {
+      type: "playerDamaged",
+      targetPlayerId: result.targetPlayer.id,
+      attackerPlayerId: result.attackerPlayerId,
+      damage: result.damage,
+      health: result.combatState.health,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
+  private broadcastPlayerDefeated(
+    room: GameRoom,
+    playerId: string,
+    defeatedByPlayerId?: string
+  ): void {
+    const message: MultiplayerServerMessage = {
+      type: "playerDefeated",
+      playerId,
+      defeatedByPlayerId,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
+  private broadcastPlayerRespawned(
+    room: GameRoom,
+    playerId: string,
+    health: number,
+    position: Vector3
+  ): void {
+    const message: MultiplayerServerMessage = {
+      type: "playerRespawned",
+      playerId,
+      health,
+      position,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
+  private broadcastChatMessage(room: GameRoom, messageData: ChatMessage): void {
+    const message: MultiplayerServerMessage = {
+      type: "chatMessage",
+      message: messageData,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
+  private broadcastHostChanged(room: GameRoom): void {
+    const message: MultiplayerServerMessage = {
+      type: "hostChanged",
+      hostPlayerId: room.hostPlayerId,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
+  private scheduleRespawn(room: GameRoom, playerId: string): void {
+    setTimeout(() => {
+      const liveRoom = this.roomManager.getRoom(room.roomId);
+      if (!liveRoom) {
+        return;
+      }
+
+      const respawned = liveRoom.respawnPlayer(playerId);
+      if (!respawned) {
+        return;
+      }
+
+      this.broadcastPlayerRespawned(
+        liveRoom,
+        playerId,
+        respawned.combatState.health,
+        respawned.player.position
+      );
+      this.broadcastPlayerUpdated(liveRoom, playerId, respawned.player);
+    }, room.getRespawnDelayMs());
   }
 
   private broadcastToRoom(
