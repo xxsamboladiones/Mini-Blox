@@ -39,10 +39,12 @@ export class ObjectOutliner {
       </div>
     `;
 
-    this.root.querySelector<HTMLInputElement>("[data-outliner-search]")?.addEventListener("input", (event) => {
-      this.query = (event.currentTarget as HTMLInputElement).value;
-      this.render();
-    });
+    this.root
+      .querySelector<HTMLInputElement>("[data-outliner-search]")
+      ?.addEventListener("input", (event) => {
+        this.query = (event.currentTarget as HTMLInputElement).value;
+        this.render();
+      });
 
     this.root.querySelectorAll<HTMLButtonElement>("[data-select-object]").forEach((button) => {
       button.addEventListener("click", () => {

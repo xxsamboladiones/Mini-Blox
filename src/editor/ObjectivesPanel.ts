@@ -1,5 +1,10 @@
 import { createIcons, icons } from "lucide";
-import type { GameMap, GameplaySettings, MapObjective, ObjectiveType } from "../shared/types/MapSchema";
+import type {
+  GameMap,
+  GameplaySettings,
+  MapObjective,
+  ObjectiveType,
+} from "../shared/types/MapSchema";
 import type { MapObject } from "../shared/types/ObjectSchema";
 
 type ObjectivesPanelActions = {
@@ -14,7 +19,7 @@ const OBJECTIVE_TYPES: Array<{ type: ObjectiveType; label: string }> = [
   { type: "activateButton", label: "Ativar botao" },
   { type: "openDoor", label: "Abrir porta" },
   { type: "defeatEnemies", label: "Derrotar inimigos" },
-  { type: "customLogic", label: "Completar por logica" }
+  { type: "customLogic", label: "Completar por logica" },
 ];
 
 export class ObjectivesPanel {
@@ -81,9 +86,11 @@ export class ObjectivesPanel {
         <label class="field">
           <span>Tipo</span>
           <select data-objective-type data-index="${index}">
-            ${OBJECTIVE_TYPES.map((option) => `
+            ${OBJECTIVE_TYPES.map(
+              (option) => `
               <option value="${option.type}" ${objective.type === option.type ? "selected" : ""}>${option.label}</option>
-            `).join("")}
+            `
+            ).join("")}
           </select>
         </label>
         ${this.renderTargetFields(objective, index)}
@@ -117,11 +124,22 @@ export class ObjectivesPanel {
     }
 
     if (objective.type === "reachObject") {
-      return this.renderObjectSelect("Objeto alvo", objective.targetObjectId ?? "", "data-objective-target-object", index);
+      return this.renderObjectSelect(
+        "Objeto alvo",
+        objective.targetObjectId ?? "",
+        "data-objective-target-object",
+        index
+      );
     }
 
     if (objective.type === "activateButton") {
-      return this.renderObjectSelect("Botao alvo", objective.targetObjectId ?? "", "data-objective-target-object", index, "button");
+      return this.renderObjectSelect(
+        "Botao alvo",
+        objective.targetObjectId ?? "",
+        "data-objective-target-object",
+        index,
+        "button"
+      );
     }
 
     if (objective.type === "collectKey") {
@@ -151,11 +169,15 @@ export class ObjectivesPanel {
         <select ${attribute} data-index="${index}">
           <option value="">Escolha um objeto</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Objeto nao encontrado (${escapeHtml(value)})</option>` : ""}
-          ${objects.map((object) => `
+          ${objects
+            .map(
+              (object) => `
             <option value="${escapeAttribute(object.id)}" ${object.id === value ? "selected" : ""}>
               ${escapeHtml(`${object.name ?? object.id} (${object.type})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -171,11 +193,15 @@ export class ObjectivesPanel {
         <select data-objective-target-key data-index="${index}">
           <option value="">Escolha uma chave</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Chave nao encontrada (${escapeHtml(value)})</option>` : ""}
-          ${keys.map((key) => `
+          ${keys
+            .map(
+              (key) => `
             <option value="${escapeAttribute(key.id)}" ${key.id === value ? "selected" : ""}>
               ${escapeHtml(`${key.label} (${key.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -191,36 +217,44 @@ export class ObjectivesPanel {
         <select data-objective-target-door data-index="${index}">
           <option value="">Escolha uma porta</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Porta nao encontrada (${escapeHtml(value)})</option>` : ""}
-          ${doors.map((door) => `
+          ${doors
+            .map(
+              (door) => `
             <option value="${escapeAttribute(door.id)}" ${door.id === value ? "selected" : ""}>
               ${escapeHtml(`${door.label} (${door.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
   }
 
   private bindEvents(): void {
-    this.root.querySelector<HTMLInputElement>("[data-objectives-required-finish]")?.addEventListener("change", (event) => {
-      const checked = (event.currentTarget as HTMLInputElement).checked;
-      const nextSettings: GameplaySettings = {
-        ...(this.map?.gameplaySettings ?? {}),
-        requireObjectivesToFinish: checked
-      };
+    this.root
+      .querySelector<HTMLInputElement>("[data-objectives-required-finish]")
+      ?.addEventListener("change", (event) => {
+        const checked = (event.currentTarget as HTMLInputElement).checked;
+        const nextSettings: GameplaySettings = {
+          ...(this.map?.gameplaySettings ?? {}),
+          requireObjectivesToFinish: checked,
+        };
 
-      if (this.map) {
-        this.map.gameplaySettings = nextSettings;
-      }
+        if (this.map) {
+          this.map.gameplaySettings = nextSettings;
+        }
 
-      this.actions.onGameplayChange(structuredClone(nextSettings));
-    });
-
-    this.root.querySelector<HTMLButtonElement>("[data-add-objective]")?.addEventListener("click", () => {
-      this.updateObjectives((objectives) => {
-        objectives.push(createDefaultObjective(objectives.length + 1, this.getObjects()));
+        this.actions.onGameplayChange(structuredClone(nextSettings));
       });
-    });
+
+    this.root
+      .querySelector<HTMLButtonElement>("[data-add-objective]")
+      ?.addEventListener("click", () => {
+        this.updateObjectives((objectives) => {
+          objectives.push(createDefaultObjective(objectives.length + 1, this.getObjects()));
+        });
+      });
 
     this.root.querySelectorAll<HTMLButtonElement>("[data-remove-objective]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -231,12 +265,18 @@ export class ObjectivesPanel {
     });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-objective-title]").forEach((input) => {
-      input.addEventListener("change", () => this.updateObjective(getIndex(input), { title: input.value.trim() || "Objetivo" }, false));
+      input.addEventListener("change", () =>
+        this.updateObjective(getIndex(input), { title: input.value.trim() || "Objetivo" }, false)
+      );
     });
 
-    this.root.querySelectorAll<HTMLTextAreaElement>("[data-objective-description]").forEach((textarea) => {
-      textarea.addEventListener("change", () => this.updateObjective(getIndex(textarea), { description: textarea.value.trim() }, false));
-    });
+    this.root
+      .querySelectorAll<HTMLTextAreaElement>("[data-objective-description]")
+      .forEach((textarea) => {
+        textarea.addEventListener("change", () =>
+          this.updateObjective(getIndex(textarea), { description: textarea.value.trim() }, false)
+        );
+      });
 
     this.root.querySelectorAll<HTMLSelectElement>("[data-objective-type]").forEach((select) => {
       select.addEventListener("change", () => {
@@ -255,32 +295,56 @@ export class ObjectivesPanel {
 
     this.root.querySelectorAll<HTMLInputElement>("[data-objective-amount]").forEach((input) => {
       input.addEventListener("change", () => {
-        this.updateObjective(getIndex(input), { targetAmount: Math.max(1, Math.floor(Number(input.value) || 1)) }, false);
+        this.updateObjective(
+          getIndex(input),
+          { targetAmount: Math.max(1, Math.floor(Number(input.value) || 1)) },
+          false
+        );
       });
     });
 
-    this.root.querySelectorAll<HTMLSelectElement>("[data-objective-target-object]").forEach((select) => {
-      select.addEventListener("change", () => this.updateObjective(getIndex(select), { targetObjectId: select.value }, false));
-    });
+    this.root
+      .querySelectorAll<HTMLSelectElement>("[data-objective-target-object]")
+      .forEach((select) => {
+        select.addEventListener("change", () =>
+          this.updateObjective(getIndex(select), { targetObjectId: select.value }, false)
+        );
+      });
 
-    this.root.querySelectorAll<HTMLSelectElement>("[data-objective-target-key]").forEach((select) => {
-      select.addEventListener("change", () => this.updateObjective(getIndex(select), { targetKeyId: select.value }, false));
-    });
+    this.root
+      .querySelectorAll<HTMLSelectElement>("[data-objective-target-key]")
+      .forEach((select) => {
+        select.addEventListener("change", () =>
+          this.updateObjective(getIndex(select), { targetKeyId: select.value }, false)
+        );
+      });
 
-    this.root.querySelectorAll<HTMLSelectElement>("[data-objective-target-door]").forEach((select) => {
-      select.addEventListener("change", () => this.updateObjective(getIndex(select), { targetDoorId: select.value }, false));
-    });
+    this.root
+      .querySelectorAll<HTMLSelectElement>("[data-objective-target-door]")
+      .forEach((select) => {
+        select.addEventListener("change", () =>
+          this.updateObjective(getIndex(select), { targetDoorId: select.value }, false)
+        );
+      });
 
-    this.root.querySelectorAll<HTMLInputElement>("[data-objective-completed-message]").forEach((input) => {
-      input.addEventListener("change", () => this.updateObjective(getIndex(input), { completedMessage: input.value.trim() }, false));
-    });
+    this.root
+      .querySelectorAll<HTMLInputElement>("[data-objective-completed-message]")
+      .forEach((input) => {
+        input.addEventListener("change", () =>
+          this.updateObjective(getIndex(input), { completedMessage: input.value.trim() }, false)
+        );
+      });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-objective-required]").forEach((input) => {
-      input.addEventListener("change", () => this.updateObjective(getIndex(input), { required: input.checked }, true));
+      input.addEventListener("change", () =>
+        this.updateObjective(getIndex(input), { required: input.checked }, true)
+      );
     });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-objective-visible]").forEach((input) => {
-      input.addEventListener("change", () => this.updateObjective(getIndex(input), { visible: input.checked }, true));
+      input.addEventListener("change", () =>
+        this.updateObjective(getIndex(input), { visible: input.checked }, true)
+      );
     });
   }
 
@@ -294,10 +358,7 @@ export class ObjectivesPanel {
     }, rerender);
   }
 
-  private updateObjectives(
-    mutate: (objectives: MapObjective[]) => void,
-    rerender = true
-  ): void {
+  private updateObjectives(mutate: (objectives: MapObjective[]) => void, rerender = true): void {
     if (!this.map) {
       return;
     }
@@ -325,7 +386,8 @@ export class ObjectivesPanel {
       .filter((object) => object.type === "key")
       .map((key) => ({
         id: typeof key.properties?.keyId === "string" ? key.properties.keyId : key.id,
-        label: typeof key.properties?.label === "string" ? key.properties.label : key.name ?? key.id
+        label:
+          typeof key.properties?.label === "string" ? key.properties.label : (key.name ?? key.id),
       }));
   }
 
@@ -333,8 +395,11 @@ export class ObjectivesPanel {
     return this.getObjects()
       .filter((object) => object.type === "door")
       .map((door) => ({
-        id: typeof door.properties?.doorId === "string" && door.properties.doorId.length > 0 ? door.properties.doorId : door.id,
-        label: door.name ?? door.id
+        id:
+          typeof door.properties?.doorId === "string" && door.properties.doorId.length > 0
+            ? door.properties.doorId
+            : door.id,
+        label: door.name ?? door.id,
       }));
   }
 }
@@ -351,7 +416,7 @@ function createDefaultObjective(index: number, objects: MapObject[]): MapObjecti
     targetAmount: finish ? undefined : 5,
     required: true,
     visible: true,
-    completedMessage: "Objetivo concluido!"
+    completedMessage: "Objetivo concluido!",
   };
 }
 
@@ -363,7 +428,7 @@ function resetObjectiveTarget(objective: MapObjective, objects: MapObject[]): Ma
     type: objective.type,
     required: objective.required,
     visible: objective.visible,
-    completedMessage: objective.completedMessage
+    completedMessage: objective.completedMessage,
   };
 
   if (objective.type === "collectCoins") {
@@ -371,15 +436,20 @@ function resetObjectiveTarget(objective: MapObjective, objects: MapObject[]): Ma
   } else if (objective.type === "defeatEnemies") {
     next.targetAmount = Math.max(1, objective.targetAmount ?? 1);
   } else if (objective.type === "reachObject") {
-    next.targetObjectId = objects.find((object) => object.type === "finish" || object.type === "goal")?.id ?? "";
+    next.targetObjectId =
+      objects.find((object) => object.type === "finish" || object.type === "goal")?.id ?? "";
   } else if (objective.type === "activateButton") {
     next.targetObjectId = objects.find((object) => object.type === "button")?.id ?? "";
   } else if (objective.type === "collectKey") {
     const key = objects.find((object) => object.type === "key");
-    next.targetKeyId = typeof key?.properties?.keyId === "string" ? key.properties.keyId : key?.id ?? "";
+    next.targetKeyId =
+      typeof key?.properties?.keyId === "string" ? key.properties.keyId : (key?.id ?? "");
   } else if (objective.type === "openDoor") {
     const door = objects.find((object) => object.type === "door");
-    next.targetDoorId = typeof door?.properties?.doorId === "string" && door.properties.doorId.length > 0 ? door.properties.doorId : door?.id ?? "";
+    next.targetDoorId =
+      typeof door?.properties?.doorId === "string" && door.properties.doorId.length > 0
+        ? door.properties.doorId
+        : (door?.id ?? "");
   }
 
   return next;
@@ -387,19 +457,21 @@ function resetObjectiveTarget(objective: MapObjective, objects: MapObject[]): Ma
 
 function toObjectiveType(value: string): ObjectiveType {
   return OBJECTIVE_TYPES.some((option) => option.type === value)
-    ? value as ObjectiveType
+    ? (value as ObjectiveType)
     : "customLogic";
 }
 
 function isObjective(value: unknown): value is MapObjective {
-  return typeof value === "object" &&
+  return (
+    typeof value === "object" &&
     value !== null &&
     "id" in value &&
     "title" in value &&
     "type" in value &&
     typeof value.id === "string" &&
     typeof value.title === "string" &&
-    typeof value.type === "string";
+    typeof value.type === "string"
+  );
 }
 
 function getIndex(element: HTMLElement): number {

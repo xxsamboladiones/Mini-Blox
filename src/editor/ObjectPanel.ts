@@ -10,20 +10,30 @@ type PaletteCategory = {
 const PALETTE_CATEGORIES: PaletteCategory[] = [
   {
     title: "Basicos",
-    types: ["cube", "platform", "ramp", "spawn"]
+    types: ["cube", "platform", "ramp", "spawn"],
   },
   {
     title: "Gameplay",
-    types: ["checkpoint", "damage", "coin", "door", "button", "finish", "npc", "enemy"]
+    types: ["checkpoint", "damage", "coin", "door", "button", "finish", "npc", "enemy"],
   },
   {
     title: "Mecanicas",
-    types: ["jumpPad", "teleporter", "movingPlatform", "disappearingBlock", "messageZone", "key", "itemSpawner"]
+    types: [
+      "jumpPad",
+      "teleporter",
+      "movingPlatform",
+      "disappearingBlock",
+      "messageZone",
+      "key",
+      "itemSpawner",
+      "teamSpawn",
+      "capturePoint",
+    ],
   },
   {
     title: "Decoracao",
-    types: ["tree", "rock", "crate", "barrel", "sign", "lamp", "arch", "pillar"]
-  }
+    types: ["tree", "rock", "crate", "barrel", "sign", "lamp", "arch", "pillar"],
+  },
 ];
 
 export class ObjectPanel {
@@ -58,12 +68,16 @@ export class ObjectPanel {
       <div class="palette-category">
         <h3>${category.title}</h3>
         <div class="object-grid">
-          ${items.map((item) => `
+          ${items
+            .map(
+              (item) => `
             <button class="palette-button" type="button" data-type="${item.type}" title="${item.description}">
               <i data-lucide="${item.icon}"></i>
               <span>${item.label}</span>
             </button>
-          `).join("")}
+          `
+            )
+            .join("")}
         </div>
       </div>
     `;

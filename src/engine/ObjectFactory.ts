@@ -13,10 +13,7 @@ export function createMapObject3D(mapObject: MapObject): THREE.Object3D {
   return object;
 }
 
-export function applyObjectTransformToThree(
-  object3D: THREE.Object3D,
-  mapObject: MapObject
-): void {
+export function applyObjectTransformToThree(object3D: THREE.Object3D, mapObject: MapObject): void {
   const rotation = mapObject.rotation ?? { x: 0, y: 0, z: 0 };
   const scale = mapObject.scale ?? { x: 1, y: 1, z: 1 };
 
@@ -26,10 +23,7 @@ export function applyObjectTransformToThree(
   object3D.name = mapObject.name ?? mapObject.id;
 }
 
-export function applyObjectAppearanceToThree(
-  object3D: THREE.Object3D,
-  mapObject: MapObject
-): void {
+export function applyObjectAppearanceToThree(object3D: THREE.Object3D, mapObject: MapObject): void {
   object3D.traverse((child) => {
     if (child instanceof THREE.PointLight && child.userData.lampLight) {
       updateLampLight(child, mapObject);
@@ -43,7 +37,8 @@ export function applyObjectAppearanceToThree(
     const materials = Array.isArray(child.material) ? child.material : [child.material];
 
     if (child.userData.requiredKeyLock) {
-      child.visible = typeof mapObject.properties?.requiredKeyId === "string" &&
+      child.visible =
+        typeof mapObject.properties?.requiredKeyId === "string" &&
         mapObject.properties.requiredKeyId.trim().length > 0;
     }
 
@@ -63,10 +58,7 @@ export function applyObjectAppearanceToThree(
   });
 }
 
-export function syncMapObjectFromThree(
-  mapObject: MapObject,
-  object3D: THREE.Object3D
-): MapObject {
+export function syncMapObjectFromThree(mapObject: MapObject, object3D: THREE.Object3D): MapObject {
   mapObject.position = toVector3(object3D.position);
   mapObject.rotation = toVector3(object3D.rotation);
   mapObject.scale = toVector3(object3D.scale);
@@ -141,6 +133,10 @@ function createPrimitive(mapObject: MapObject): THREE.Object3D {
       return createEnemyObject(mapObject);
     case "itemSpawner":
       return createItemSpawnerObject(mapObject);
+    case "teamSpawn":
+      return createTeamSpawnObject(mapObject);
+    case "capturePoint":
+      return createCapturePointObject(mapObject);
     case "itemPickup":
       return createItemPickupObject(mapObject);
     case "tree":
@@ -169,18 +165,31 @@ function createPrimitive(mapObject: MapObject): THREE.Object3D {
 
 function createBlockObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), createMaterial(mapObject, {
-    roughness: 0.64,
-    metalness: 0.03
-  }));
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    createMaterial(mapObject, {
+      roughness: 0.64,
+      metalness: 0.03,
+    })
+  );
   const cap = new THREE.Mesh(
     new THREE.BoxGeometry(0.96, 0.035, 0.96),
-    createMaterial(mapObject, { color: "#ffffff", transparent: true, opacity: 0.14, roughness: 0.5 })
+    createMaterial(mapObject, {
+      color: "#ffffff",
+      transparent: true,
+      opacity: 0.14,
+      roughness: 0.5,
+    })
   );
   cap.position.y = 0.515;
   const base = new THREE.Mesh(
     new THREE.BoxGeometry(1.02, 0.035, 1.02),
-    createMaterial(mapObject, { color: "#0f172a", transparent: true, opacity: 0.18, roughness: 0.8 })
+    createMaterial(mapObject, {
+      color: "#0f172a",
+      transparent: true,
+      opacity: 0.18,
+      roughness: 0.8,
+    })
   );
   base.position.y = -0.515;
   group.add(body, cap, base);
@@ -189,10 +198,13 @@ function createBlockObject(mapObject: MapObject): THREE.Object3D {
 
 function createPlatformObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
-  const deck = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), createMaterial(mapObject, {
-    roughness: 0.62,
-    metalness: 0.04
-  }));
+  const deck = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    createMaterial(mapObject, {
+      roughness: 0.62,
+      metalness: 0.04,
+    })
+  );
   const trimMaterial = new THREE.MeshStandardMaterial({ color: "#334155", roughness: 0.74 });
   trimMaterial.userData.fixedColor = true;
 
@@ -213,13 +225,18 @@ function createDamageZoneObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const zone = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
-    createMaterial(mapObject, { transparent: true, opacity: 0.34, emissive: new THREE.Color("#7f1111"), emissiveIntensity: 0.25 })
+    createMaterial(mapObject, {
+      transparent: true,
+      opacity: 0.34,
+      emissive: new THREE.Color("#7f1111"),
+      emissiveIntensity: 0.25,
+    })
   );
   const stripeMaterial = new THREE.MeshStandardMaterial({
     color: "#111827",
     roughness: 0.7,
     emissive: "#450a0a",
-    emissiveIntensity: 0.12
+    emissiveIntensity: 0.12,
   });
   stripeMaterial.userData.fixedColor = true;
 
@@ -238,7 +255,7 @@ function createMovingPlatformObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const material = createMaterial(mapObject, {
     metalness: 0.08,
-    roughness: 0.45
+    roughness: 0.45,
   });
   const deck = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
   const railMaterial = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.72 });
@@ -273,9 +290,13 @@ function createJumpPadObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const material = createMaterial(mapObject, {
     emissive: new THREE.Color("#14532d"),
-    emissiveIntensity: 0.22
+    emissiveIntensity: 0.22,
   });
-  const basePlateMaterial = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.7, metalness: 0.12 });
+  const basePlateMaterial = new THREE.MeshStandardMaterial({
+    color: "#0f172a",
+    roughness: 0.7,
+    metalness: 0.12,
+  });
   basePlateMaterial.userData.fixedColor = true;
   const base = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
   const basePlate = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 1.1), basePlateMaterial);
@@ -285,17 +306,24 @@ function createJumpPadObject(mapObject: MapObject): THREE.Object3D {
     color: "#dcfce7",
     emissive: "#22c55e",
     emissiveIntensity: 0.28,
-    roughness: 0.42
+    roughness: 0.42,
   });
   arrowMaterial.userData.fixedColor = true;
   const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.62, 4), arrowMaterial);
   arrow.position.y = 0.84;
   arrow.rotation.y = Math.PI / 4;
 
-  const springMaterial = new THREE.MeshStandardMaterial({ color: "#334155", roughness: 0.5, metalness: 0.35 });
+  const springMaterial = new THREE.MeshStandardMaterial({
+    color: "#334155",
+    roughness: 0.5,
+    metalness: 0.35,
+  });
   springMaterial.userData.fixedColor = true;
   for (const x of [-0.34, 0.34]) {
-    const spring = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.46, 8), springMaterial);
+    const spring = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.035, 0.035, 0.46, 8),
+      springMaterial
+    );
     spring.position.set(x, 0.18, -0.34);
     group.add(spring);
   }
@@ -306,24 +334,11 @@ function createJumpPadObject(mapObject: MapObject): THREE.Object3D {
 
 function createRampGeometry(): THREE.BufferGeometry {
   const vertices = new Float32Array([
-    -0.5, -0.5, -0.5,
-    0.5, -0.5, -0.5,
-    -0.5, -0.5, 0.5,
-    0.5, -0.5, 0.5,
-    -0.5, 0.5, 0.5,
-    0.5, 0.5, 0.5
+    -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5,
   ]);
 
-  const indices = [
-    0, 2, 1,
-    1, 2, 3,
-    2, 4, 3,
-    3, 4, 5,
-    0, 1, 5,
-    0, 5, 4,
-    0, 4, 2,
-    1, 3, 5
-  ];
+  const indices = [0, 2, 1, 1, 2, 3, 2, 4, 3, 3, 4, 5, 0, 1, 5, 0, 5, 4, 0, 4, 2, 1, 3, 5];
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
@@ -352,7 +367,11 @@ function createSpawnObject(mapObject: MapObject): THREE.Object3D {
 function createCheckpointObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const material = createMaterial(mapObject);
-  const poleMaterial = new THREE.MeshStandardMaterial({ color: "#475569", roughness: 0.6, metalness: 0.18 });
+  const poleMaterial = new THREE.MeshStandardMaterial({
+    color: "#475569",
+    roughness: 0.6,
+    metalness: 0.18,
+  });
   poleMaterial.userData.fixedColor = true;
   const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.12, 16), poleMaterial);
   base.position.y = 0.06;
@@ -373,7 +392,7 @@ function createCoinObject(mapObject: MapObject): THREE.Object3D {
     metalness: 0.35,
     roughness: 0.28,
     emissive: new THREE.Color("#6f4e00"),
-    emissiveIntensity: 0.18
+    emissiveIntensity: 0.18,
   });
   const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.1, 36), material);
   coin.rotation.x = Math.PI / 2;
@@ -396,7 +415,7 @@ function createTeleporterObject(mapObject: MapObject): THREE.Object3D {
     transparent: true,
     opacity: 0.82,
     emissive: new THREE.Color("#4c1d95"),
-    emissiveIntensity: 0.35
+    emissiveIntensity: 0.35,
   });
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.06, 10, 48), material);
   ring.rotation.x = Math.PI / 2;
@@ -418,10 +437,15 @@ function createTeleporterObject(mapObject: MapObject): THREE.Object3D {
     roughness: 0.58,
     metalness: 0.22,
     emissive: "#312e81",
-    emissiveIntensity: 0.08
+    emissiveIntensity: 0.08,
   });
   postMaterial.userData.fixedColor = true;
-  for (const [x, z] of [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]] as const) {
+  for (const [x, z] of [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [-0.5, 0.5],
+    [0.5, 0.5],
+  ] as const) {
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 1.15, 8), postMaterial);
     post.position.set(x, 0.58, z);
     group.add(post);
@@ -452,7 +476,7 @@ function createKeyObject(mapObject: MapObject): THREE.Object3D {
     metalness: 0.22,
     roughness: 0.32,
     emissive: new THREE.Color("#1d4ed8"),
-    emissiveIntensity: 0.18
+    emissiveIntensity: 0.18,
   });
   const head = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.055, 10, 28), material);
   head.rotation.x = Math.PI / 2;
@@ -477,7 +501,7 @@ function createDoorObject(mapObject: MapObject): THREE.Object3D {
   const panel = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), createMaterial(mapObject));
   const frameMaterial = new THREE.MeshStandardMaterial({
     color: "#2f3542",
-    roughness: 0.72
+    roughness: 0.72,
   });
   frameMaterial.userData.fixedColor = true;
   const leftJamb = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.16, 1.16), frameMaterial);
@@ -493,7 +517,7 @@ function createDoorObject(mapObject: MapObject): THREE.Object3D {
   const handleMaterial = new THREE.MeshStandardMaterial({
     color: "#e5e7eb",
     metalness: 0.38,
-    roughness: 0.34
+    roughness: 0.34,
   });
   handleMaterial.userData.fixedColor = true;
   const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.2, 12), handleMaterial);
@@ -504,13 +528,14 @@ function createDoorObject(mapObject: MapObject): THREE.Object3D {
   const lockMaterial = new THREE.MeshStandardMaterial({
     color: "#facc15",
     metalness: 0.25,
-    roughness: 0.38
+    roughness: 0.38,
   });
   lockMaterial.userData.fixedColor = true;
   const lock = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.26, 0.08), lockMaterial);
   lock.position.set(0.33, 0, -0.58);
   lock.userData.requiredKeyLock = true;
-  lock.visible = typeof mapObject.properties?.requiredKeyId === "string" &&
+  lock.visible =
+    typeof mapObject.properties?.requiredKeyId === "string" &&
     mapObject.properties.requiredKeyId.trim().length > 0;
   group.add(lock);
 
@@ -518,7 +543,7 @@ function createDoorObject(mapObject: MapObject): THREE.Object3D {
     color: "#fef3c7",
     transparent: true,
     opacity: 0.72,
-    roughness: 0.44
+    roughness: 0.44,
   });
   stripeMaterial.userData.fixedColor = true;
   const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.14, 0.04), stripeMaterial);
@@ -536,9 +561,16 @@ function createButtonObject(mapObject: MapObject): THREE.Object3D {
     new THREE.MeshStandardMaterial({ color: "#343a40", roughness: 0.8 })
   );
   base.material.userData.fixedColor = true;
-  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.16, 24), createMaterial(mapObject));
+  const top = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.34, 0.38, 0.16, 24),
+    createMaterial(mapObject)
+  );
   top.position.y = 0.12;
-  const rimMaterial = new THREE.MeshStandardMaterial({ color: "#111827", roughness: 0.62, metalness: 0.18 });
+  const rimMaterial = new THREE.MeshStandardMaterial({
+    color: "#111827",
+    roughness: 0.62,
+    metalness: 0.18,
+  });
   rimMaterial.userData.fixedColor = true;
   const rim = new THREE.Mesh(new THREE.TorusGeometry(0.39, 0.035, 8, 24), rimMaterial);
   rim.position.y = 0.2;
@@ -557,7 +589,7 @@ function createFinishObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const material = createMaterial(mapObject, {
     emissive: new THREE.Color("#0f7a42"),
-    emissiveIntensity: 0.28
+    emissiveIntensity: 0.28,
   });
   const torus = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.06, 10, 42), material);
   torus.rotation.x = Math.PI / 2;
@@ -589,7 +621,7 @@ function createNpcObject(mapObject: MapObject): THREE.Object3D {
     color: "#ffffff",
     roughness: 0.42,
     transparent: true,
-    opacity: 0.9
+    opacity: 0.9,
   });
   bubbleMaterial.userData.fixedColor = true;
 
@@ -603,10 +635,7 @@ function createNpcObject(mapObject: MapObject): THREE.Object3D {
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.78, 0.46), material);
   body.position.y = 0.8;
 
-  const head = new THREE.Mesh(
-    new THREE.BoxGeometry(0.56, 0.52, 0.56),
-    skinMaterial
-  );
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.52, 0.56), skinMaterial);
   head.position.y = 1.36;
 
   const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.035), darkMaterial);
@@ -633,7 +662,20 @@ function createNpcObject(mapObject: MapObject): THREE.Object3D {
   bubbleTail.position.set(0.18, 1.62, -0.18);
   bubbleTail.rotation.z = Math.PI;
 
-  group.add(base, body, head, leftEye, rightEye, smile, leftArm, rightArm, leftLeg, rightLeg, bubble, bubbleTail);
+  group.add(
+    base,
+    body,
+    head,
+    leftEye,
+    rightEye,
+    smile,
+    leftArm,
+    rightArm,
+    leftLeg,
+    rightLeg,
+    bubble,
+    bubbleTail
+  );
   return group;
 }
 
@@ -642,7 +684,7 @@ function createEnemyObject(mapObject: MapObject): THREE.Object3D {
   const material = createMaterial(mapObject, {
     roughness: 0.68,
     emissive: new THREE.Color("#3f0000"),
-    emissiveIntensity: 0.08
+    emissiveIntensity: 0.08,
   });
   const darkMaterial = new THREE.MeshStandardMaterial({ color: "#111827", roughness: 0.72 });
   darkMaterial.userData.fixedColor = true;
@@ -650,7 +692,7 @@ function createEnemyObject(mapObject: MapObject): THREE.Object3D {
     color: "#fee2e2",
     emissive: "#ef4444",
     emissiveIntensity: 0.5,
-    roughness: 0.36
+    roughness: 0.36,
   });
   eyeMaterial.userData.fixedColor = true;
 
@@ -690,7 +732,20 @@ function createEnemyObject(mapObject: MapObject): THREE.Object3D {
   base.material.userData.fixedColor = true;
   base.position.y = 0.04;
 
-  group.add(base, body, head, leftHorn, rightHorn, leftEye, rightEye, mouth, leftArm, rightArm, leftLeg, rightLeg);
+  group.add(
+    base,
+    body,
+    head,
+    leftHorn,
+    rightHorn,
+    leftEye,
+    rightEye,
+    mouth,
+    leftArm,
+    rightArm,
+    leftLeg,
+    rightLeg
+  );
   return group;
 }
 
@@ -698,7 +753,7 @@ function createItemSpawnerObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const material = createMaterial(mapObject, {
     emissive: new THREE.Color("#045f6f"),
-    emissiveIntensity: 0.18
+    emissiveIntensity: 0.18,
   });
   const baseMaterial = new THREE.MeshStandardMaterial({ color: "#1f2937", roughness: 0.76 });
   baseMaterial.userData.fixedColor = true;
@@ -714,9 +769,16 @@ function createItemSpawnerObject(mapObject: MapObject): THREE.Object3D {
   ring.position.y = 0.3;
   ring.rotation.x = Math.PI / 2;
 
-  const antennaMaterial = new THREE.MeshStandardMaterial({ color: "#e0f2fe", roughness: 0.36, metalness: 0.18 });
+  const antennaMaterial = new THREE.MeshStandardMaterial({
+    color: "#e0f2fe",
+    roughness: 0.36,
+    metalness: 0.18,
+  });
   antennaMaterial.userData.fixedColor = true;
-  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.48, 8), antennaMaterial);
+  const antenna = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.025, 0.025, 0.48, 8),
+    antennaMaterial
+  );
   antenna.position.y = 0.96;
   const antennaTip = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 8), material);
   antennaTip.position.y = 1.22;
@@ -725,8 +787,66 @@ function createItemSpawnerObject(mapObject: MapObject): THREE.Object3D {
   return group;
 }
 
+function createTeamSpawnObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, { transparent: true, opacity: 0.92 });
+  const poleMaterial = new THREE.MeshStandardMaterial({
+    color: "#1f2937",
+    roughness: 0.68,
+    metalness: 0.16,
+  });
+  poleMaterial.userData.fixedColor = true;
+
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.72, 0.12, 28), material);
+  base.position.y = 0.06;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.035, 8, 36), material);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.18;
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.45, 10), poleMaterial);
+  pole.position.y = 0.78;
+  const flag = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.42, 0.05), material);
+  flag.position.set(0.36, 1.18, 0);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 8), material);
+  tip.position.y = 1.52;
+
+  group.add(base, ring, pole, flag, tip);
+  return group;
+}
+
+function createCapturePointObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, {
+    transparent: true,
+    opacity: 0.68,
+    emissive: new THREE.Color("#7c4a00"),
+    emissiveIntensity: 0.2,
+  });
+  const darkMaterial = new THREE.MeshStandardMaterial({ color: "#111827", roughness: 0.75 });
+  darkMaterial.userData.fixedColor = true;
+
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.82, 0.12, 36), material);
+  plate.position.y = 0.06;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.045, 8, 44), material);
+  ring.position.y = 0.2;
+  ring.rotation.x = Math.PI / 2;
+  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.72, 18), darkMaterial);
+  pillar.position.y = 0.45;
+  const beacon = new THREE.Mesh(new THREE.OctahedronGeometry(0.34), material);
+  beacon.position.y = 0.92;
+  const radiusHalo = new THREE.Mesh(
+    new THREE.TorusGeometry(1, 0.012, 6, 64),
+    createMaterial(mapObject, { transparent: true, opacity: 0.34, side: THREE.DoubleSide })
+  );
+  radiusHalo.position.y = 0.025;
+  radiusHalo.rotation.x = Math.PI / 2;
+
+  group.add(plate, ring, pillar, beacon, radiusHalo);
+  return group;
+}
+
 function createItemPickupObject(mapObject: MapObject): THREE.Object3D {
-  const itemId = typeof mapObject.properties?.itemId === "string" ? mapObject.properties.itemId : "";
+  const itemId =
+    typeof mapObject.properties?.itemId === "string" ? mapObject.properties.itemId : "";
   const item = getItemDefinition(itemId);
   const color = item?.color ?? "#facc15";
   const material = new THREE.MeshStandardMaterial({
@@ -734,7 +854,7 @@ function createItemPickupObject(mapObject: MapObject): THREE.Object3D {
     roughness: 0.35,
     metalness: 0.08,
     emissive: new THREE.Color(color),
-    emissiveIntensity: 0.18
+    emissiveIntensity: 0.18,
   });
   const group = new THREE.Group();
   const core = createPickupCore(itemId, material);
@@ -792,7 +912,7 @@ function createTreeObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
   const trunkMaterial = new THREE.MeshStandardMaterial({
     color: "#7c4a21",
-    roughness: 0.82
+    roughness: 0.82,
   });
   trunkMaterial.userData.fixedColor = true;
 
@@ -801,7 +921,7 @@ function createTreeObject(mapObject: MapObject): THREE.Object3D {
 
   const foliageMaterial = createMaterial(mapObject, {
     roughness: 0.76,
-    metalness: 0
+    metalness: 0,
   });
   const lower = new THREE.Mesh(new THREE.ConeGeometry(0.82, 1.15, 7), foliageMaterial);
   lower.position.y = 1.35;
@@ -833,10 +953,13 @@ function createRockObject(mapObject: MapObject): THREE.Object3D {
 
 function createCrateObject(mapObject: MapObject): THREE.Object3D {
   const group = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), createMaterial(mapObject, {
-    roughness: 0.78,
-    metalness: 0
-  }));
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    createMaterial(mapObject, {
+      roughness: 0.78,
+      metalness: 0,
+    })
+  );
   body.position.y = 0.5;
 
   const bandMaterial = new THREE.MeshStandardMaterial({ color: "#6b3f18", roughness: 0.86 });
@@ -869,7 +992,7 @@ function createBarrelObject(mapObject: MapObject): THREE.Object3D {
   const ringMaterial = new THREE.MeshStandardMaterial({
     color: "#3f3f46",
     roughness: 0.48,
-    metalness: 0.35
+    metalness: 0.35,
   });
   ringMaterial.userData.fixedColor = true;
 
@@ -879,7 +1002,11 @@ function createBarrelObject(mapObject: MapObject): THREE.Object3D {
     group.add(ring);
   }
 
-  const capMaterial = new THREE.MeshStandardMaterial({ color: "#27272a", roughness: 0.5, metalness: 0.26 });
+  const capMaterial = new THREE.MeshStandardMaterial({
+    color: "#27272a",
+    roughness: 0.5,
+    metalness: 0.26,
+  });
   capMaterial.userData.fixedColor = true;
   const topCap = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.04, 16), capMaterial);
   topCap.position.y = 1.07;
@@ -922,7 +1049,7 @@ function createLampObject(mapObject: MapObject): THREE.Object3D {
   const poleMaterial = new THREE.MeshStandardMaterial({
     color: "#334155",
     roughness: 0.58,
-    metalness: 0.28
+    metalness: 0.28,
   });
   poleMaterial.userData.fixedColor = true;
 
@@ -934,18 +1061,21 @@ function createLampObject(mapObject: MapObject): THREE.Object3D {
   arm.position.set(0.22, 1.34, 0);
 
   const lightColor = getStringProperty(mapObject, "lightColor", "#fff7aa");
-  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), createMaterial(mapObject, {
-    color: lightColor,
-    emissive: new THREE.Color(lightColor),
-    emissiveIntensity: 0.85,
-    roughness: 0.22
-  }));
+  const bulb = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, 16, 12),
+    createMaterial(mapObject, {
+      color: lightColor,
+      emissive: new THREE.Color(lightColor),
+      emissiveIntensity: 0.85,
+      roughness: 0.22,
+    })
+  );
   bulb.position.set(0.44, 1.24, 0);
 
   const shadeMaterial = new THREE.MeshStandardMaterial({
     color: "#475569",
     roughness: 0.52,
-    metalness: 0.2
+    metalness: 0.2,
   });
   shadeMaterial.userData.fixedColor = true;
   const shade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.22, 16, 1, true), shadeMaterial);
@@ -995,7 +1125,7 @@ function createModelPlaceholder(mapObject: MapObject): THREE.Object3D {
   const material = createMaterial(mapObject, {
     transparent: true,
     opacity: 0.2,
-    wireframe: true
+    wireframe: true,
   });
   const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
   group.add(box);
@@ -1052,7 +1182,7 @@ function createSignTextMaterial(mapObject: MapObject): THREE.MeshStandardMateria
     color: "#ffffff",
     roughness: 0.8,
     metalness: 0,
-    side: THREE.FrontSide
+    side: THREE.FrontSide,
   });
   material.userData.fixedColor = true;
   material.userData.signText = true;
@@ -1080,7 +1210,11 @@ function createSignTextTexture(mapObject: MapObject): THREE.CanvasTexture {
   const context = canvas.getContext("2d");
 
   if (context) {
-    const background = getStringProperty(mapObject, "color", getObjectCatalogItem(mapObject.type).color);
+    const background = getStringProperty(
+      mapObject,
+      "color",
+      getObjectCatalogItem(mapObject.type).color
+    );
     context.fillStyle = background;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.strokeStyle = "#5f3b19";
@@ -1133,7 +1267,7 @@ function disposeMaterial(material: THREE.Material): void {
     withTextures.roughnessMap,
     withTextures.metalnessMap,
     withTextures.emissiveMap,
-    withTextures.alphaMap
+    withTextures.alphaMap,
   ];
 
   textures.forEach((texture) => texture?.dispose());
@@ -1156,7 +1290,7 @@ function getMaterialPreset(kind: VisualMaterial): {
         opacity: 1,
         transparent: false,
         emissive: "#000000",
-        emissiveIntensity: 0
+        emissiveIntensity: 0,
       };
     case "glass":
       return {
@@ -1165,7 +1299,7 @@ function getMaterialPreset(kind: VisualMaterial): {
         opacity: 0.36,
         transparent: true,
         emissive: "#000000",
-        emissiveIntensity: 0
+        emissiveIntensity: 0,
       };
     case "glow":
       return {
@@ -1174,7 +1308,7 @@ function getMaterialPreset(kind: VisualMaterial): {
         opacity: 1,
         transparent: false,
         emissive: "#66f7ff",
-        emissiveIntensity: 1.18
+        emissiveIntensity: 1.18,
       };
     case "rubber":
       return {
@@ -1183,7 +1317,7 @@ function getMaterialPreset(kind: VisualMaterial): {
         opacity: 1,
         transparent: false,
         emissive: "#000000",
-        emissiveIntensity: 0
+        emissiveIntensity: 0,
       };
     case "ice":
       return {
@@ -1192,7 +1326,7 @@ function getMaterialPreset(kind: VisualMaterial): {
         opacity: 0.58,
         transparent: true,
         emissive: "#8edfff",
-        emissiveIntensity: 0.2
+        emissiveIntensity: 0.2,
       };
     case "default":
     default:
@@ -1202,7 +1336,7 @@ function getMaterialPreset(kind: VisualMaterial): {
         opacity: 1,
         transparent: false,
         emissive: "#000000",
-        emissiveIntensity: 0
+        emissiveIntensity: 0,
       };
   }
 }
@@ -1244,7 +1378,7 @@ function getObjectColor(mapObject: MapObject, kind: VisualMaterial): string {
 function getBaseMaterialOptions(material: THREE.Material): StandardMaterialOptions {
   const options = material.userData.baseMaterialOptions;
   return typeof options === "object" && options !== null
-    ? options as StandardMaterialOptions
+    ? (options as StandardMaterialOptions)
     : {};
 }
 
@@ -1295,7 +1429,7 @@ function toVector3(vector: THREE.Vector3 | THREE.Euler): Vector3 {
   return {
     x: round(vector.x),
     y: round(vector.y),
-    z: round(vector.z)
+    z: round(vector.z),
   };
 }
 

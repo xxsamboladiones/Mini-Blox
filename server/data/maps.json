@@ -1,0 +1,6221 @@
+{
+  "maps": [
+    {
+      "id": "online-1780519916993-r0eanjeq6n",
+      "ownerClientId": "client-1780519881047-991nh38g94d",
+      "map": {
+        "version": 1,
+        "id": "map-d656d347-feaa-4ef1-9a9f-79d15d9e44ca",
+        "name": "Mapa vazio",
+        "authorId": "local-builder",
+        "description": "Sandbox grande e limpo com grid visual, areas livres, placas e final distante.",
+        "creatorName": "Criador",
+        "spawnPoint": {
+          "x": 0,
+          "y": 0.72,
+          "z": 4
+        },
+        "objects": [
+          {
+            "id": "empty_spawn",
+            "type": "spawn",
+            "name": "Spawn principal",
+            "position": {
+              "x": 0,
+              "y": 0.72,
+              "z": 4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#19c37d",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_platform_00001",
+            "type": "platform",
+            "name": "Area principal limpa de edicao",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 18,
+              "y": 0.4,
+              "z": 16
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00002",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 1",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": -8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00003",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 1",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": -8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00004",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 2",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": -5.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00005",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 2",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": -5.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00006",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 3",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": -2.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00007",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 3",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": -2.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00008",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 4",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00009",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 4",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00010",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 5",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": 2.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00011",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 5",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": 2.667
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00012",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 6",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": 5.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00013",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 6",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": 5.333
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00014",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia esquerda 7",
+            "position": {
+              "x": -8.65,
+              "y": 0.75,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00015",
+            "type": "cube",
+            "name": "Area principal limpa de edicao guia direita 7",
+            "position": {
+              "x": 8.65,
+              "y": 0.75,
+              "z": 8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dbeafe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00016",
+            "type": "cube",
+            "name": "Area principal limpa de edicao suporte 1",
+            "position": {
+              "x": -6.48,
+              "y": -0.55,
+              "z": -5.76
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00017",
+            "type": "cube",
+            "name": "Area principal limpa de edicao suporte 2",
+            "position": {
+              "x": 6.48,
+              "y": -0.55,
+              "z": -5.76
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_sign_00018",
+            "type": "sign",
+            "name": "Placa - Mapa vazio: base lim",
+            "position": {
+              "x": -7,
+              "y": 0.2,
+              "z": 5.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Mapa vazio: base limpa para criar.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_messagezone_00019",
+            "type": "messageZone",
+            "name": "Mensagem inicial do mapa vazio",
+            "position": {
+              "x": 0,
+              "y": 1.05,
+              "z": 1.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 7,
+              "y": 1.4,
+              "z": 2.4
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "message": "Use esta area como ponto de partida. As outras ilhas mostram testes basicos.",
+              "oneTime": true,
+              "opacity": 0.35
+            }
+          },
+          {
+            "id": "empty_checkpoint_00020",
+            "type": "checkpoint",
+            "name": "Checkpoint da area inicial",
+            "position": {
+              "x": 6.8,
+              "y": 0.75,
+              "z": 4.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_da_area_inicial",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "empty_platform_00021",
+            "type": "platform",
+            "name": "Area livre para construir",
+            "position": {
+              "x": -18,
+              "y": 0.2,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 16,
+              "y": 0.4,
+              "z": 16
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00022",
+            "type": "cube",
+            "name": "Area livre para construir guia esquerda 1",
+            "position": {
+              "x": -25.65,
+              "y": 0.75,
+              "z": -26
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00023",
+            "type": "cube",
+            "name": "Area livre para construir guia direita 1",
+            "position": {
+              "x": -10.35,
+              "y": 0.75,
+              "z": -26
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00024",
+            "type": "cube",
+            "name": "Area livre para construir guia esquerda 2",
+            "position": {
+              "x": -25.65,
+              "y": 0.75,
+              "z": -22.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00025",
+            "type": "cube",
+            "name": "Area livre para construir guia direita 2",
+            "position": {
+              "x": -10.35,
+              "y": 0.75,
+              "z": -22.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00026",
+            "type": "cube",
+            "name": "Area livre para construir guia esquerda 3",
+            "position": {
+              "x": -25.65,
+              "y": 0.75,
+              "z": -19.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00027",
+            "type": "cube",
+            "name": "Area livre para construir guia direita 3",
+            "position": {
+              "x": -10.35,
+              "y": 0.75,
+              "z": -19.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00028",
+            "type": "cube",
+            "name": "Area livre para construir guia esquerda 4",
+            "position": {
+              "x": -25.65,
+              "y": 0.75,
+              "z": -16.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00029",
+            "type": "cube",
+            "name": "Area livre para construir guia direita 4",
+            "position": {
+              "x": -10.35,
+              "y": 0.75,
+              "z": -16.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00030",
+            "type": "cube",
+            "name": "Area livre para construir guia esquerda 5",
+            "position": {
+              "x": -25.65,
+              "y": 0.75,
+              "z": -13.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00031",
+            "type": "cube",
+            "name": "Area livre para construir guia direita 5",
+            "position": {
+              "x": -10.35,
+              "y": 0.75,
+              "z": -13.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00032",
+            "type": "cube",
+            "name": "Area livre para construir guia esquerda 6",
+            "position": {
+              "x": -25.65,
+              "y": 0.75,
+              "z": -10
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00033",
+            "type": "cube",
+            "name": "Area livre para construir guia direita 6",
+            "position": {
+              "x": -10.35,
+              "y": 0.75,
+              "z": -10
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#e0f2fe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00034",
+            "type": "cube",
+            "name": "Area livre para construir suporte 1",
+            "position": {
+              "x": -23.76,
+              "y": -0.55,
+              "z": -23.76
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00035",
+            "type": "cube",
+            "name": "Area livre para construir suporte 2",
+            "position": {
+              "x": -12.24,
+              "y": -0.55,
+              "z": -23.76
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_platform_00036",
+            "type": "platform",
+            "name": "Ligacao para area livre",
+            "position": {
+              "x": -9,
+              "y": 0.2,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": -2.3562,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 25.456
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": true
+            }
+          },
+          {
+            "id": "empty_cube_00037",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 1.E",
+            "position": {
+              "x": -4.018,
+              "y": 0.72,
+              "z": -0.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00038",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 1.D",
+            "position": {
+              "x": -0.482,
+              "y": 0.72,
+              "z": -4.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00039",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 2.E",
+            "position": {
+              "x": -8.518,
+              "y": 0.72,
+              "z": -4.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00040",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 2.D",
+            "position": {
+              "x": -4.982,
+              "y": 0.72,
+              "z": -8.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00041",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 3.E",
+            "position": {
+              "x": -13.018,
+              "y": 0.72,
+              "z": -9.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00042",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 3.D",
+            "position": {
+              "x": -9.482,
+              "y": 0.72,
+              "z": -13.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00043",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 4.E",
+            "position": {
+              "x": -17.518,
+              "y": 0.72,
+              "z": -13.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00044",
+            "type": "cube",
+            "name": "Ligacao para area livre marcador 4.D",
+            "position": {
+              "x": -13.982,
+              "y": 0.72,
+              "z": -17.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#93c5fd",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00045",
+            "type": "sign",
+            "name": "Placa - Area livre: apague, ",
+            "position": {
+              "x": -24,
+              "y": 0.2,
+              "z": -12.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Area livre: apague, duplique ou construa.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_messagezone_00046",
+            "type": "messageZone",
+            "name": "Mensagem area livre",
+            "position": {
+              "x": -18,
+              "y": 1.05,
+              "z": -17.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 6,
+              "y": 1.4,
+              "z": 2.2
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "message": "Area sem puzzle: boa para testar cubos, rampas e modelos.",
+              "oneTime": true,
+              "opacity": 0.35
+            }
+          },
+          {
+            "id": "empty_platform_00047",
+            "type": "platform",
+            "name": "Area de teste de movimento",
+            "position": {
+              "x": 18,
+              "y": 0.2,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 15,
+              "y": 0.4,
+              "z": 14
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00048",
+            "type": "cube",
+            "name": "Area de teste de movimento guia esquerda 1",
+            "position": {
+              "x": 10.85,
+              "y": 0.75,
+              "z": -25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00049",
+            "type": "cube",
+            "name": "Area de teste de movimento guia direita 1",
+            "position": {
+              "x": 25.15,
+              "y": 0.75,
+              "z": -25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00050",
+            "type": "cube",
+            "name": "Area de teste de movimento guia esquerda 2",
+            "position": {
+              "x": 10.85,
+              "y": 0.75,
+              "z": -22.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00051",
+            "type": "cube",
+            "name": "Area de teste de movimento guia direita 2",
+            "position": {
+              "x": 25.15,
+              "y": 0.75,
+              "z": -22.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00052",
+            "type": "cube",
+            "name": "Area de teste de movimento guia esquerda 3",
+            "position": {
+              "x": 10.85,
+              "y": 0.75,
+              "z": -19.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00053",
+            "type": "cube",
+            "name": "Area de teste de movimento guia direita 3",
+            "position": {
+              "x": 25.15,
+              "y": 0.75,
+              "z": -19.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00054",
+            "type": "cube",
+            "name": "Area de teste de movimento guia esquerda 4",
+            "position": {
+              "x": 10.85,
+              "y": 0.75,
+              "z": -16.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00055",
+            "type": "cube",
+            "name": "Area de teste de movimento guia direita 4",
+            "position": {
+              "x": 25.15,
+              "y": 0.75,
+              "z": -16.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00056",
+            "type": "cube",
+            "name": "Area de teste de movimento guia esquerda 5",
+            "position": {
+              "x": 10.85,
+              "y": 0.75,
+              "z": -13.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00057",
+            "type": "cube",
+            "name": "Area de teste de movimento guia direita 5",
+            "position": {
+              "x": 25.15,
+              "y": 0.75,
+              "z": -13.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00058",
+            "type": "cube",
+            "name": "Area de teste de movimento guia esquerda 6",
+            "position": {
+              "x": 10.85,
+              "y": 0.75,
+              "z": -11
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00059",
+            "type": "cube",
+            "name": "Area de teste de movimento guia direita 6",
+            "position": {
+              "x": 25.15,
+              "y": 0.75,
+              "z": -11
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#dcfce7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00060",
+            "type": "cube",
+            "name": "Area de teste de movimento suporte 1",
+            "position": {
+              "x": 12.6,
+              "y": -0.55,
+              "z": -23.04
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00061",
+            "type": "cube",
+            "name": "Area de teste de movimento suporte 2",
+            "position": {
+              "x": 23.4,
+              "y": -0.55,
+              "z": -23.04
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_platform_00062",
+            "type": "platform",
+            "name": "Ligacao para teste de movimento",
+            "position": {
+              "x": 9,
+              "y": 0.2,
+              "z": -9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 2.3562,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 25.456
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": true
+            }
+          },
+          {
+            "id": "empty_cube_00063",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 1.E",
+            "position": {
+              "x": 0.482,
+              "y": 0.72,
+              "z": -4.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00064",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 1.D",
+            "position": {
+              "x": 4.018,
+              "y": 0.72,
+              "z": -0.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00065",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 2.E",
+            "position": {
+              "x": 4.982,
+              "y": 0.72,
+              "z": -8.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00066",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 2.D",
+            "position": {
+              "x": 8.518,
+              "y": 0.72,
+              "z": -4.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00067",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 3.E",
+            "position": {
+              "x": 9.482,
+              "y": 0.72,
+              "z": -13.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00068",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 3.D",
+            "position": {
+              "x": 13.018,
+              "y": 0.72,
+              "z": -9.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00069",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 4.E",
+            "position": {
+              "x": 13.982,
+              "y": 0.72,
+              "z": -17.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00070",
+            "type": "cube",
+            "name": "Ligacao para teste de movimento marcador 4.D",
+            "position": {
+              "x": 17.518,
+              "y": 0.72,
+              "z": -13.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#86efac",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00071",
+            "type": "sign",
+            "name": "Placa - Teste: moedas marcam",
+            "position": {
+              "x": 12,
+              "y": 0.2,
+              "z": -12.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Teste: moedas marcam uma rota simples.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_coin_00072",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 1",
+            "position": {
+              "x": 5,
+              "y": 1.15,
+              "z": -4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00073",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 2",
+            "position": {
+              "x": 6.857,
+              "y": 1.15,
+              "z": -6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00074",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 3",
+            "position": {
+              "x": 8.714,
+              "y": 1.15,
+              "z": -8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00075",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 4",
+            "position": {
+              "x": 10.571,
+              "y": 1.15,
+              "z": -10
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00076",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 5",
+            "position": {
+              "x": 12.429,
+              "y": 1.15,
+              "z": -12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00077",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 6",
+            "position": {
+              "x": 14.286,
+              "y": 1.15,
+              "z": -14
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00078",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 7",
+            "position": {
+              "x": 16.143,
+              "y": 1.15,
+              "z": -16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_coin_00079",
+            "type": "coin",
+            "name": "Moeda guia do mapa vazio 8",
+            "position": {
+              "x": 18,
+              "y": 1.15,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "empty_checkpoint_00080",
+            "type": "checkpoint",
+            "name": "Checkpoint de teste de movimento",
+            "position": {
+              "x": 23.5,
+              "y": 0.75,
+              "z": -14.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_de_teste_de_movimento",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "empty_platform_00081",
+            "type": "platform",
+            "name": "Area de exemplo de fluxo",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -36
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 16,
+              "y": 0.4,
+              "z": 14
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00082",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia esquerda 1",
+            "position": {
+              "x": -7.65,
+              "y": 0.75,
+              "z": -43
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00083",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia direita 1",
+            "position": {
+              "x": 7.65,
+              "y": 0.75,
+              "z": -43
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00084",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia esquerda 2",
+            "position": {
+              "x": -7.65,
+              "y": 0.75,
+              "z": -40.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00085",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia direita 2",
+            "position": {
+              "x": 7.65,
+              "y": 0.75,
+              "z": -40.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00086",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia esquerda 3",
+            "position": {
+              "x": -7.65,
+              "y": 0.75,
+              "z": -37.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00087",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia direita 3",
+            "position": {
+              "x": 7.65,
+              "y": 0.75,
+              "z": -37.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00088",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia esquerda 4",
+            "position": {
+              "x": -7.65,
+              "y": 0.75,
+              "z": -34.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00089",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia direita 4",
+            "position": {
+              "x": 7.65,
+              "y": 0.75,
+              "z": -34.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00090",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia esquerda 5",
+            "position": {
+              "x": -7.65,
+              "y": 0.75,
+              "z": -31.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00091",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia direita 5",
+            "position": {
+              "x": 7.65,
+              "y": 0.75,
+              "z": -31.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00092",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia esquerda 6",
+            "position": {
+              "x": -7.65,
+              "y": 0.75,
+              "z": -29
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00093",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo guia direita 6",
+            "position": {
+              "x": 7.65,
+              "y": 0.75,
+              "z": -29
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fef3c7",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00094",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo suporte 1",
+            "position": {
+              "x": -5.76,
+              "y": -0.55,
+              "z": -41.04
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00095",
+            "type": "cube",
+            "name": "Area de exemplo de fluxo suporte 2",
+            "position": {
+              "x": 5.76,
+              "y": -0.55,
+              "z": -41.04
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_platform_00096",
+            "type": "platform",
+            "name": "Ligacao da area livre ao exemplo",
+            "position": {
+              "x": -9,
+              "y": 0.2,
+              "z": -27
+            },
+            "rotation": {
+              "x": 0,
+              "y": 2.3562,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 25.456
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": true
+            }
+          },
+          {
+            "id": "empty_cube_00097",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 1.E",
+            "position": {
+              "x": -17.518,
+              "y": 0.72,
+              "z": -22.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00098",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 1.D",
+            "position": {
+              "x": -13.982,
+              "y": 0.72,
+              "z": -18.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00099",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 2.E",
+            "position": {
+              "x": -13.018,
+              "y": 0.72,
+              "z": -26.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00100",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 2.D",
+            "position": {
+              "x": -9.482,
+              "y": 0.72,
+              "z": -22.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00101",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 3.E",
+            "position": {
+              "x": -8.518,
+              "y": 0.72,
+              "z": -31.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00102",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 3.D",
+            "position": {
+              "x": -4.982,
+              "y": 0.72,
+              "z": -27.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00103",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 4.E",
+            "position": {
+              "x": -4.018,
+              "y": 0.72,
+              "z": -35.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00104",
+            "type": "cube",
+            "name": "Ligacao da area livre ao exemplo marcador 4.D",
+            "position": {
+              "x": -0.482,
+              "y": 0.72,
+              "z": -31.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_platform_00105",
+            "type": "platform",
+            "name": "Ligacao do teste ao exemplo",
+            "position": {
+              "x": 9,
+              "y": 0.2,
+              "z": -27
+            },
+            "rotation": {
+              "x": 0,
+              "y": -2.3562,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 25.456
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": true
+            }
+          },
+          {
+            "id": "empty_cube_00106",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 1.E",
+            "position": {
+              "x": 13.982,
+              "y": 0.72,
+              "z": -18.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00107",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 1.D",
+            "position": {
+              "x": 17.518,
+              "y": 0.72,
+              "z": -22.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00108",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 2.E",
+            "position": {
+              "x": 9.482,
+              "y": 0.72,
+              "z": -22.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00109",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 2.D",
+            "position": {
+              "x": 13.018,
+              "y": 0.72,
+              "z": -26.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00110",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 3.E",
+            "position": {
+              "x": 4.982,
+              "y": 0.72,
+              "z": -27.482
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00111",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 3.D",
+            "position": {
+              "x": 8.518,
+              "y": 0.72,
+              "z": -31.018
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00112",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 4.E",
+            "position": {
+              "x": 0.482,
+              "y": 0.72,
+              "z": -31.982
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00113",
+            "type": "cube",
+            "name": "Ligacao do teste ao exemplo marcador 4.D",
+            "position": {
+              "x": 4.018,
+              "y": 0.72,
+              "z": -35.518
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fde68a",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00114",
+            "type": "sign",
+            "name": "Placa - Exemplo: este setor ",
+            "position": {
+              "x": -6.2,
+              "y": 0.2,
+              "z": -31
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Exemplo: este setor mostra como sinalizar um objetivo.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_messagezone_00115",
+            "type": "messageZone",
+            "name": "Mensagem exemplo de fluxo",
+            "position": {
+              "x": 0,
+              "y": 1.05,
+              "z": -35.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 6.4,
+              "y": 1.4,
+              "z": 2.2
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "message": "Exemplo de fluxo: placa, moedas, checkpoint e final proximo.",
+              "oneTime": true,
+              "opacity": 0.35
+            }
+          },
+          {
+            "id": "empty_cube_00116",
+            "type": "cube",
+            "name": "Marcador editavel esquerdo",
+            "position": {
+              "x": -5.6,
+              "y": 0.7,
+              "z": -38.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00117",
+            "type": "cube",
+            "name": "Marcador editavel direito",
+            "position": {
+              "x": 5.6,
+              "y": 0.7,
+              "z": -38.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_platform_00118",
+            "type": "platform",
+            "name": "Area final opcional",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 14,
+              "y": 0.4,
+              "z": 12
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00119",
+            "type": "cube",
+            "name": "Area final opcional guia esquerda 1",
+            "position": {
+              "x": -6.65,
+              "y": 0.75,
+              "z": -60
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00120",
+            "type": "cube",
+            "name": "Area final opcional guia direita 1",
+            "position": {
+              "x": 6.65,
+              "y": 0.75,
+              "z": -60
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00121",
+            "type": "cube",
+            "name": "Area final opcional guia esquerda 2",
+            "position": {
+              "x": -6.65,
+              "y": 0.75,
+              "z": -57
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00122",
+            "type": "cube",
+            "name": "Area final opcional guia direita 2",
+            "position": {
+              "x": 6.65,
+              "y": 0.75,
+              "z": -57
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00123",
+            "type": "cube",
+            "name": "Area final opcional guia esquerda 3",
+            "position": {
+              "x": -6.65,
+              "y": 0.75,
+              "z": -54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00124",
+            "type": "cube",
+            "name": "Area final opcional guia direita 3",
+            "position": {
+              "x": 6.65,
+              "y": 0.75,
+              "z": -54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00125",
+            "type": "cube",
+            "name": "Area final opcional guia esquerda 4",
+            "position": {
+              "x": -6.65,
+              "y": 0.75,
+              "z": -51
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00126",
+            "type": "cube",
+            "name": "Area final opcional guia direita 4",
+            "position": {
+              "x": 6.65,
+              "y": 0.75,
+              "z": -51
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00127",
+            "type": "cube",
+            "name": "Area final opcional guia esquerda 5",
+            "position": {
+              "x": -6.65,
+              "y": 0.75,
+              "z": -48
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00128",
+            "type": "cube",
+            "name": "Area final opcional guia direita 5",
+            "position": {
+              "x": 6.65,
+              "y": 0.75,
+              "z": -48
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00129",
+            "type": "cube",
+            "name": "Area final opcional suporte 1",
+            "position": {
+              "x": -5.04,
+              "y": -0.55,
+              "z": -58.32
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00130",
+            "type": "cube",
+            "name": "Area final opcional suporte 2",
+            "position": {
+              "x": 5.04,
+              "y": -0.55,
+              "z": -58.32
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_platform_00131",
+            "type": "platform",
+            "name": "Ligacao para final opcional",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -45
+            },
+            "rotation": {
+              "x": 0,
+              "y": 3.1416,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": 18
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": true
+            }
+          },
+          {
+            "id": "empty_cube_00132",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 1.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -38.25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00133",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 1.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -38.25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00134",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 2.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -42.75
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00135",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 2.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -42.75
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00136",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 3.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -47.25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00137",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 3.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -47.25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00138",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 4.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -51.75
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00139",
+            "type": "cube",
+            "name": "Ligacao para final opcional marcador 4.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -51.75
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bbf7d0",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00140",
+            "type": "sign",
+            "name": "Placa - Final opcional: test",
+            "position": {
+              "x": -5.4,
+              "y": 0.2,
+              "z": -50
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Final opcional: teste o runtime rapidamente.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_finish_00141",
+            "type": "finish",
+            "name": "Final opcional do mapa vazio",
+            "position": {
+              "x": 0,
+              "y": 1.25,
+              "z": -57
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#22c55e",
+              "message": "Mapa vazio testado com sucesso!",
+              "requiresAllCoins": false,
+              "collision": false
+            }
+          },
+          {
+            "id": "empty_cube_00142",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 1.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -3.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00143",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 1.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -3.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00144",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 2.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -10.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00145",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 2.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -10.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00146",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 3.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00147",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 3.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00148",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 4.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -25.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00149",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 4.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -25.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00150",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 5.E",
+            "position": {
+              "x": -2.5,
+              "y": 0.72,
+              "z": -32.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00151",
+            "type": "cube",
+            "name": "Marcador de eixo principal do sandbox 5.D",
+            "position": {
+              "x": 2.5,
+              "y": 0.72,
+              "z": -32.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.3,
+              "y": 0.72,
+              "z": 0.3
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#bfdbfe",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00152",
+            "type": "sign",
+            "name": "Placa - Area de edicao princ",
+            "position": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": -3.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Area de edicao principal: Siga o caminho principal e procure moedas opcionais.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00153",
+            "type": "sign",
+            "name": "Placa - Exemplo de caminho: ",
+            "position": {
+              "x": -22.2,
+              "y": 0.32,
+              "z": -21.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Exemplo de caminho: Checkpoint proximo: arrisque apenas depois de ativar.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00154",
+            "type": "sign",
+            "name": "Placa - Area de testes: Boto",
+            "position": {
+              "x": 22.2,
+              "y": 0.32,
+              "z": -21.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Area de testes: Botoes podem abrir atalhos e portas.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00155",
+            "type": "sign",
+            "name": "Placa - Espaco para puzzle: ",
+            "position": {
+              "x": -4.2,
+              "y": 0.32,
+              "z": -39.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Espaco para puzzle: Chaves ficam antes das portas importantes.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_sign_00156",
+            "type": "sign",
+            "name": "Placa - Final opcional: Tele",
+            "position": {
+              "x": 4.2,
+              "y": 0.32,
+              "z": -57.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Final opcional: Teleportes conectam areas distantes.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00157",
+            "type": "cube",
+            "name": "Marcador decorativo 1",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": -2.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00158",
+            "type": "cube",
+            "name": "Marcador decorativo 2",
+            "position": {
+              "x": -5.5,
+              "y": 0.45,
+              "z": -1.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00159",
+            "type": "cube",
+            "name": "Marcador decorativo 3",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": -0.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00160",
+            "type": "cube",
+            "name": "Marcador decorativo 4",
+            "position": {
+              "x": -5.5,
+              "y": 0.45,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00161",
+            "type": "cube",
+            "name": "Marcador decorativo 5",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": 0.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00162",
+            "type": "cube",
+            "name": "Marcador decorativo 6",
+            "position": {
+              "x": -7.3,
+              "y": 0.45,
+              "z": 1.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00163",
+            "type": "cube",
+            "name": "Marcador decorativo 7",
+            "position": {
+              "x": 7.3,
+              "y": 0.45,
+              "z": 2.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00164",
+            "type": "cube",
+            "name": "Marcador decorativo 8",
+            "position": {
+              "x": -7.3,
+              "y": 0.45,
+              "z": -2.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00165",
+            "type": "cube",
+            "name": "Marcador decorativo 9",
+            "position": {
+              "x": -10.7,
+              "y": 0.45,
+              "z": -19.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00166",
+            "type": "cube",
+            "name": "Marcador decorativo 10",
+            "position": {
+              "x": -25.3,
+              "y": 0.45,
+              "z": -18.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00167",
+            "type": "cube",
+            "name": "Marcador decorativo 11",
+            "position": {
+              "x": -8.9,
+              "y": 0.45,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00168",
+            "type": "cube",
+            "name": "Marcador decorativo 12",
+            "position": {
+              "x": -27.1,
+              "y": 0.45,
+              "z": -17.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00169",
+            "type": "cube",
+            "name": "Marcador decorativo 13",
+            "position": {
+              "x": -8.9,
+              "y": 0.45,
+              "z": -16.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00170",
+            "type": "cube",
+            "name": "Marcador decorativo 14",
+            "position": {
+              "x": -27.1,
+              "y": 0.45,
+              "z": -15.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00171",
+            "type": "cube",
+            "name": "Marcador decorativo 15",
+            "position": {
+              "x": -8.9,
+              "y": 0.45,
+              "z": -20.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00172",
+            "type": "cube",
+            "name": "Marcador decorativo 16",
+            "position": {
+              "x": -28.9,
+              "y": 0.45,
+              "z": -19.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00173",
+            "type": "cube",
+            "name": "Marcador decorativo 17",
+            "position": {
+              "x": -7.1,
+              "y": 0.45,
+              "z": -18.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00174",
+            "type": "cube",
+            "name": "Marcador decorativo 18",
+            "position": {
+              "x": -28.9,
+              "y": 0.45,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00175",
+            "type": "cube",
+            "name": "Marcador decorativo 19",
+            "position": {
+              "x": -7.1,
+              "y": 0.45,
+              "z": -17.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00176",
+            "type": "cube",
+            "name": "Marcador decorativo 20",
+            "position": {
+              "x": -28.9,
+              "y": 0.45,
+              "z": -16.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00177",
+            "type": "cube",
+            "name": "Marcador decorativo 21",
+            "position": {
+              "x": -5.3,
+              "y": 0.45,
+              "z": -15.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00178",
+            "type": "cube",
+            "name": "Marcador decorativo 22",
+            "position": {
+              "x": -30.7,
+              "y": 0.45,
+              "z": -20.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00179",
+            "type": "cube",
+            "name": "Marcador decorativo 23",
+            "position": {
+              "x": -5.3,
+              "y": 0.45,
+              "z": -19.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00180",
+            "type": "cube",
+            "name": "Marcador decorativo 24",
+            "position": {
+              "x": 5.3,
+              "y": 0.45,
+              "z": -18.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00181",
+            "type": "cube",
+            "name": "Marcador decorativo 25",
+            "position": {
+              "x": 30.7,
+              "y": 0.45,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00182",
+            "type": "cube",
+            "name": "Marcador decorativo 26",
+            "position": {
+              "x": 12.5,
+              "y": 0.45,
+              "z": -17.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00183",
+            "type": "cube",
+            "name": "Marcador decorativo 27",
+            "position": {
+              "x": 23.5,
+              "y": 0.45,
+              "z": -16.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00184",
+            "type": "cube",
+            "name": "Marcador decorativo 28",
+            "position": {
+              "x": 12.5,
+              "y": 0.45,
+              "z": -15.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00185",
+            "type": "cube",
+            "name": "Marcador decorativo 29",
+            "position": {
+              "x": 23.5,
+              "y": 0.45,
+              "z": -20.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00186",
+            "type": "cube",
+            "name": "Marcador decorativo 30",
+            "position": {
+              "x": 12.5,
+              "y": 0.45,
+              "z": -19.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00187",
+            "type": "cube",
+            "name": "Marcador decorativo 31",
+            "position": {
+              "x": 25.3,
+              "y": 0.45,
+              "z": -18.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00188",
+            "type": "cube",
+            "name": "Marcador decorativo 32",
+            "position": {
+              "x": 10.7,
+              "y": 0.45,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00189",
+            "type": "cube",
+            "name": "Marcador decorativo 33",
+            "position": {
+              "x": 25.3,
+              "y": 0.45,
+              "z": -17.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00190",
+            "type": "cube",
+            "name": "Marcador decorativo 34",
+            "position": {
+              "x": 10.7,
+              "y": 0.45,
+              "z": -16.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00191",
+            "type": "cube",
+            "name": "Marcador decorativo 35",
+            "position": {
+              "x": 25.3,
+              "y": 0.45,
+              "z": -15.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00192",
+            "type": "cube",
+            "name": "Marcador decorativo 36",
+            "position": {
+              "x": 8.9,
+              "y": 0.45,
+              "z": -20.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00193",
+            "type": "cube",
+            "name": "Marcador decorativo 37",
+            "position": {
+              "x": 27.1,
+              "y": 0.45,
+              "z": -19.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00194",
+            "type": "cube",
+            "name": "Marcador decorativo 38",
+            "position": {
+              "x": -9.1,
+              "y": 0.45,
+              "z": -36.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00195",
+            "type": "cube",
+            "name": "Marcador decorativo 39",
+            "position": {
+              "x": 9.1,
+              "y": 0.45,
+              "z": -36
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00196",
+            "type": "cube",
+            "name": "Marcador decorativo 40",
+            "position": {
+              "x": -9.1,
+              "y": 0.45,
+              "z": -35.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00197",
+            "type": "cube",
+            "name": "Marcador decorativo 41",
+            "position": {
+              "x": 10.9,
+              "y": 0.45,
+              "z": -34.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00198",
+            "type": "cube",
+            "name": "Marcador decorativo 42",
+            "position": {
+              "x": -10.9,
+              "y": 0.45,
+              "z": -33.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00199",
+            "type": "cube",
+            "name": "Marcador decorativo 43",
+            "position": {
+              "x": 10.9,
+              "y": 0.45,
+              "z": -38.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00200",
+            "type": "cube",
+            "name": "Marcador decorativo 44",
+            "position": {
+              "x": -10.9,
+              "y": 0.45,
+              "z": -37.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00201",
+            "type": "cube",
+            "name": "Marcador decorativo 45",
+            "position": {
+              "x": 10.9,
+              "y": 0.45,
+              "z": -36.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00202",
+            "type": "cube",
+            "name": "Marcador decorativo 46",
+            "position": {
+              "x": -12.7,
+              "y": 0.45,
+              "z": -36
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00203",
+            "type": "cube",
+            "name": "Marcador decorativo 47",
+            "position": {
+              "x": 12.7,
+              "y": 0.45,
+              "z": -35.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00204",
+            "type": "cube",
+            "name": "Marcador decorativo 48",
+            "position": {
+              "x": -12.7,
+              "y": 0.45,
+              "z": -34.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00205",
+            "type": "cube",
+            "name": "Marcador decorativo 49",
+            "position": {
+              "x": 12.7,
+              "y": 0.45,
+              "z": -33.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00206",
+            "type": "cube",
+            "name": "Marcador decorativo 50",
+            "position": {
+              "x": -12.7,
+              "y": 0.45,
+              "z": -38.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00207",
+            "type": "cube",
+            "name": "Marcador decorativo 51",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": -37.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00208",
+            "type": "cube",
+            "name": "Marcador decorativo 52",
+            "position": {
+              "x": -5.5,
+              "y": 0.45,
+              "z": -36.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00209",
+            "type": "cube",
+            "name": "Marcador decorativo 53",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": -54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00210",
+            "type": "cube",
+            "name": "Marcador decorativo 54",
+            "position": {
+              "x": -5.5,
+              "y": 0.45,
+              "z": -53.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00211",
+            "type": "cube",
+            "name": "Marcador decorativo 55",
+            "position": {
+              "x": 5.5,
+              "y": 0.45,
+              "z": -52.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00212",
+            "type": "cube",
+            "name": "Marcador decorativo 56",
+            "position": {
+              "x": -7.3,
+              "y": 0.45,
+              "z": -51.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00213",
+            "type": "cube",
+            "name": "Marcador decorativo 57",
+            "position": {
+              "x": 7.3,
+              "y": 0.45,
+              "z": -56.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00214",
+            "type": "cube",
+            "name": "Marcador decorativo 58",
+            "position": {
+              "x": -7.3,
+              "y": 0.45,
+              "z": -55.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00215",
+            "type": "cube",
+            "name": "Marcador decorativo 59",
+            "position": {
+              "x": 7.3,
+              "y": 0.45,
+              "z": -54.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "empty_cube_00216",
+            "type": "cube",
+            "name": "Marcador decorativo 60",
+            "position": {
+              "x": -7.3,
+              "y": 0.45,
+              "z": -54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.9,
+              "y": 0.9,
+              "z": 0.9
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#94a3b8",
+              "collision": false,
+              "material": "default"
+            }
+          }
+        ],
+        "objectives": [],
+        "logic": [
+          {
+            "id": "empty_logic_001",
+            "name": "Boas-vindas do mapa vazio",
+            "enabled": true,
+            "trigger": {
+              "type": "onMapStart"
+            },
+            "conditions": [],
+            "actions": [
+              {
+                "type": "showMessage",
+                "message": "Mapa vazio: base limpa com areas de teste e final opcional."
+              }
+            ]
+          },
+          {
+            "id": "empty_logic_002",
+            "name": "Finaliza mapa vazio opcional",
+            "enabled": true,
+            "trigger": {
+              "type": "onPlayerEnterObject",
+              "objectId": "empty_finish_00141"
+            },
+            "conditions": [
+              {
+                "type": "once"
+              }
+            ],
+            "actions": [
+              {
+                "type": "finishMap"
+              }
+            ]
+          }
+        ],
+        "logicDebug": false,
+        "visualSettings": {
+          "theme": "classic",
+          "skyColor": "#d8ecff",
+          "groundColor": "#eef5f8",
+          "fogEnabled": false,
+          "fogColor": "#d8ecff",
+          "fogNear": 18,
+          "fogFar": 90,
+          "ambientLightIntensity": 1.65,
+          "sunLightIntensity": 2.35
+        },
+        "audioSettings": {
+          "masterVolume": 0.8,
+          "sfxVolume": 0.9,
+          "musicVolume": 0.25,
+          "muted": false,
+          "ambientMusic": "none"
+        },
+        "gameplaySettings": {
+          "voidDeathEnabled": true
+        },
+        "gameModeSettings": {
+          "mode": "freeplay",
+          "roundEnabled": false,
+          "respawnDelay": 1,
+          "teamsEnabled": false,
+          "winCondition": {
+            "type": "none"
+          },
+          "scoring": {
+            "coinScore": 10,
+            "enemyDefeatScore": 100,
+            "objectiveScore": 250,
+            "deathPenalty": 25
+          }
+        },
+        "teams": [],
+        "tags": [
+          "sandbox",
+          "grande",
+          "classic"
+        ],
+        "isPublished": false,
+        "createdAt": "2026-06-03T20:44:38.289Z",
+        "updatedAt": "2026-06-03T20:45:19.100Z"
+      },
+      "createdAt": "2026-06-03T20:51:56.994Z",
+      "updatedAt": "2026-06-03T20:51:56.994Z",
+      "publishedAt": "2026-06-03T20:51:56.994Z",
+      "playCount": 2,
+      "likedBy": []
+    }
+  ]
+}

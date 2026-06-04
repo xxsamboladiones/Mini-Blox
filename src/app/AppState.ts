@@ -26,6 +26,12 @@ export type MapListActions = {
   onCreateMap: () => void;
   onEditMap: (map: GameMap) => void;
   onPlayMap: (map: GameMap) => void;
+  onPlayMultiplayer?: (
+    map: GameMap,
+    roomId: string,
+    onlineMapId?: string
+  ) => void | Promise<void>;
+  onCreateMultiplayerRoom?: (map: GameMap, onlineMapId?: string) => void | Promise<void>;
 };
 
 export type EditorScreenActions = {
@@ -36,4 +42,7 @@ export type EditorScreenActions = {
 export type PlayScreenActions = {
   onBackToMenu: () => void;
   onEditMap: (map: GameMap) => void;
+  mode?: "solo" | "multiplayer";
+  roomId?: string;
+  onlineMapId?: string;
 };

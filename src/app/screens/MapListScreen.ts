@@ -6,6 +6,10 @@ import { resolveAudioSettings } from "../../shared/AudioSettings";
 import { resolveVisualSettings } from "../../shared/VisualSettings";
 import type { GameMap, VisualTheme } from "../../shared/types/MapSchema";
 import type { MapListActions, Screen } from "../AppState";
+import { OnlineMapsTab } from "./map-list/OnlineMapsTab.js";
+import { OnlineMapDetailsModal } from "./map-list/OnlineMapDetailsModal.js";
+import { MultiplayerLobbyModal } from "./map-list/MultiplayerLobbyModal.js";
+import type { OnlineMapSummary } from "../../services/OnlineMapService.js";
 
 type CatalogStatusFilter = "all" | "published" | "draft";
 type CatalogSort = "recent" | "oldest" | "name" | "favorites" | "likes";
@@ -25,13 +29,17 @@ const DEFAULT_FILTERS: CatalogFilters = {
   status: "all",
   theme: "all",
   favoritesOnly: false,
-  sort: "recent"
+  sort: "recent",
 };
 
 export class MapListScreen implements Screen {
   private maps = MapStorage.getAllMaps();
   private filters: CatalogFilters = { ...DEFAULT_FILTERS };
   private selectedMapId: string | null = null;
+  private activeTab: "local" | "online" = "local";
+  private onlineMapsTab: OnlineMapsTab | null = null;
+  private onlineMapDetailsModal: OnlineMapDetailsModal | null = null;
+  private multiplayerLobbyModal: MultiplayerLobbyModal | null = null;
 
   constructor(
     private readonly root: HTMLElement,
@@ -49,7 +57,7 @@ export class MapListScreen implements Screen {
         <header class="screen-header">
           <div>
             <strong>Mini Blox</strong>
-            <span>Catalogo local de mapas</span>
+            <span>Catalogo de mapas</span>
           </div>
           <div class="top-actions">
             <button class="top-action" type="button" data-action="menu" data-screen-action="menu">
@@ -64,40 +72,52 @@ export class MapListScreen implements Screen {
         </header>
 
         <section class="map-list-panel">
-          <section class="catalog-toolbar" aria-label="Filtros do catalogo">
-            <label class="field">
-              <span>Buscar</span>
-              <input id="catalog-query" type="search" value="${escapeAttribute(this.filters.query)}" placeholder="Nome ou descricao" />
-            </label>
-            <label class="field">
-              <span>Tag</span>
-              <select id="catalog-tag">
-                <option value="">Todas</option>
-                ${tags.map((tag) => `<option value="${escapeAttribute(tag)}" ${this.filters.tag === tag ? "selected" : ""}>${escapeHtml(tag)}</option>`).join("")}
-              </select>
-            </label>
-            <label class="field">
-              <span>Status</span>
-              <select id="catalog-status">
-                <option value="all" ${this.filters.status === "all" ? "selected" : ""}>Todos</option>
-                <option value="published" ${this.filters.status === "published" ? "selected" : ""}>Publicado</option>
-                <option value="draft" ${this.filters.status === "draft" ? "selected" : ""}>Rascunho</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>Tema</span>
-              <select id="catalog-theme">
-                <option value="all" ${this.filters.theme === "all" ? "selected" : ""}>Todos</option>
-                ${themes.map((theme) => `<option value="${theme}" ${this.filters.theme === theme ? "selected" : ""}>${theme}</option>`).join("")}
-              </select>
-            </label>
-            <label class="field">
-              <span>Ordenar</span>
-              <select id="catalog-sort">
-                <option value="recent" ${this.filters.sort === "recent" ? "selected" : ""}>Mais recente</option>
-                <option value="oldest" ${this.filters.sort === "oldest" ? "selected" : ""}>Mais antigo</option>
-                <option value="name" ${this.filters.sort === "name" ? "selected" : ""}>Nome A-Z</option>
-                <option value="favorites" ${this.filters.sort === "favorites" ? "selected" : ""}>Favoritos primeiro</option>
+          <div class="catalog-tabs">
+            <button class="tab-button ${this.activeTab === "local" ? "active" : ""}" type="button" data-tab="local">
+              <i data-lucide="folder"></i>
+              <span>Locais</span>
+            </button>
+            <button class="tab-button ${this.activeTab === "online" ? "active" : ""}" type="button" data-tab="online">
+              <i data-lucide="globe"></i>
+              <span>Online</span>
+            </button>
+          </div>
+
+          <div id="local-tab-content" class="tab-content ${this.activeTab === "local" ? "active" : ""}">
+            <section class="catalog-toolbar" aria-label="Filtros do catalogo">
+              <label class="field">
+                <span>Buscar</span>
+                <input id="catalog-query" type="search" value="${escapeAttribute(this.filters.query)}" placeholder="Nome ou descricao" />
+              </label>
+              <label class="field">
+                <span>Tag</span>
+                <select id="catalog-tag">
+                  <option value="">Todas</option>
+                  ${tags.map((tag) => `<option value="${escapeAttribute(tag)}" ${this.filters.tag === tag ? "selected" : ""}>${escapeHtml(tag)}</option>`).join("")}
+                </select>
+              </label>
+              <label class="field">
+                <span>Status</span>
+                <select id="catalog-status">
+                  <option value="all" ${this.filters.status === "all" ? "selected" : ""}>Todos</option>
+                  <option value="published" ${this.filters.status === "published" ? "selected" : ""}>Publicado</option>
+                  <option value="draft" ${this.filters.status === "draft" ? "selected" : ""}>Rascunho</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Tema</span>
+                <select id="catalog-theme">
+                  <option value="all" ${this.filters.theme === "all" ? "selected" : ""}>Todos</option>
+                  ${themes.map((theme) => `<option value="${theme}" ${this.filters.theme === theme ? "selected" : ""}>${theme}</option>`).join("")}
+                </select>
+              </label>
+              <label class="field">
+                <span>Ordenar</span>
+                <select id="catalog-sort">
+                  <option value="recent" ${this.filters.sort === "recent" ? "selected" : ""}>Mais recente</option>
+                  <option value="oldest" ${this.filters.sort === "oldest" ? "selected" : ""}>Mais antigo</option>
+                  <option value="name" ${this.filters.sort === "name" ? "selected" : ""}>Nome A-Z</option>
+                  <option value="favorites" ${this.filters.sort === "favorites" ? "selected" : ""}>Favoritos primeiro</option>
                 <option value="likes" ${this.filters.sort === "likes" ? "selected" : ""}>Mais curtidos</option>
               </select>
             </label>
@@ -115,7 +135,9 @@ export class MapListScreen implements Screen {
             </button>
           </div>
 
-          ${this.maps.length === 0 ? `
+          ${
+            this.maps.length === 0
+              ? `
             <div class="empty-maps">
               <i data-lucide="map-x"></i>
               <span>Nenhum mapa salvo ainda.</span>
@@ -124,16 +146,24 @@ export class MapListScreen implements Screen {
                 <span>Criar primeiro mapa</span>
               </button>
             </div>
-          ` : filteredMaps.length === 0 ? `
+          `
+              : filteredMaps.length === 0
+                ? `
             <div class="empty-maps">
               <i data-lucide="search-x"></i>
               <span>Nenhum mapa encontrado com esses filtros.</span>
             </div>
-          ` : `
+          `
+                : `
             <div class="map-list">
               ${filteredMaps.map((map) => renderMapCard(map)).join("")}
             </div>
-          `}
+          `
+          }
+          </div>
+
+          <div id="online-tab-content" class="tab-content ${this.activeTab === "online" ? "active" : ""}">
+          </div>
         </section>
 
         ${this.renderDetailsModal()}
@@ -142,28 +172,45 @@ export class MapListScreen implements Screen {
 
     this.root.addEventListener("click", this.handleClick);
     this.bindFilters();
+    this.bindTabs();
+
+    if (this.activeTab === "online") {
+      this.initializeOnlineTab();
+    }
+
     createIcons({ icons });
   }
 
   destroy(): void {
     this.root.removeEventListener("click", this.handleClick);
+    this.onlineMapsTab?.dispose();
+    this.onlineMapDetailsModal?.dispose();
+    this.multiplayerLobbyModal?.dispose();
+    this.onlineMapsTab = null;
+    this.onlineMapDetailsModal = null;
+    this.multiplayerLobbyModal = null;
   }
 
   private bindFilters(): void {
     const apply = (): void => {
-      const activeElement = document.activeElement instanceof HTMLInputElement ||
+      const activeElement =
+        document.activeElement instanceof HTMLInputElement ||
         document.activeElement instanceof HTMLSelectElement
-        ? document.activeElement
-        : null;
+          ? document.activeElement
+          : null;
       const activeId = activeElement?.id ?? "";
-      const selectionStart = activeElement instanceof HTMLInputElement ? activeElement.selectionStart : null;
+      const selectionStart =
+        activeElement instanceof HTMLInputElement ? activeElement.selectionStart : null;
       this.filters = {
         query: this.root.querySelector<HTMLInputElement>("#catalog-query")?.value ?? "",
         tag: this.root.querySelector<HTMLSelectElement>("#catalog-tag")?.value ?? "",
-        status: getStatusFilter(this.root.querySelector<HTMLSelectElement>("#catalog-status")?.value),
+        status: getStatusFilter(
+          this.root.querySelector<HTMLSelectElement>("#catalog-status")?.value
+        ),
         theme: getThemeFilter(this.root.querySelector<HTMLSelectElement>("#catalog-theme")?.value),
-        favoritesOnly: this.root.querySelector<HTMLInputElement>("#catalog-favorites-only")?.checked ?? false,
-        sort: getCatalogSort(this.root.querySelector<HTMLSelectElement>("#catalog-sort")?.value)
+        favoritesOnly:
+          this.root.querySelector<HTMLInputElement>("#catalog-favorites-only")?.checked ?? false,
+        sort: getCatalogSort(this.root.querySelector<HTMLSelectElement>("#catalog-sort")?.value),
       };
       this.render();
       restoreFilterFocus(this.root, activeId, selectionStart);
@@ -175,11 +222,83 @@ export class MapListScreen implements Screen {
       this.root.querySelector<HTMLSelectElement>("#catalog-status"),
       this.root.querySelector<HTMLSelectElement>("#catalog-theme"),
       this.root.querySelector<HTMLSelectElement>("#catalog-sort"),
-      this.root.querySelector<HTMLInputElement>("#catalog-favorites-only")
+      this.root.querySelector<HTMLInputElement>("#catalog-favorites-only"),
     ].forEach((input) => {
       input?.addEventListener("input", apply);
       input?.addEventListener("change", apply);
     });
+  }
+
+  private bindTabs(): void {
+    this.root.querySelectorAll<HTMLElement>("[data-tab]").forEach((tabButton) => {
+      tabButton.addEventListener("click", () => {
+        const tab = tabButton.dataset.tab as "local" | "online";
+        if (tab === this.activeTab) return;
+
+        this.activeTab = tab;
+        this.render();
+      });
+    });
+  }
+
+  private initializeOnlineTab(): void {
+    const onlineTabContent = this.root.querySelector<HTMLElement>("#online-tab-content");
+    if (!onlineTabContent) return;
+
+    this.onlineMapsTab?.dispose();
+    this.onlineMapDetailsModal?.dispose();
+    this.multiplayerLobbyModal?.dispose();
+
+    this.multiplayerLobbyModal = new MultiplayerLobbyModal();
+
+    this.onlineMapDetailsModal = new OnlineMapDetailsModal(this.root, {
+      onPlayMap: (map) => this.actions.onPlayMap(map),
+      onEditMap: (map) => this.actions.onEditMap(map),
+      onClose: () => {
+        this.onlineMapDetailsModal = null;
+      },
+      onPlayMultiplayer: (map, roomId, onlineMapId) =>
+        this.actions.onPlayMultiplayer?.(map, roomId, onlineMapId),
+      onCreateMultiplayerRoom: (map, onlineMapId) =>
+        this.actions.onCreateMultiplayerRoom?.(map, onlineMapId),
+    }, this.multiplayerLobbyModal);
+
+    this.onlineMapsTab = new OnlineMapsTab(onlineTabContent, {
+      onPlayMap: (map) => this.actions.onPlayMap(map),
+      onEditMap: (map) => this.actions.onEditMap(map),
+      onShowDetails: (summary) => {
+        this.onlineMapDetailsModal?.show(summary);
+      },
+      onDownloadCopy: (summary) => {
+        void this.handleDownloadOnlineCopy(summary);
+      },
+      onPlayMultiplayer: (map, roomId, onlineMapId) =>
+        this.actions.onPlayMultiplayer?.(map, roomId, onlineMapId),
+      onCreateMultiplayerRoom: (map, onlineMapId) =>
+        this.actions.onCreateMultiplayerRoom?.(map, onlineMapId),
+    }, this.multiplayerLobbyModal);
+
+    this.onlineMapsTab.render();
+  }
+
+  private async handleDownloadOnlineCopy(summary: OnlineMapSummary): Promise<void> {
+    const { OnlineMapService } = await import("../../services/OnlineMapService.js");
+    const { MapStorage } = await import("../../storage/MapStorage.js");
+
+    try {
+      const localCopy = await OnlineMapService.downloadOnlineMapAsLocalCopy(summary.id);
+      MapStorage.saveMap(localCopy);
+
+      const shouldOpen = confirm(
+        `Mapa "${summary.name}" salvo como cópia local!\n\nDeseja abrir no editor agora?`
+      );
+
+      if (shouldOpen) {
+        this.actions.onEditMap(localCopy);
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Erro ao baixar mapa.");
+    }
   }
 
   private readonly handleClick = (event: MouseEvent): void => {
@@ -217,7 +336,8 @@ export class MapListScreen implements Screen {
       return;
     }
 
-    const mapId = button.dataset.mapId ?? button.closest<HTMLElement>("[data-map-id]")?.dataset.mapId;
+    const mapId =
+      button.dataset.mapId ?? button.closest<HTMLElement>("[data-map-id]")?.dataset.mapId;
     const map = this.maps.find((candidate) => candidate.id === mapId);
 
     if (!map) {
@@ -284,13 +404,17 @@ export class MapListScreen implements Screen {
       }
 
       if (this.filters.sort === "favorites") {
-        return compareBoolean(favorites.has(b.id), favorites.has(a.id)) ||
-          getTime(b.updatedAt) - getTime(a.updatedAt);
+        return (
+          compareBoolean(favorites.has(b.id), favorites.has(a.id)) ||
+          getTime(b.updatedAt) - getTime(a.updatedAt)
+        );
       }
 
       if (this.filters.sort === "likes") {
-        return compareBoolean(likes.has(b.id), likes.has(a.id)) ||
-          getTime(b.updatedAt) - getTime(a.updatedAt);
+        return (
+          compareBoolean(likes.has(b.id), likes.has(a.id)) ||
+          getTime(b.updatedAt) - getTime(a.updatedAt)
+        );
       }
 
       return getTime(b.updatedAt) - getTime(a.updatedAt);
@@ -322,13 +446,17 @@ export class MapListScreen implements Screen {
       <section class="map-detail-overlay" role="dialog" aria-modal="true" aria-label="Detalhes do mapa">
         <article class="map-detail-panel" data-map-id="${escapeAttribute(map.id)}">
           <div class="map-detail-media">
-            ${map.thumbnail ? `
+            ${
+              map.thumbnail
+                ? `
               <img src="${escapeAttribute(map.thumbnail)}" alt="Thumbnail de ${escapeAttribute(map.name)}" />
-            ` : `
+            `
+                : `
               <div class="map-thumbnail-placeholder">
                 <i data-lucide="image"></i>
               </div>
-            `}
+            `
+            }
           </div>
           <div class="map-detail-content">
             <div class="map-title-line">
@@ -346,11 +474,15 @@ export class MapListScreen implements Screen {
               <span><i data-lucide="calendar-plus"></i>${formatDate(map.createdAt)}</span>
               <span><i data-lucide="clock"></i>${formatUpdatedAt(map.updatedAt)}</span>
             </div>
-            ${tags.length > 0 ? `
+            ${
+              tags.length > 0
+                ? `
               <div class="map-tags">
                 ${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
               </div>
-            ` : ""}
+            `
+                : ""
+            }
             <div class="map-detail-stats">
               <span><strong>${map.objects.length}</strong> objetos</span>
               <span><strong>${getCoinCount(map)}</strong> moedas</span>
@@ -413,13 +545,17 @@ function renderMapCard(map: GameMap): string {
   return `
     <article class="map-card" data-map-id="${escapeAttribute(map.id)}">
       <div class="map-thumbnail">
-        ${map.thumbnail ? `
+        ${
+          map.thumbnail
+            ? `
           <img src="${escapeAttribute(map.thumbnail)}" alt="Thumbnail de ${escapeAttribute(map.name)}" />
-        ` : `
+        `
+            : `
           <div class="map-thumbnail-placeholder">
             <i data-lucide="image"></i>
           </div>
-        `}
+        `
+        }
       </div>
       <div class="map-card-info">
         <div class="map-title-line">
@@ -438,11 +574,18 @@ function renderMapCard(map: GameMap): string {
           <span><i data-lucide="clock"></i>${formatUpdatedAt(map.updatedAt)}</span>
           <span><i data-lucide="heart"></i>${LocalMapMetadataStorage.getLikeCount(map.id)} curtidas</span>
         </div>
-        ${tags.length > 0 ? `
+        ${
+          tags.length > 0
+            ? `
           <div class="map-tags">
-            ${tags.slice(0, 5).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
+            ${tags
+              .slice(0, 5)
+              .map((tag) => `<span>${escapeHtml(tag)}</span>`)
+              .join("")}
           </div>
-        ` : ""}
+        `
+            : ""
+        }
       </div>
       <div class="map-row-actions">
         <button class="small-action primary" type="button" data-action="play" title="Jogar">
@@ -480,7 +623,7 @@ function createDuplicateMap(map: GameMap): GameMap {
     isPublished: false,
     publishedAt: undefined,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
 }
 
@@ -499,8 +642,9 @@ function getAvailableTags(maps: GameMap[]): string[] {
 }
 
 function getAvailableThemes(maps: GameMap[]): VisualTheme[] {
-  return [...new Set(maps.map((map) => resolveVisualSettings(map.visualSettings).theme))]
-    .sort((a, b) => a.localeCompare(b, "pt-BR"));
+  return [...new Set(maps.map((map) => resolveVisualSettings(map.visualSettings).theme))].sort(
+    (a, b) => a.localeCompare(b, "pt-BR")
+  );
 }
 
 function downloadJson(map: GameMap, fileName: string): void {
@@ -518,13 +662,15 @@ function getExportFileName(map: GameMap): string {
 }
 
 function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "mapa";
+  return (
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "mapa"
+  );
 }
 
 function createId(prefix: string): string {
@@ -542,7 +688,7 @@ function formatUpdatedAt(value: string | undefined): string {
 
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -552,7 +698,7 @@ function formatDate(value: string | undefined): string {
   }
 
   return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short"
+    dateStyle: "short",
   }).format(new Date(value));
 }
 
@@ -599,12 +745,7 @@ function getThemeFilter(value: string | undefined): "all" | VisualTheme {
 }
 
 function getCatalogSort(value: string | undefined): CatalogSort {
-  if (
-    value === "oldest" ||
-    value === "name" ||
-    value === "favorites" ||
-    value === "likes"
-  ) {
+  if (value === "oldest" || value === "name" || value === "favorites" || value === "likes") {
     return value;
   }
 

@@ -13,18 +13,22 @@ async function main() {
 
   await mkdir(userDataDir, { recursive: true });
 
-  const browser = spawn(EDGE_PATH, [
-    "--headless=new",
-    "--disable-gpu",
-    "--no-first-run",
-    "--no-default-browser-check",
-    `--remote-debugging-port=${DEBUG_PORT}`,
-    `--user-data-dir=${userDataDir}`,
-    "about:blank"
-  ], {
-    stdio: "ignore",
-    windowsHide: true
-  });
+  const browser = spawn(
+    EDGE_PATH,
+    [
+      "--headless=new",
+      "--disable-gpu",
+      "--no-first-run",
+      "--no-default-browser-check",
+      `--remote-debugging-port=${DEBUG_PORT}`,
+      `--user-data-dir=${userDataDir}`,
+      "about:blank",
+    ],
+    {
+      stdio: "ignore",
+      windowsHide: true,
+    }
+  );
 
   try {
     const version = await waitForVersion();
@@ -46,49 +50,69 @@ async function inspectViewport(client, width, height, mobile, name) {
   const { targetId } = await client.send("Target.createTarget", { url: "about:blank" });
   const { sessionId } = await client.send("Target.attachToTarget", {
     targetId,
-    flatten: true
+    flatten: true,
   });
 
   await client.send("Page.enable", {}, sessionId);
   await client.send("Runtime.enable", {}, sessionId);
-  await client.send("Emulation.setDeviceMetricsOverride", {
-    width,
-    height,
-    deviceScaleFactor: 1,
-    mobile
-  }, sessionId);
+  await client.send(
+    "Emulation.setDeviceMetricsOverride",
+    {
+      width,
+      height,
+      deviceScaleFactor: 1,
+      mobile,
+    },
+    sessionId
+  );
   await client.send("Page.navigate", { url: APP_URL }, sessionId);
   await wait(1200);
-  await client.send("Runtime.evaluate", {
-    expression: `document.querySelector('[data-action="create"]')?.click()`
-  }, sessionId);
+  await client.send(
+    "Runtime.evaluate",
+    {
+      expression: `document.querySelector('[data-action="create"]')?.click()`,
+    },
+    sessionId
+  );
   await wait(1200);
 
-  const rect = await evaluateJson(client, sessionId, `(() => {
+  const rect = await evaluateJson(
+    client,
+    sessionId,
+    `(() => {
     const canvas = document.querySelector("canvas");
     if (!canvas) return null;
     const r = canvas.getBoundingClientRect();
     return { x: r.x, y: r.y, width: r.width, height: r.height };
-  })()`);
+  })()`
+  );
 
-  const errors = await evaluateJson(client, sessionId, `(() => {
+  const errors = await evaluateJson(
+    client,
+    sessionId,
+    `(() => {
     return window.__miniBloxErrors ?? [];
-  })()`);
+  })()`
+  );
 
   if (!rect || rect.width < 20 || rect.height < 20) {
     throw new Error(`Canvas is not visible in ${name} viewport.`);
   }
 
-  const { data } = await client.send("Page.captureScreenshot", {
-    format: "png",
-    clip: {
-      x: Math.max(0, rect.x),
-      y: Math.max(0, rect.y),
-      width: Math.max(1, rect.width),
-      height: Math.max(1, rect.height),
-      scale: 1
-    }
-  }, sessionId);
+  const { data } = await client.send(
+    "Page.captureScreenshot",
+    {
+      format: "png",
+      clip: {
+        x: Math.max(0, rect.x),
+        y: Math.max(0, rect.y),
+        width: Math.max(1, rect.width),
+        height: Math.max(1, rect.height),
+        scale: 1,
+      },
+    },
+    sessionId
+  );
 
   const image = parsePng(Buffer.from(data, "base64"));
   const pixelSummary = summarizePixels(image);
@@ -101,7 +125,7 @@ async function inspectViewport(client, width, height, mobile, name) {
     canvas: `${Math.round(rect.width)}x${Math.round(rect.height)}`,
     uniqueSampleColors: pixelSummary.uniqueSampleColors,
     nonBlankSamples: pixelSummary.nonBlankSamples,
-    errors
+    errors,
   };
 }
 
@@ -126,7 +150,7 @@ function summarizePixels(image) {
 
   return {
     uniqueSampleColors: samples.size,
-    nonBlankSamples
+    nonBlankSamples,
   };
 }
 
@@ -204,10 +228,14 @@ function parsePng(buffer) {
 }
 
 async function evaluateJson(client, sessionId, expression) {
-  const result = await client.send("Runtime.evaluate", {
-    expression: `JSON.stringify(${expression})`,
-    returnByValue: true
-  }, sessionId);
+  const result = await client.send(
+    "Runtime.evaluate",
+    {
+      expression: `JSON.stringify(${expression})`,
+      returnByValue: true,
+    },
+    sessionId
+  );
 
   return JSON.parse(result.result.value);
 }

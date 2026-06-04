@@ -8,10 +8,13 @@ import {
   createMapObject3D,
   disposeObject3D,
   stampMapObject3D,
-  syncMapObjectFromThree
+  syncMapObjectFromThree,
 } from "../engine/ObjectFactory";
 import { PhysicsSystem } from "../engine/PhysicsSystem";
-import { createMapObject as createMapObjectData, getObjectCatalogItem } from "../shared/ObjectCatalog";
+import {
+  createMapObject as createMapObjectData,
+  getObjectCatalogItem,
+} from "../shared/ObjectCatalog";
 import { resolveVisualSettings } from "../shared/VisualSettings";
 import type { GameMap } from "../shared/types/MapSchema";
 import type { BuiltInObjectType, MapAsset, MapObject, Vector3 } from "../shared/types/ObjectSchema";
@@ -106,7 +109,10 @@ export class EditorScene {
     cancelAnimationFrame(this.animationFrame);
     this.renderer.domElement.removeEventListener("pointerdown", this.handlePointerDown);
     this.renderer.domElement.removeEventListener("pointerup", this.handlePointerUp);
-    this.transformControls.removeEventListener("dragging-changed", this.handleTransformDraggingChanged);
+    this.transformControls.removeEventListener(
+      "dragging-changed",
+      this.handleTransformDraggingChanged
+    );
     this.transformControls.removeEventListener("objectChange", this.handleTransformObjectChange);
     this.resizeObserver.disconnect();
     this.orbitControls.dispose();
@@ -169,21 +175,27 @@ export class EditorScene {
   }
 
   updateMapInfo(
-    patch: Partial<Pick<GameMap,
-      "name" |
-      "authorId" |
-      "description" |
-      "creatorName" |
-      "thumbnail" |
-      "tags" |
-      "isPublished" |
-      "publishedAt" |
-      "logicDebug" |
-      "visualSettings" |
-      "audioSettings" |
-      "gameplaySettings" |
-      "objectives"
-    >>
+    patch: Partial<
+      Pick<
+        GameMap,
+        | "name"
+        | "authorId"
+        | "description"
+        | "creatorName"
+        | "thumbnail"
+        | "tags"
+        | "isPublished"
+        | "publishedAt"
+        | "logicDebug"
+        | "visualSettings"
+        | "audioSettings"
+        | "gameplaySettings"
+        | "objectives"
+        | "gameModeSettings"
+        | "teams"
+        | "onlineMetadata"
+      >
+    >
   ): void {
     Object.assign(this.map, patch);
     if (patch.visualSettings) {
@@ -240,7 +252,7 @@ export class EditorScene {
     const properties = type === "button" ? this.getSuggestedButtonProperties() : undefined;
     const mapObject = createMapObjectData(type, this.getPlacementPoint(type), {
       name: this.getNextObjectName(type),
-      properties
+      properties,
     });
     this.map.objects.push(mapObject);
     await this.addViewForObject(mapObject);
@@ -257,14 +269,14 @@ export class EditorScene {
       name: file.name,
       kind: "model",
       mimeType: file.type || "model/gltf-binary",
-      dataUrl
+      dataUrl,
     };
 
     this.map.assets = [...(this.map.assets ?? []), asset];
 
     const mapObject = createMapObjectData("model", this.getPlacementPoint("model"), {
       name: file.name.replace(/\.[^.]+$/, ""),
-      assetId: asset.id
+      assetId: asset.id,
     });
 
     this.map.objects.push(mapObject);
@@ -330,7 +342,7 @@ export class EditorScene {
     if (patch.properties) {
       mapObject.properties = {
         ...mapObject.properties,
-        ...patch.properties
+        ...patch.properties,
       };
     }
 
@@ -533,7 +545,7 @@ export class EditorScene {
       new THREE.MeshStandardMaterial({
         color: "#edf4fb",
         roughness: 0.85,
-        metalness: 0
+        metalness: 0,
       })
     );
     this.floor.rotation.x = -Math.PI / 2;
@@ -569,7 +581,10 @@ export class EditorScene {
   private bindEvents(): void {
     this.renderer.domElement.addEventListener("pointerdown", this.handlePointerDown);
     this.renderer.domElement.addEventListener("pointerup", this.handlePointerUp);
-    this.transformControls.addEventListener("dragging-changed", this.handleTransformDraggingChanged);
+    this.transformControls.addEventListener(
+      "dragging-changed",
+      this.handleTransformDraggingChanged
+    );
     this.transformControls.addEventListener("objectChange", this.handleTransformObjectChange);
   }
 
@@ -717,18 +732,18 @@ export class EditorScene {
     if (duplicate.type === "door") {
       duplicate.properties = {
         ...duplicate.properties,
-        doorId: duplicate.id
+        doorId: duplicate.id,
       };
     } else if (duplicate.type === "checkpoint") {
       duplicate.properties = {
         ...duplicate.properties,
-        checkpointId: duplicate.id
+        checkpointId: duplicate.id,
       };
     } else if (duplicate.type === "teleporter") {
       duplicate.properties = {
         ...duplicate.properties,
         teleporterId: duplicate.id,
-        targetTeleporterId: ""
+        targetTeleporterId: "",
       };
     }
 
@@ -760,19 +775,22 @@ export class EditorScene {
   }
 
   private getSuggestedButtonProperties(): MapObject["properties"] | undefined {
-    const latestDoor = [...this.map.objects].reverse().find((mapObject) => mapObject.type === "door");
+    const latestDoor = [...this.map.objects]
+      .reverse()
+      .find((mapObject) => mapObject.type === "door");
 
     if (!latestDoor) {
       return undefined;
     }
 
-    const targetDoorId = typeof latestDoor.properties?.doorId === "string"
-      ? latestDoor.properties.doorId
-      : latestDoor.id;
+    const targetDoorId =
+      typeof latestDoor.properties?.doorId === "string"
+        ? latestDoor.properties.doorId
+        : latestDoor.id;
 
     return {
       targetDoorId,
-      buttonTargetId: targetDoorId
+      buttonTargetId: targetDoorId,
     };
   }
 
@@ -810,12 +828,15 @@ export class EditorScene {
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     const hit = ray.intersectPlane(plane, point);
     const scale = getObjectCatalogItem(type).defaultScale;
-    const y = type === "spawn" ||
+    const y =
+      type === "spawn" ||
       type === "coin" ||
       type === "checkpoint" ||
       type === "finish" ||
       type === "npc" ||
       type === "itemSpawner" ||
+      type === "teamSpawn" ||
+      type === "capturePoint" ||
       type === "teleporter" ||
       type === "messageZone" ||
       type === "key" ||
@@ -827,8 +848,8 @@ export class EditorScene {
       type === "lamp" ||
       type === "arch" ||
       type === "pillar"
-      ? 0
-      : scale.y / 2;
+        ? 0
+        : scale.y / 2;
 
     if (!hit) {
       point.copy(this.orbitControls.target);
@@ -837,7 +858,7 @@ export class EditorScene {
     return this.offsetPlacementPoint({
       x: snap(point.x),
       y: snap(y),
-      z: snap(point.z)
+      z: snap(point.z),
     });
   }
 
@@ -856,11 +877,12 @@ export class EditorScene {
   }
 
   private hasObjectNear(point: Vector3): boolean {
-    return this.map.objects.some((mapObject) => (
-      Math.abs(mapObject.position.x - point.x) < 0.05 &&
-      Math.abs(mapObject.position.y - point.y) < 0.05 &&
-      Math.abs(mapObject.position.z - point.z) < 0.05
-    ));
+    return this.map.objects.some(
+      (mapObject) =>
+        Math.abs(mapObject.position.x - point.x) < 0.05 &&
+        Math.abs(mapObject.position.y - point.y) < 0.05 &&
+        Math.abs(mapObject.position.z - point.z) < 0.05
+    );
   }
 
   private applySnapToSelectedObject(): void {
@@ -915,7 +937,10 @@ export class EditorScene {
     bounds.getSize(size);
 
     const radius = Math.max(size.x, size.y, size.z, 1);
-    const direction = new THREE.Vector3().subVectors(this.camera.position, this.orbitControls.target);
+    const direction = new THREE.Vector3().subVectors(
+      this.camera.position,
+      this.orbitControls.target
+    );
 
     if (direction.lengthSq() < 0.01) {
       direction.set(1, 0.85, 1);
@@ -1058,6 +1083,10 @@ function getObjectNameBase(type: BuiltInObjectType): string {
       return "NPC";
     case "itemSpawner":
       return "Item Spawner";
+    case "teamSpawn":
+      return "Spawn de Time";
+    case "capturePoint":
+      return "Capture Point";
     case "tree":
       return "Arvore";
     case "rock":

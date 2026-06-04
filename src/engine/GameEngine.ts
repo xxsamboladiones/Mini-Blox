@@ -101,7 +101,9 @@ export class GameEngine {
       const object3D = createMapObject3D(mapObject);
 
       if (mapObject.type === "model" && mapObject.assetId) {
-        const asset = this.activeMap.assets?.find((candidate) => candidate.id === mapObject.assetId);
+        const asset = this.activeMap.assets?.find(
+          (candidate) => candidate.id === mapObject.assetId
+        );
 
         if (asset) {
           object3D.clear();

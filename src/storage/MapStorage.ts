@@ -19,7 +19,7 @@ export const MapStorage = {
       tags: normalizeTags(map.tags),
       isPublished: map.isPublished ?? Boolean(map.publishedAt),
       createdAt: map.createdAt ?? existingMap?.createdAt ?? now,
-      updatedAt: now
+      updatedAt: now,
     };
     localStorage.setItem(getMapKey(nextMap.id), JSON.stringify(nextMap));
     writeIndex([nextMap.id, ...readIndex().filter((id) => id !== nextMap.id)]);
@@ -74,7 +74,7 @@ export const MapStorage = {
 
   setLastMap(id: string): void {
     localStorage.setItem(LAST_MAP_KEY, id);
-  }
+  },
 };
 
 function getMapKey(id: string): string {
@@ -90,9 +90,7 @@ function readIndex(): string[] {
 
   try {
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === "string")
-      : [];
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
   } catch {
     return [];
   }

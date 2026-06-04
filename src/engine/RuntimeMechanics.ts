@@ -4,13 +4,14 @@ import {
   applyObjectAppearanceToThree,
   applyObjectTransformToThree,
   createMapObject3D,
-  disposeObject3D
+  disposeObject3D,
 } from "./ObjectFactory";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { PlayerController } from "./PlayerController";
-import { RuntimeHud, type VictoryActions } from "./RuntimeHud";
+import { RuntimeHud, type GameModeSummary, type VictoryActions } from "./RuntimeHud";
 import { LogicRuntime } from "./LogicRuntime";
 import { ObjectiveRuntime } from "./ObjectiveRuntime";
+import { GameModeRuntime } from "./GameModeRuntime";
 import type { GameMap } from "../shared/types/MapSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
 import type { InventoryItem, ItemPickupObject, ItemSpawnMode } from "../shared/types/ItemSchema";
@@ -76,7 +77,7 @@ const DEFAULT_WEAPON: EquippedWeapon = {
   label: "Basica",
   damage: 25,
   range: 2,
-  cooldown: 0.5
+  cooldown: 0.5,
 };
 
 export class RuntimeMechanics {
@@ -115,6 +116,7 @@ export class RuntimeMechanics {
   private readonly initialDoorPositions = new Map<string, THREE.Vector3>();
   private readonly logicRuntime: LogicRuntime;
   private readonly objectiveRuntime: ObjectiveRuntime;
+  private readonly gameModeRuntime: GameModeRuntime;
 
   constructor(
     private readonly map: GameMap,
@@ -160,7 +162,8 @@ export class RuntimeMechanics {
         const healed = this.healPlayer(amount);
         this.hud.showMessage(healed > 0 ? `Vida +${Math.round(healed)}` : "Vida ja esta cheia");
       },
-      damagePlayer: (amount) => this.damagePlayer(amount, "Logica causou dano", this.player.getPosition(), false),
+      damagePlayer: (amount) =>
+        this.damagePlayer(amount, "Logica causou dano", this.player.getPosition(), false),
       giveWeapon: (weaponId) => {
         this.equipWeapon(weaponId);
         this.updateInventoryHud();
@@ -168,13 +171,27 @@ export class RuntimeMechanics {
       },
       completeObjective: (objectiveId) => this.objectiveRuntime.completeObjective(objectiveId),
       showDialogue: (objectId, message) => this.showDialogueLine(objectId, message),
-      getObjectById: (objectId) => this.map.objects.find((mapObject) => mapObject.id === objectId) ?? null
+      addScore: (amount) => this.gameModeRuntime.addScore(amount),
+      addTeamScore: (teamId, amount) => this.gameModeRuntime.addTeamScore(teamId, amount),
+      setTeam: (teamId) => this.gameModeRuntime.setTeam(teamId),
+      endRound: (result) => this.gameModeRuntime.endRound(result),
+      getObjectById: (objectId) =>
+        this.map.objects.find((mapObject) => mapObject.id === objectId) ?? null,
     });
     this.objectiveRuntime = new ObjectiveRuntime(this.map, this.hud, this.audio, this.feedback, {
       onObjectiveCompleted: (objective) => {
+        this.gameModeRuntime.onObjectiveCompleted(this.objectiveRuntime.getRequiredSummary());
         this.logicRuntime.dispatch({ type: "onObjectiveCompleted", objectiveId: objective.id });
-      }
+      },
     });
+    this.gameModeRuntime = new GameModeRuntime(this.map, this.hud, this.objectViews, {
+      onWin: (message, summary) => this.completeGame(message, summary),
+      onLogicEvent: (event) => this.logicRuntime.dispatch(event),
+      onTeamChanged: (team) => this.player.setTeamColor(team?.color ?? null),
+    });
+    this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint(this.currentRespawnPoint);
+    this.player.setPosition(this.currentRespawnPoint);
+    this.player.resetVelocity();
     this.logicRuntime.start();
   }
 
@@ -200,6 +217,7 @@ export class RuntimeMechanics {
     this.updateItemPickups(playerBounds);
     this.updateEnemies(deltaSeconds, playerBounds);
     this.updateLogicObjectEntryEvents(playerBounds);
+    this.gameModeRuntime.update(deltaSeconds, playerBounds, this.player.getPosition());
 
     if (this.isGameFinished) {
       return;
@@ -319,12 +337,15 @@ export class RuntimeMechanics {
     }
 
     const speaker = getString(target.properties?.npcName, target.name ?? "NPC");
-    const lines = getNpcDialogueLines(target, target.properties?.showQuestHint !== false ? this.objectiveRuntime.getCurrentHint() : null);
+    const lines = getNpcDialogueLines(
+      target,
+      target.properties?.showQuestHint !== false ? this.objectiveRuntime.getCurrentHint() : null
+    );
     this.activeDialogue = {
       objectId: target.id,
       speaker,
       lines,
-      index: 0
+      index: 0,
     };
     this.audio.play("message");
     this.feedback.spawn("npc", target.position, speaker);
@@ -335,12 +356,14 @@ export class RuntimeMechanics {
 
   private showDialogueLine(objectId: string, message: string): void {
     const target = this.map.objects.find((mapObject) => mapObject.id === objectId);
-    const speaker = target ? getString(target.properties?.npcName, target.name ?? "NPC") : "Sistema";
+    const speaker = target
+      ? getString(target.properties?.npcName, target.name ?? "NPC")
+      : "Sistema";
     this.activeDialogue = {
       objectId,
       speaker,
       lines: [message],
-      index: 0
+      index: 0,
     };
     this.audio.play("message");
 
@@ -419,6 +442,7 @@ export class RuntimeMechanics {
     this.hud.setWeapon(null);
     this.updateInventoryHud();
     this.clearRuntimePickups();
+    this.gameModeRuntime.reset();
 
     for (const mapObject of this.map.objects) {
       const view = this.objectViews.get(mapObject.id);
@@ -436,6 +460,7 @@ export class RuntimeMechanics {
     this.physicsSystem.setCollidersFromObjects(this.map, this.objectViews);
     this.applyInitialDoorState();
     this.initializeItemSpawners();
+    this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint({ ...this.map.spawnPoint });
     this.player.setPosition(this.currentRespawnPoint);
     this.player.resetVelocity();
     this.logicRuntime.reset();
@@ -504,12 +529,20 @@ export class RuntimeMechanics {
       return;
     }
 
-    this.coinCount = Math.max(0, this.coinCount + Math.floor(amount));
+    const coinAmount = Math.floor(amount);
+    this.coinCount = Math.max(0, this.coinCount + coinAmount);
     this.hud.setCoins(this.coinCount, this.getTotalCoinObjects());
     this.audio.play("coin");
+    this.objectiveRuntime.onCoinCollected(this.coinCount);
+    this.gameModeRuntime.onCoinCollected(this.coinCount, coinAmount);
   }
 
-  private damagePlayer(amount: number, message: string, position?: Vector3, emitLogicEvent = true): void {
+  private damagePlayer(
+    amount: number,
+    message: string,
+    position?: Vector3,
+    emitLogicEvent = true
+  ): void {
     const previousHealth = this.player.getHealth();
     const currentHealth = this.player.damage(Math.max(0, amount));
     const damageDone = Math.max(0, previousHealth - currentHealth);
@@ -543,15 +576,16 @@ export class RuntimeMechanics {
     const normalizedWeaponId = normalizeWeaponId(itemId);
     const catalogItemId = normalizedWeaponId === "basic_sword" ? "weapon_basic" : itemId;
     const definition = getItemDefinition(catalogItemId);
-    const weapon = definition && "damage" in definition
-      ? {
-        id: normalizedWeaponId,
-        label: definition.name === "Sword" ? "Basica" : definition.name,
-        damage: definition.damage,
-        range: definition.range,
-        cooldown: definition.cooldown
-      }
-      : DEFAULT_WEAPON;
+    const weapon =
+      definition && "damage" in definition
+        ? {
+            id: normalizedWeaponId,
+            label: definition.name === "Sword" ? "Basica" : definition.name,
+            damage: definition.damage,
+            range: definition.range,
+            cooldown: definition.cooldown,
+          }
+        : DEFAULT_WEAPON;
 
     this.equippedWeapon = weapon;
     this.hud.setWeapon(weapon.label);
@@ -567,7 +601,7 @@ export class RuntimeMechanics {
       this.inventory.set(inventoryItemId, {
         itemId: inventoryItemId,
         quantity: 1,
-        collectedAt: now
+        collectedAt: now,
       });
     }
   }
@@ -619,8 +653,8 @@ export class RuntimeMechanics {
           ...target,
           properties: {
             ...target.properties,
-            color: activatedColor
-          }
+            color: activatedColor,
+          },
         });
       }
     }
@@ -636,7 +670,11 @@ export class RuntimeMechanics {
       return;
     }
 
-    if (this.map.gameplaySettings?.requireObjectivesToFinish && !this.objectiveRuntime.areRequiredObjectivesComplete()) {
+    if (
+      (this.map.gameplaySettings?.requireObjectivesToFinish ||
+        this.gameModeRuntime.requiresObjectivesToFinish()) &&
+      !this.objectiveRuntime.areRequiredObjectivesComplete()
+    ) {
       const summary = this.objectiveRuntime.getRequiredSummary();
 
       if (this.messageCooldown <= 0) {
@@ -647,6 +685,14 @@ export class RuntimeMechanics {
       return;
     }
 
+    this.gameModeRuntime.handleFinishReached(message, this.objectiveRuntime.getRequiredSummary());
+  }
+
+  private completeGame(message: string, summary?: GameModeSummary): void {
+    if (this.isGameFinished) {
+      return;
+    }
+
     this.isGameFinished = true;
     this.options.onComplete?.(this.coinCount);
     this.audio.play("victory");
@@ -654,9 +700,9 @@ export class RuntimeMechanics {
     const actions: VictoryActions = {
       onRestart: this.options.onRestart,
       onEdit: this.options.onEdit,
-      onMenu: this.options.onMenu
+      onMenu: this.options.onMenu,
     };
-    this.hud.showVictory(message, this.coinCount, actions);
+    this.hud.showVictory(message, this.coinCount, actions, summary);
   }
 
   setObjectEnabled(objectId: string, enabled: boolean): boolean {
@@ -673,7 +719,10 @@ export class RuntimeMechanics {
       applyObjectTransformToThree(view, mapObject);
       applyObjectAppearanceToThree(view, mapObject);
 
-      if (mapObject.type === "door" && this.isDoorOpenById(getString(mapObject.properties?.doorId, mapObject.id))) {
+      if (
+        mapObject.type === "door" &&
+        this.isDoorOpenById(getString(mapObject.properties?.doorId, mapObject.id))
+      ) {
         this.physicsSystem.removeCollider(mapObject.id);
       } else {
         this.physicsSystem.updateColliderForObject(mapObject, view);
@@ -689,7 +738,10 @@ export class RuntimeMechanics {
   }
 
   private updateCheckpoint(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if (this.activatedCheckpointIds.has(mapObject.id) || !this.intersects(mapObject, playerBounds)) {
+    if (
+      this.activatedCheckpointIds.has(mapObject.id) ||
+      !this.intersects(mapObject, playerBounds)
+    ) {
       return;
     }
 
@@ -703,8 +755,8 @@ export class RuntimeMechanics {
         ...mapObject,
         properties: {
           ...mapObject.properties,
-          color: activatedColor
-        }
+          color: activatedColor,
+        },
       });
     }
 
@@ -721,7 +773,10 @@ export class RuntimeMechanics {
     const mode = mapObject.properties?.mode === "damage" ? "damage" : "kill";
 
     if (mode === "damage") {
-      const amount = getNumber(mapObject.properties?.damage, getNumber(mapObject.properties?.damagePerSecond, 25));
+      const amount = getNumber(
+        mapObject.properties?.damage,
+        getNumber(mapObject.properties?.damagePerSecond, 25)
+      );
       this.damagePlayer(amount, "Cuidado! Voce sofreu dano", mapObject.position);
       this.deathCooldown = this.player.isDead() ? this.deathCooldown : 0.7;
       return;
@@ -736,7 +791,10 @@ export class RuntimeMechanics {
     }
 
     this.collectedCoinIds.add(mapObject.id);
-    const value = getNumber(mapObject.properties?.value, getNumber(mapObject.properties?.coinValue, 1));
+    const value = getNumber(
+      mapObject.properties?.value,
+      getNumber(mapObject.properties?.coinValue, 1)
+    );
     this.coinCount += value;
     const view = this.objectViews.get(mapObject.id);
 
@@ -749,6 +807,7 @@ export class RuntimeMechanics {
     this.audio.play("coin");
     this.feedback.spawn("coinCollect", mapObject.position, `+${value}`);
     this.objectiveRuntime.onCoinCollected(this.coinCount);
+    this.gameModeRuntime.onCoinCollected(this.coinCount, value);
     this.logicRuntime.dispatch({ type: "onCoinCollected", objectId: mapObject.id });
   }
 
@@ -793,7 +852,11 @@ export class RuntimeMechanics {
     this.openDoor(mapObject);
   }
 
-  private updateDisappearingBlock(mapObject: MapObject, playerBounds: THREE.Box3, deltaSeconds: number): void {
+  private updateDisappearingBlock(
+    mapObject: MapObject,
+    playerBounds: THREE.Box3,
+    deltaSeconds: number
+  ): void {
     const state = this.disappearingBlockStates.get(mapObject.id);
 
     if (!state) {
@@ -821,12 +884,18 @@ export class RuntimeMechanics {
   }
 
   private updateJumpPad(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if ((this.jumpPadCooldowns.get(mapObject.id) ?? 0) > 0 || !this.intersects(mapObject, playerBounds)) {
+    if (
+      (this.jumpPadCooldowns.get(mapObject.id) ?? 0) > 0 ||
+      !this.intersects(mapObject, playerBounds)
+    ) {
       return;
     }
 
     this.player.applyImpulseY(Math.max(0, getNumber(mapObject.properties?.force, 12)));
-    this.jumpPadCooldowns.set(mapObject.id, Math.max(0.05, getNumber(mapObject.properties?.cooldown, 0.4)));
+    this.jumpPadCooldowns.set(
+      mapObject.id,
+      Math.max(0.05, getNumber(mapObject.properties?.cooldown, 0.4))
+    );
     this.hud.showMessage("Impulso!");
     this.audio.play("jumpPad");
     this.feedback.spawn("jumpPad", mapObject.position);
@@ -834,7 +903,10 @@ export class RuntimeMechanics {
   }
 
   private updateTeleporter(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if ((this.teleporterCooldowns.get(mapObject.id) ?? 0) > 0 || !this.intersects(mapObject, playerBounds)) {
+    if (
+      (this.teleporterCooldowns.get(mapObject.id) ?? 0) > 0 ||
+      !this.intersects(mapObject, playerBounds)
+    ) {
       return;
     }
 
@@ -844,10 +916,12 @@ export class RuntimeMechanics {
       return;
     }
 
-    const target = this.map.objects.find((candidate) => (
-      candidate.type === "teleporter" &&
-      (candidate.id === targetTeleporterId || candidate.properties?.teleporterId === targetTeleporterId)
-    ));
+    const target = this.map.objects.find(
+      (candidate) =>
+        candidate.type === "teleporter" &&
+        (candidate.id === targetTeleporterId ||
+          candidate.properties?.teleporterId === targetTeleporterId)
+    );
 
     if (!target) {
       return;
@@ -928,10 +1002,11 @@ export class RuntimeMechanics {
     );
 
     if (targetDoorId) {
-      const door = this.map.objects.find((candidate) => (
-        candidate.type === "door" &&
-        (candidate.id === targetDoorId || candidate.properties?.doorId === targetDoorId)
-      ));
+      const door = this.map.objects.find(
+        (candidate) =>
+          candidate.type === "door" &&
+          (candidate.id === targetDoorId || candidate.properties?.doorId === targetDoorId)
+      );
 
       if (!door) {
         if (!this.warnedMissingDoorIds.has(targetDoorId)) {
@@ -956,8 +1031,8 @@ export class RuntimeMechanics {
         ...mapObject,
         properties: {
           ...mapObject.properties,
-          color: "#22c55e"
-        }
+          color: "#22c55e",
+        },
       });
     }
 
@@ -975,7 +1050,10 @@ export class RuntimeMechanics {
 
     this.objectiveRuntime.onObjectReached(mapObject.id);
 
-    if (mapObject.properties?.requiresAllCoins && this.collectedCoinIds.size < this.getTotalCoinObjects()) {
+    if (
+      mapObject.properties?.requiresAllCoins &&
+      this.collectedCoinIds.size < this.getTotalCoinObjects()
+    ) {
       if (this.messageCooldown <= 0) {
         this.hud.showMessage("Colete todas as moedas para finalizar.");
         this.messageCooldown = 1.5;
@@ -1001,7 +1079,7 @@ export class RuntimeMechanics {
           startOffset: getThreeVector(mapObject.properties?.startOffset, { x: 0, y: 0, z: 0 }),
           endOffset: getThreeVector(mapObject.properties?.endOffset, { x: 5, y: 0, z: 0 }),
           progress: 0,
-          direction: 1
+          direction: 1,
         };
         this.movingPlatformStates.set(mapObject.id, state);
         this.applyMovingPlatformPosition(state);
@@ -1009,7 +1087,7 @@ export class RuntimeMechanics {
         this.disappearingBlockStates.set(mapObject.id, {
           mapObject,
           phase: "idle",
-          timer: 0
+          timer: 0,
         });
       } else if (mapObject.type === "enemy") {
         const view = this.objectViews.get(mapObject.id);
@@ -1027,7 +1105,7 @@ export class RuntimeMechanics {
           health: maxHealth,
           maxHealth,
           attackCooldown: 0,
-          patrolTarget: 1
+          patrolTarget: 1,
         });
       }
     }
@@ -1043,7 +1121,7 @@ export class RuntimeMechanics {
         continue;
       }
 
-      state.progress += (deltaSeconds * speed / distance) * state.direction;
+      state.progress += ((deltaSeconds * speed) / distance) * state.direction;
 
       if (state.mapObject.properties?.loop === false) {
         state.progress = Math.min(1, state.progress);
@@ -1066,7 +1144,9 @@ export class RuntimeMechanics {
       return;
     }
 
-    const offset = state.startOffset.clone().lerp(state.endOffset, THREE.MathUtils.clamp(state.progress, 0, 1));
+    const offset = state.startOffset
+      .clone()
+      .lerp(state.endOffset, THREE.MathUtils.clamp(state.progress, 0, 1));
     view.position.copy(state.basePosition).add(offset);
     this.physicsSystem.updateColliderForObject(state.mapObject, view, true);
   }
@@ -1120,10 +1200,15 @@ export class RuntimeMechanics {
       if (behavior === "chase" && distanceToPlayer <= detectionRange) {
         target = playerPosition;
       } else if (behavior === "patrol") {
-        const patrolOffset = getThreeVector(state.mapObject.properties?.patrolOffset, { x: 4, y: 0, z: 0 });
-        target = state.patrolTarget === 1
-          ? state.spawnPosition.clone().add(patrolOffset)
-          : state.spawnPosition.clone();
+        const patrolOffset = getThreeVector(state.mapObject.properties?.patrolOffset, {
+          x: 4,
+          y: 0,
+          z: 0,
+        });
+        target =
+          state.patrolTarget === 1
+            ? state.spawnPosition.clone().add(patrolOffset)
+            : state.spawnPosition.clone();
 
         if (distance2DVector(view.position, target) <= 0.22) {
           state.patrolTarget = state.patrolTarget === 1 ? 0 : 1;
@@ -1152,7 +1237,10 @@ export class RuntimeMechanics {
         this.deathCooldown <= 0
       ) {
         const damage = Math.max(1, getNumber(state.mapObject.properties?.damage, 10));
-        state.attackCooldown = Math.max(0.2, getNumber(state.mapObject.properties?.attackCooldown, 1));
+        state.attackCooldown = Math.max(
+          0.2,
+          getNumber(state.mapObject.properties?.attackCooldown, 1)
+        );
         this.damagePlayer(damage, "Inimigo causou dano", state.mapObject.position);
       }
     }
@@ -1220,6 +1308,7 @@ export class RuntimeMechanics {
   private dispatchEnemyDefeated(objectId: string): void {
     const totalEnemies = this.getTotalEnemyObjects();
     this.objectiveRuntime.onEnemyDefeated(this.defeatedEnemyIds.size, totalEnemies);
+    this.gameModeRuntime.onEnemyDefeated(this.defeatedEnemyIds.size, totalEnemies);
     this.logicRuntime.dispatch({ type: "onEnemyDefeated", objectId });
     this.logicRuntime.dispatch({ type: "onAnyEnemyDefeated", objectId });
 
@@ -1293,7 +1382,7 @@ export class RuntimeMechanics {
       const state: ItemSpawnerRuntimeState = {
         spawner: mapObject,
         activePickupIds: new Set(),
-        cooldown: spawnOnStart ? 0 : (respawnTime > 0 ? respawnTime : Number.POSITIVE_INFINITY)
+        cooldown: spawnOnStart ? 0 : respawnTime > 0 ? respawnTime : Number.POSITIVE_INFINITY,
       };
       this.itemSpawnerStates.set(mapObject.id, state);
 
@@ -1331,11 +1420,12 @@ export class RuntimeMechanics {
         itemId,
         sourceSpawnerId: state.spawner.id,
         amount: getSpawnerAmount(state.spawner, itemId),
-        healAmount: itemId === "health_pack" || itemId === "health"
-          ? getSpawnerAmount(state.spawner, itemId)
-          : undefined,
-        weaponId: itemId === "weapon_basic" ? "basic_sword" : undefined
-      }
+        healAmount:
+          itemId === "health_pack" || itemId === "health"
+            ? getSpawnerAmount(state.spawner, itemId)
+            : undefined,
+        weaponId: itemId === "weapon_basic" ? "basic_sword" : undefined,
+      },
     };
     const view = createMapObject3D(pickup);
     view.userData.runtimePickup = true;
@@ -1343,9 +1433,8 @@ export class RuntimeMechanics {
     this.objectViews.set(pickup.id, view);
     state.activePickupIds.add(pickup.id);
     this.world.add(view);
-    state.cooldown = state.activePickupIds.size < getMaxSpawnedItems(state.spawner)
-      ? 0
-      : Number.POSITIVE_INFINITY;
+    state.cooldown =
+      state.activePickupIds.size < getMaxSpawnedItems(state.spawner) ? 0 : Number.POSITIVE_INFINITY;
   }
 
   private collectItemPickup(pickup: ItemPickupObject): void {
@@ -1407,7 +1496,7 @@ export class RuntimeMechanics {
         this.inventory.set(itemId, {
           itemId,
           quantity: 1,
-          collectedAt: now
+          collectedAt: now,
         });
       }
     }
@@ -1443,10 +1532,12 @@ export class RuntimeMechanics {
   }
 
   private updateInventoryHud(): void {
-    this.hud.setInventory([...this.inventory.values()].map((item) => ({
-      label: getItemLabel(item.itemId),
-      quantity: item.quantity
-    })));
+    this.hud.setInventory(
+      [...this.inventory.values()].map((item) => ({
+        label: getItemLabel(item.itemId),
+        quantity: item.quantity,
+      }))
+    );
     this.hud.setKeys([...this.keyLabels.values()]);
   }
 
@@ -1475,17 +1566,19 @@ export class RuntimeMechanics {
     this.hud.showMessage(message);
     this.audio.play("death");
     this.feedback.spawn("death", position);
+    this.gameModeRuntime.onPlayerDeath();
     this.respawnPlayer();
   }
 
   private respawnPlayer(): void {
-    this.deathCooldown = 0.8;
+    this.deathCooldown = Math.max(0.2, this.gameModeRuntime.getRespawnDelay());
     this.player.resetHealth();
     this.hud.setHealth(this.player.getHealth(), this.player.getMaxHealth());
+    const respawnPoint = this.gameModeRuntime.getRespawnPoint(this.currentRespawnPoint);
     this.player.setPosition({
-      x: this.currentRespawnPoint.x,
-      y: this.currentRespawnPoint.y + RESPAWN_VERTICAL_OFFSET,
-      z: this.currentRespawnPoint.z
+      x: respawnPoint.x,
+      y: respawnPoint.y + RESPAWN_VERTICAL_OFFSET,
+      z: respawnPoint.z,
     });
     this.player.resetVelocity();
     this.player.playRespawnFeedback();
@@ -1504,7 +1597,9 @@ export class RuntimeMechanics {
 
     if (showMessage && this.messageCooldown <= 0) {
       const keyLabel = this.getKeyLabel(requiredKeyId);
-      this.hud.showMessage(keyLabel ? `Voce precisa da chave: ${keyLabel}` : "Voce precisa de uma chave.");
+      this.hud.showMessage(
+        keyLabel ? `Voce precisa da chave: ${keyLabel}` : "Voce precisa de uma chave."
+      );
       this.messageCooldown = 1.1;
     }
 
@@ -1518,10 +1613,10 @@ export class RuntimeMechanics {
       return collectedLabel;
     }
 
-    const keyObject = this.map.objects.find((candidate) => (
-      candidate.type === "key" &&
-      getString(candidate.properties?.keyId, candidate.id) === keyId
-    ));
+    const keyObject = this.map.objects.find(
+      (candidate) =>
+        candidate.type === "key" && getString(candidate.properties?.keyId, candidate.id) === keyId
+    );
 
     if (!keyObject) {
       return null;
@@ -1604,16 +1699,21 @@ export class RuntimeMechanics {
   }
 
   private getDoorById(doorId: string): MapObject | null {
-    return this.map.objects.find((candidate) => (
-      candidate.type === "door" &&
-      (candidate.id === doorId || candidate.properties?.doorId === doorId)
-    )) ?? null;
+    return (
+      this.map.objects.find(
+        (candidate) =>
+          candidate.type === "door" &&
+          (candidate.id === doorId || candidate.properties?.doorId === doorId)
+      ) ?? null
+    );
   }
 
   private getObjectById(objectId: string): MapObject | ItemPickupObject | null {
-    return this.runtimePickups.get(objectId) ??
+    return (
+      this.runtimePickups.get(objectId) ??
       this.map.objects.find((mapObject) => mapObject.id === objectId) ??
-      null;
+      null
+    );
   }
 }
 
@@ -1646,11 +1746,8 @@ function getStringArray(value: unknown): string[] {
 function getNpcDialogueLines(mapObject: MapObject, objectiveHint: string | null): string[] {
   const dialogue = getStringArray(mapObject.properties?.dialogue);
   const legacyDialog = getString(mapObject.properties?.dialog, "");
-  const lines = dialogue.length > 0
-    ? dialogue
-    : legacyDialog.trim().length > 0
-      ? [legacyDialog]
-      : ["Ola!"];
+  const lines =
+    dialogue.length > 0 ? dialogue : legacyDialog.trim().length > 0 ? [legacyDialog] : ["Ola!"];
 
   if (!objectiveHint) {
     return lines;
@@ -1716,7 +1813,7 @@ function getPickupPosition(spawner: MapObject, index: number): Vector3 {
   return {
     x: spawner.position.x + Math.cos(angle) * radius,
     y: spawner.position.y + Math.max(0.75, scale.y * 0.75),
-    z: spawner.position.z + Math.sin(angle) * radius
+    z: spawner.position.z + Math.sin(angle) * radius,
   };
 }
 
@@ -1758,7 +1855,7 @@ function fromThreeVector(vector: THREE.Vector3): Vector3 {
   return {
     x: vector.x,
     y: vector.y,
-    z: vector.z
+    z: vector.z,
   };
 }
 

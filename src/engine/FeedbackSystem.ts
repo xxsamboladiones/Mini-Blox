@@ -90,7 +90,7 @@ export class FeedbackSystem {
       duration: getDuration(cue),
       startScale: getStartScale(cue),
       endScale: getEndScale(cue),
-      riseSpeed: cue === "coinCollect" || cue === "key" || cue === "item" ? 0.7 : 0.12
+      riseSpeed: cue === "coinCollect" || cue === "key" || cue === "item" ? 0.7 : 0.12,
     });
   }
 
@@ -149,7 +149,7 @@ export class FeedbackSystem {
       color,
       transparent: true,
       opacity: 0.85,
-      depthWrite: false
+      depthWrite: false,
     });
     const origin = new THREE.Vector3(position.x, position.y, position.z);
 
@@ -185,7 +185,10 @@ export class FeedbackSystem {
     window.setTimeout(() => element.remove(), 360);
   }
 
-  private spawnFloatingText(text: string, kind: "coin" | "key" | "item" | "objective" | "danger" | "victory"): void {
+  private spawnFloatingText(
+    text: string,
+    kind: "coin" | "key" | "item" | "objective" | "danger" | "victory"
+  ): void {
     const element = document.createElement("div");
     element.className = `runtime-floating-feedback ${kind}`;
     element.textContent = text;
@@ -194,7 +197,7 @@ export class FeedbackSystem {
       element,
       age: 0,
       duration: 0.9,
-      distance: 42
+      distance: 42,
     });
   }
 }
@@ -242,7 +245,9 @@ function getDuration(cue: FeedbackCue): number {
 }
 
 function getStartScale(cue: FeedbackCue): number {
-  return cue === "coinCollect" || cue === "key" || cue === "item" || cue === "objective" ? 0.4 : 0.65;
+  return cue === "coinCollect" || cue === "key" || cue === "item" || cue === "objective"
+    ? 0.4
+    : 0.65;
 }
 
 function getEndScale(cue: FeedbackCue): number {

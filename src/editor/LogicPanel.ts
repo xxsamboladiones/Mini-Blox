@@ -1,7 +1,12 @@
 import { createIcons, icons } from "lucide";
 import type { GameMap } from "../shared/types/MapSchema";
 import type { MapObject } from "../shared/types/ObjectSchema";
-import type { LogicAction, LogicCondition, LogicRule, LogicTrigger } from "../shared/types/ScriptSchema";
+import type {
+  LogicAction,
+  LogicCondition,
+  LogicRule,
+  LogicTrigger,
+} from "../shared/types/ScriptSchema";
 
 type LogicPanelActions = {
   onChange: (logic: LogicRule[]) => void;
@@ -61,9 +66,11 @@ export class LogicPanel {
         <label class="field">
           <span>Preset</span>
           <select data-logic-preset>
-            ${PRESET_OPTIONS.map((preset) => `
+            ${PRESET_OPTIONS.map(
+              (preset) => `
               <option value="${preset.id}">${preset.label}</option>
-            `).join("")}
+            `
+            ).join("")}
           </select>
         </label>
         <button class="property-action compact-action" type="button" data-add-preset>
@@ -79,11 +86,15 @@ export class LogicPanel {
         </button>
       </div>
 
-      ${warningCount > 0 ? `
+      ${
+        warningCount > 0
+          ? `
         <div class="logic-summary warning">${warningCount} aviso${warningCount === 1 ? "" : "s"} de configuracao</div>
-      ` : `
+      `
+          : `
         <div class="logic-summary ok">Nenhum aviso de logica</div>
-      `}
+      `
+      }
 
       <div class="logic-list">
         ${visibleRules.length === 0 ? `<div class="empty-row">${rules.length === 0 ? "Nenhuma regra" : "Nenhuma regra encontrada"}</div>` : ""}
@@ -156,9 +167,11 @@ export class LogicPanel {
           <label class="field">
             <span>Trigger</span>
             <select data-trigger-type data-rule-id="${escapeAttribute(rule.id)}">
-              ${TRIGGER_OPTIONS.map((option) => `
+              ${TRIGGER_OPTIONS.map(
+                (option) => `
                 <option value="${option.type}" ${rule.trigger.type === option.type ? "selected" : ""}>${option.label}</option>
-              `).join("")}
+              `
+              ).join("")}
             </select>
           </label>
           ${this.renderTriggerFields(rule)}
@@ -205,7 +218,12 @@ export class LogicPanel {
       rule.trigger.type === "onButtonActivated" ||
       rule.trigger.type === "onCoinCollected"
     ) {
-      return this.renderObjectSelect("Objeto", rule.trigger.objectId, "data-trigger-object", rule.id);
+      return this.renderObjectSelect(
+        "Objeto",
+        rule.trigger.objectId,
+        "data-trigger-object",
+        rule.id
+      );
     }
 
     if (rule.trigger.type === "onKeyCollected") {
@@ -213,7 +231,12 @@ export class LogicPanel {
     }
 
     if (rule.trigger.type === "onEnemyDefeated") {
-      return this.renderEnemySelect("Inimigo", rule.trigger.objectId, "data-trigger-enemy", rule.id);
+      return this.renderEnemySelect(
+        "Inimigo",
+        rule.trigger.objectId,
+        "data-trigger-enemy",
+        rule.id
+      );
     }
 
     if (rule.trigger.type === "onNpcInteracted") {
@@ -221,11 +244,39 @@ export class LogicPanel {
     }
 
     if (rule.trigger.type === "onObjectiveCompleted") {
-      return this.renderObjectiveSelect("Objetivo", rule.trigger.objectiveId, "data-trigger-objective", rule.id);
+      return this.renderObjectiveSelect(
+        "Objetivo",
+        rule.trigger.objectiveId,
+        "data-trigger-objective",
+        rule.id
+      );
     }
 
     if (rule.trigger.type === "onItemCollected") {
       return this.renderItemTypeSelect("Item", rule.trigger.itemType, "data-trigger-item", rule.id);
+    }
+
+    if (rule.trigger.type === "onScoreReached") {
+      return this.renderAmountInput(
+        "Pontuacao",
+        rule.trigger.amount,
+        "data-trigger-amount",
+        rule.id
+      );
+    }
+
+    if (rule.trigger.type === "onTeamScoreReached") {
+      return `
+        ${this.renderTeamSelect("Time", rule.trigger.teamId, "data-trigger-team", rule.id)}
+        ${this.renderAmountInput("Pontuacao", rule.trigger.amount, "data-trigger-amount", rule.id)}
+      `;
+    }
+
+    if (rule.trigger.type === "onCapturePointCaptured") {
+      return `
+        ${this.renderCapturePointSelect("Ponto", rule.trigger.pointId, "data-trigger-point", rule.id)}
+        ${this.renderTeamSelect("Time opcional", rule.trigger.teamId ?? "", "data-trigger-team", rule.id)}
+      `;
     }
 
     return "";
@@ -238,9 +289,11 @@ export class LogicPanel {
           <label class="field">
             <span>Condicao</span>
             <select data-condition-type data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}">
-              ${CONDITION_OPTIONS.map((option) => `
+              ${CONDITION_OPTIONS.map(
+                (option) => `
                 <option value="${option.type}" ${condition.type === option.type ? "selected" : ""}>${option.label}</option>
-              `).join("")}
+              `
+              ).join("")}
             </select>
           </label>
           <button class="icon-action compact danger" type="button" data-remove-condition data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" title="Remover condicao" aria-label="Remover condicao">
@@ -267,11 +320,23 @@ export class LogicPanel {
     }
 
     if (condition.type === "doorIsOpen") {
-      return this.renderDoorSelect("Porta", condition.doorId, "data-condition-door", rule.id, index);
+      return this.renderDoorSelect(
+        "Porta",
+        condition.doorId,
+        "data-condition-door",
+        rule.id,
+        index
+      );
     }
 
     if (condition.type === "enemyDefeated") {
-      return this.renderEnemySelect("Inimigo", condition.objectId, "data-condition-enemy", rule.id, index);
+      return this.renderEnemySelect(
+        "Inimigo",
+        condition.objectId,
+        "data-condition-enemy",
+        rule.id,
+        index
+      );
     }
 
     if (condition.type === "enemiesDefeatedAtLeast") {
@@ -284,7 +349,13 @@ export class LogicPanel {
     }
 
     if (condition.type === "hasWeapon") {
-      return this.renderWeaponSelect("Arma", condition.weaponId, "data-condition-weapon", rule.id, index);
+      return this.renderWeaponSelect(
+        "Arma",
+        condition.weaponId,
+        "data-condition-weapon",
+        rule.id,
+        index
+      );
     }
 
     if (condition.type === "healthBelow") {
@@ -306,9 +377,11 @@ export class LogicPanel {
           <label class="field">
             <span>Acao</span>
             <select data-action-type data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}">
-              ${ACTION_OPTIONS.map((option) => `
+              ${ACTION_OPTIONS.map(
+                (option) => `
                 <option value="${option.type}" ${action.type === option.type ? "selected" : ""}>${option.label}</option>
-              `).join("")}
+              `
+              ).join("")}
             </select>
           </label>
           <button class="icon-action compact danger" type="button" data-remove-action data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" title="Remover acao" aria-label="Remover acao">
@@ -335,10 +408,16 @@ export class LogicPanel {
     }
 
     if (action.type === "teleportPlayer") {
-      return this.renderObjectSelect("Destino", action.targetObjectId, "data-action-target", rule.id, index);
+      return this.renderObjectSelect(
+        "Destino",
+        action.targetObjectId,
+        "data-action-target",
+        rule.id,
+        index
+      );
     }
 
-    if (action.type === "giveCoins") {
+    if (action.type === "giveCoins" || action.type === "addScore") {
       return `
         <label class="field">
           <span>Quantidade</span>
@@ -347,12 +426,28 @@ export class LogicPanel {
       `;
     }
 
-    if (action.type === "setCheckpoint" || action.type === "enableObject" || action.type === "disableObject") {
-      return this.renderObjectSelect("Objeto", action.objectId, "data-action-object", rule.id, index);
+    if (
+      action.type === "setCheckpoint" ||
+      action.type === "enableObject" ||
+      action.type === "disableObject"
+    ) {
+      return this.renderObjectSelect(
+        "Objeto",
+        action.objectId,
+        "data-action-object",
+        rule.id,
+        index
+      );
     }
 
     if (action.type === "spawnEnemy") {
-      return this.renderEnemySelect("Inimigo", action.objectId, "data-action-enemy", rule.id, index);
+      return this.renderEnemySelect(
+        "Inimigo",
+        action.objectId,
+        "data-action-enemy",
+        rule.id,
+        index
+      );
     }
 
     if (action.type === "healPlayer" || action.type === "damagePlayer") {
@@ -369,7 +464,13 @@ export class LogicPanel {
     }
 
     if (action.type === "completeObjective") {
-      return this.renderObjectiveSelect("Objetivo", action.objectiveId, "data-action-objective", rule.id, index);
+      return this.renderObjectiveSelect(
+        "Objetivo",
+        action.objectiveId,
+        "data-action-objective",
+        rule.id,
+        index
+      );
     }
 
     if (action.type === "showDialogue") {
@@ -382,7 +483,48 @@ export class LogicPanel {
       `;
     }
 
+    if (action.type === "addTeamScore") {
+      return `
+        ${this.renderTeamSelect("Time", action.teamId, "data-action-team", rule.id, index)}
+        <label class="field">
+          <span>Quantidade</span>
+          <input type="number" step="1" value="${action.amount}" data-action-amount data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" />
+        </label>
+      `;
+    }
+
+    if (action.type === "setTeam") {
+      return this.renderTeamSelect("Time", action.teamId, "data-action-team", rule.id, index);
+    }
+
+    if (action.type === "endRound") {
+      return `
+        <label class="field">
+          <span>Resultado</span>
+          <select data-action-result data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}">
+            <option value="win" ${action.result === "win" ? "selected" : ""}>Vitoria</option>
+            <option value="lose" ${action.result === "lose" ? "selected" : ""}>Derrota</option>
+            <option value="draw" ${action.result === "draw" ? "selected" : ""}>Empate</option>
+          </select>
+        </label>
+      `;
+    }
+
     return `<div class="logic-note">Finaliza o mapa imediatamente.</div>`;
+  }
+
+  private renderAmountInput(
+    label: string,
+    value: number,
+    attribute: string,
+    ruleId: string
+  ): string {
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <input ${attribute} data-rule-id="${escapeAttribute(ruleId)}" type="number" min="0" step="1" value="${value}" />
+      </label>
+    `;
   }
 
   private renderObjectSelect(
@@ -402,11 +544,15 @@ export class LogicPanel {
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           <option value="">Escolha um objeto</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Objeto nao encontrado (${escapeHtml(value)})</option>` : ""}
-          ${objects.map((object) => `
+          ${objects
+            .map(
+              (object) => `
             <option value="${escapeAttribute(object.id)}" ${object.id === value ? "selected" : ""}>
               ${escapeHtml(getObjectLabel(object))}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -429,11 +575,15 @@ export class LogicPanel {
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           <option value="">Escolha uma porta</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Porta nao encontrada (${escapeHtml(value)})</option>` : ""}
-          ${doors.map((door) => `
+          ${doors
+            .map(
+              (door) => `
             <option value="${escapeAttribute(door.id)}" ${door.id === value ? "selected" : ""}>
               ${escapeHtml(`${door.label} (${door.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -456,11 +606,15 @@ export class LogicPanel {
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           <option value="">Escolha uma chave</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Chave nao encontrada (${escapeHtml(value)})</option>` : ""}
-          ${keys.map((key) => `
+          ${keys
+            .map(
+              (key) => `
             <option value="${escapeAttribute(key.id)}" ${key.id === value ? "selected" : ""}>
               ${escapeHtml(`${key.label} (${key.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -483,11 +637,15 @@ export class LogicPanel {
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           <option value="">Escolha um inimigo</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Inimigo nao encontrado (${escapeHtml(value)})</option>` : ""}
-          ${enemies.map((enemy) => `
+          ${enemies
+            .map(
+              (enemy) => `
             <option value="${escapeAttribute(enemy.id)}" ${enemy.id === value ? "selected" : ""}>
               ${escapeHtml(`${enemy.label} (${enemy.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -510,11 +668,15 @@ export class LogicPanel {
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           <option value="">Escolha um NPC</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>NPC nao encontrado (${escapeHtml(value)})</option>` : ""}
-          ${npcs.map((npc) => `
+          ${npcs
+            .map(
+              (npc) => `
             <option value="${escapeAttribute(npc.id)}" ${npc.id === value ? "selected" : ""}>
               ${escapeHtml(`${npc.label} (${npc.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -537,11 +699,15 @@ export class LogicPanel {
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           <option value="">Escolha um objetivo</option>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Objetivo nao encontrado (${escapeHtml(value)})</option>` : ""}
-          ${objectives.map((objective) => `
+          ${objectives
+            .map(
+              (objective) => `
             <option value="${escapeAttribute(objective.id)}" ${objective.id === value ? "selected" : ""}>
               ${escapeHtml(`${objective.label} (${objective.id})`)}
             </option>
-          `).join("")}
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
@@ -562,9 +728,11 @@ export class LogicPanel {
         <span>${label}</span>
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Item invalido (${escapeHtml(value)})</option>` : ""}
-          ${ITEM_TYPE_OPTIONS.map((item) => `
+          ${ITEM_TYPE_OPTIONS.map(
+            (item) => `
             <option value="${item.id}" ${item.id === value ? "selected" : ""}>${item.label}</option>
-          `).join("")}
+          `
+          ).join("")}
         </select>
       </label>
     `;
@@ -585,45 +753,117 @@ export class LogicPanel {
         <span>${label}</span>
         <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
           ${!exists ? `<option value="${escapeAttribute(value)}" selected>Arma invalida (${escapeHtml(value)})</option>` : ""}
-          ${WEAPON_OPTIONS.map((weapon) => `
+          ${WEAPON_OPTIONS.map(
+            (weapon) => `
             <option value="${weapon.id}" ${weapon.id === value ? "selected" : ""}>${weapon.label}</option>
-          `).join("")}
+          `
+          ).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderTeamSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const teams = this.getTeamOptions();
+    const exists = value.length === 0 || teams.some((team) => team.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">${label.includes("opcional") ? "Qualquer time" : "Escolha um time"}</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Time nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${teams
+            .map(
+              (team) => `
+            <option value="${escapeAttribute(team.id)}" ${team.id === value ? "selected" : ""}>
+              ${escapeHtml(`${team.label} (${team.id})`)}
+            </option>
+          `
+            )
+            .join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderCapturePointSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string
+  ): string {
+    const points = this.getCapturePointOptions();
+    const exists = value.length === 0 || points.some((point) => point.id === value);
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}">
+          <option value="">Escolha um ponto</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Ponto nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${points
+            .map(
+              (point) => `
+            <option value="${escapeAttribute(point.id)}" ${point.id === value ? "selected" : ""}>
+              ${escapeHtml(`${point.label} (${point.id})`)}
+            </option>
+          `
+            )
+            .join("")}
         </select>
       </label>
     `;
   }
 
   private bindEvents(): void {
-    this.root.querySelector<HTMLInputElement>("[data-logic-search]")?.addEventListener("input", (event) => {
-      this.query = (event.currentTarget as HTMLInputElement).value;
-      this.render();
-    });
-
-    this.root.querySelector<HTMLInputElement>("[data-logic-debug]")?.addEventListener("change", (event) => {
-      const logicDebug = (event.currentTarget as HTMLInputElement).checked;
-
-      if (this.map) {
-        this.map.logicDebug = logicDebug;
-      }
-
-      this.actions.onDebugChange(logicDebug);
-      this.render();
-    });
-
-    this.root.querySelector<HTMLButtonElement>("[data-add-logic-rule]")?.addEventListener("click", () => {
-      this.updateRules((rules) => {
-        rules.push(createDefaultRule(rules.length + 1, this.getObjects(), this.getKeyOptions()));
+    this.root
+      .querySelector<HTMLInputElement>("[data-logic-search]")
+      ?.addEventListener("input", (event) => {
+        this.query = (event.currentTarget as HTMLInputElement).value;
+        this.render();
       });
-    });
 
-    this.root.querySelector<HTMLButtonElement>("[data-add-preset]")?.addEventListener("click", () => {
-      const select = this.root.querySelector<HTMLSelectElement>("[data-logic-preset]");
-      const presetId = toPresetId(select?.value ?? "messageOnEnter");
+    this.root
+      .querySelector<HTMLInputElement>("[data-logic-debug]")
+      ?.addEventListener("change", (event) => {
+        const logicDebug = (event.currentTarget as HTMLInputElement).checked;
 
-      this.updateRules((rules) => {
-        rules.push(createPresetRule(presetId, rules.length + 1, this.getObjects(), this.getKeyOptions()));
+        if (this.map) {
+          this.map.logicDebug = logicDebug;
+        }
+
+        this.actions.onDebugChange(logicDebug);
+        this.render();
       });
-    });
+
+    this.root
+      .querySelector<HTMLButtonElement>("[data-add-logic-rule]")
+      ?.addEventListener("click", () => {
+        this.updateRules((rules) => {
+          rules.push(createDefaultRule(rules.length + 1, this.getObjects(), this.getKeyOptions()));
+        });
+      });
+
+    this.root
+      .querySelector<HTMLButtonElement>("[data-add-preset]")
+      ?.addEventListener("click", () => {
+        const select = this.root.querySelector<HTMLSelectElement>("[data-logic-preset]");
+        const presetId = toPresetId(select?.value ?? "messageOnEnter");
+
+        this.updateRules((rules) => {
+          rules.push(
+            createPresetRule(presetId, rules.length + 1, this.getObjects(), this.getKeyOptions())
+          );
+        });
+      });
 
     this.root.querySelectorAll<HTMLButtonElement>("[data-toggle-rule]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -705,7 +945,11 @@ export class LogicPanel {
     this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-type]").forEach((select) => {
       select.addEventListener("change", () => {
         this.updateRule(select.dataset.ruleId, (rule) => {
-          rule.trigger = createDefaultTrigger(toTriggerType(select.value), this.getObjects(), this.getKeyOptions());
+          rule.trigger = createDefaultTrigger(
+            toTriggerType(select.value),
+            this.getObjects(),
+            this.getKeyOptions()
+          );
         });
       });
     });
@@ -774,6 +1018,41 @@ export class LogicPanel {
       });
     });
 
+    this.root.querySelectorAll<HTMLInputElement>("[data-trigger-amount]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this.updateRule(input.dataset.ruleId, (rule) => {
+          if (
+            rule.trigger.type === "onScoreReached" ||
+            rule.trigger.type === "onTeamScoreReached"
+          ) {
+            rule.trigger.amount = Math.max(0, Math.floor(Number(input.value) || 0));
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-team]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onTeamScoreReached") {
+            rule.trigger.teamId = select.value;
+          } else if (rule.trigger.type === "onCapturePointCaptured") {
+            rule.trigger.teamId = select.value || undefined;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-point]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onCapturePointCaptured") {
+            rule.trigger.pointId = select.value;
+          }
+        });
+      });
+    });
+
     this.bindConditionEvents();
     this.bindActionEvents();
   }
@@ -782,7 +1061,9 @@ export class LogicPanel {
     this.root.querySelectorAll<HTMLButtonElement>("[data-add-condition]").forEach((button) => {
       button.addEventListener("click", () => {
         this.updateRule(button.dataset.ruleId, (rule) => {
-          rule.conditions.push(createDefaultCondition("once", this.getKeyOptions(), this.getObjects()));
+          rule.conditions.push(
+            createDefaultCondition("once", this.getKeyOptions(), this.getObjects())
+          );
         });
       });
     });
@@ -890,7 +1171,10 @@ export class LogicPanel {
     this.root.querySelectorAll<HTMLSelectElement>("[data-action-type]").forEach((select) => {
       select.addEventListener("change", () => {
         this.updateRule(select.dataset.ruleId, (rule) => {
-          rule.actions[getIndex(select)] = createDefaultAction(toActionType(select.value), this.getObjects());
+          rule.actions[getIndex(select)] = createDefaultAction(
+            toActionType(select.value),
+            this.getObjects()
+          );
         });
       });
     });
@@ -938,7 +1222,9 @@ export class LogicPanel {
         this.updateRule(input.dataset.ruleId, (rule) => {
           const action = rule.actions[getIndex(input)];
 
-          if (action?.type === "giveCoins") {
+          if (action?.type === "giveCoins" || action?.type === "addScore") {
+            action.amount = Math.floor(Number(input.value) || 0);
+          } else if (action?.type === "addTeamScore") {
             action.amount = Math.floor(Number(input.value) || 0);
           } else if (action?.type === "healPlayer" || action?.type === "damagePlayer") {
             action.amount = Math.max(0, Math.floor(Number(input.value) || 0));
@@ -952,7 +1238,11 @@ export class LogicPanel {
         this.updateRule(select.dataset.ruleId, (rule) => {
           const action = rule.actions[getIndex(select)];
 
-          if (action?.type === "setCheckpoint" || action?.type === "enableObject" || action?.type === "disableObject") {
+          if (
+            action?.type === "setCheckpoint" ||
+            action?.type === "enableObject" ||
+            action?.type === "disableObject"
+          ) {
             action.objectId = select.value;
           }
         });
@@ -995,13 +1285,39 @@ export class LogicPanel {
       });
     });
 
-    this.root.querySelectorAll<HTMLSelectElement>("[data-action-dialogue-object]").forEach((select) => {
+    this.root
+      .querySelectorAll<HTMLSelectElement>("[data-action-dialogue-object]")
+      .forEach((select) => {
+        select.addEventListener("change", () => {
+          this.updateRule(select.dataset.ruleId, (rule) => {
+            const action = rule.actions[getIndex(select)];
+
+            if (action?.type === "showDialogue") {
+              action.objectId = select.value;
+            }
+          });
+        });
+      });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-team]").forEach((select) => {
       select.addEventListener("change", () => {
         this.updateRule(select.dataset.ruleId, (rule) => {
           const action = rule.actions[getIndex(select)];
 
-          if (action?.type === "showDialogue") {
-            action.objectId = select.value;
+          if (action?.type === "addTeamScore" || action?.type === "setTeam") {
+            action.teamId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-result]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "endRound") {
+            action.result = toRoundResult(select.value);
           }
         });
       });
@@ -1080,28 +1396,63 @@ export class LogicPanel {
       trigger.type === "onCoinCollected"
     ) {
       if (!this.hasObject(trigger.objectId)) {
-        return [`Trigger ${trigger.type} aponta para objeto inexistente: ${trigger.objectId || "(vazio)"}`];
+        return [
+          `Trigger ${trigger.type} aponta para objeto inexistente: ${trigger.objectId || "(vazio)"}`,
+        ];
       }
     }
 
     if (trigger.type === "onKeyCollected" && !this.hasKey(trigger.keyId)) {
-      return [`Trigger onKeyCollected aponta para chave inexistente: ${trigger.keyId || "(vazio)"}`];
+      return [
+        `Trigger onKeyCollected aponta para chave inexistente: ${trigger.keyId || "(vazio)"}`,
+      ];
     }
 
     if (trigger.type === "onEnemyDefeated" && !this.hasEnemy(trigger.objectId)) {
-      return [`Trigger onEnemyDefeated aponta para inimigo inexistente: ${trigger.objectId || "(vazio)"}`];
+      return [
+        `Trigger onEnemyDefeated aponta para inimigo inexistente: ${trigger.objectId || "(vazio)"}`,
+      ];
     }
 
     if (trigger.type === "onNpcInteracted" && !this.hasNpc(trigger.objectId)) {
-      return [`Trigger onNpcInteracted aponta para NPC inexistente: ${trigger.objectId || "(vazio)"}`];
+      return [
+        `Trigger onNpcInteracted aponta para NPC inexistente: ${trigger.objectId || "(vazio)"}`,
+      ];
     }
 
     if (trigger.type === "onObjectiveCompleted" && !this.hasObjective(trigger.objectiveId)) {
-      return [`Trigger onObjectiveCompleted aponta para objetivo inexistente: ${trigger.objectiveId || "(vazio)"}`];
+      return [
+        `Trigger onObjectiveCompleted aponta para objetivo inexistente: ${trigger.objectiveId || "(vazio)"}`,
+      ];
     }
 
     if (trigger.type === "onItemCollected" && !isValidItemType(trigger.itemType)) {
       return [`Trigger onItemCollected usa item invalido: ${trigger.itemType || "(vazio)"}`];
+    }
+
+    if (
+      trigger.type === "onScoreReached" &&
+      (!Number.isFinite(trigger.amount) || trigger.amount < 0)
+    ) {
+      return ["Trigger onScoreReached precisa de pontuacao valida."];
+    }
+
+    if (trigger.type === "onTeamScoreReached") {
+      if (!this.hasTeam(trigger.teamId)) {
+        return [
+          `Trigger onTeamScoreReached aponta time inexistente: ${trigger.teamId || "(vazio)"}`,
+        ];
+      }
+
+      if (!Number.isFinite(trigger.amount) || trigger.amount < 0) {
+        return ["Trigger onTeamScoreReached precisa de pontuacao valida."];
+      }
+    }
+
+    if (trigger.type === "onCapturePointCaptured" && !this.hasCapturePoint(trigger.pointId)) {
+      return [
+        `Trigger onCapturePointCaptured aponta ponto inexistente: ${trigger.pointId || "(vazio)"}`,
+      ];
     }
 
     return [];
@@ -1113,11 +1464,15 @@ export class LogicPanel {
     }
 
     if (condition.type === "doorIsOpen" && !this.hasDoor(condition.doorId)) {
-      return [`Condicao doorIsOpen aponta para porta inexistente: ${condition.doorId || "(vazio)"}`];
+      return [
+        `Condicao doorIsOpen aponta para porta inexistente: ${condition.doorId || "(vazio)"}`,
+      ];
     }
 
     if (condition.type === "enemyDefeated" && !this.hasEnemy(condition.objectId)) {
-      return [`Condicao enemyDefeated aponta para inimigo inexistente: ${condition.objectId || "(vazio)"}`];
+      return [
+        `Condicao enemyDefeated aponta para inimigo inexistente: ${condition.objectId || "(vazio)"}`,
+      ];
     }
 
     if (condition.type === "hasWeapon" && !isValidWeaponId(condition.weaponId)) {
@@ -1128,24 +1483,40 @@ export class LogicPanel {
   }
 
   private validateAction(action: LogicAction): string[] {
-    if ((action.type === "openDoor" || action.type === "closeDoor") && !this.hasDoor(action.doorId)) {
-      return [`Acao ${action.type} aponta para uma porta inexistente: ${action.doorId || "(vazio)"}`];
+    if (
+      (action.type === "openDoor" || action.type === "closeDoor") &&
+      !this.hasDoor(action.doorId)
+    ) {
+      return [
+        `Acao ${action.type} aponta para uma porta inexistente: ${action.doorId || "(vazio)"}`,
+      ];
     }
 
     if (action.type === "teleportPlayer" && !this.hasObject(action.targetObjectId)) {
-      return [`Acao teleportPlayer aponta para objeto inexistente: ${action.targetObjectId || "(vazio)"}`];
+      return [
+        `Acao teleportPlayer aponta para objeto inexistente: ${action.targetObjectId || "(vazio)"}`,
+      ];
     }
 
     if (action.type === "setCheckpoint" && !this.hasCheckpoint(action.objectId)) {
-      return [`Acao setCheckpoint aponta para checkpoint inexistente: ${action.objectId || "(vazio)"}`];
+      return [
+        `Acao setCheckpoint aponta para checkpoint inexistente: ${action.objectId || "(vazio)"}`,
+      ];
     }
 
-    if ((action.type === "enableObject" || action.type === "disableObject") && !this.hasObject(action.objectId)) {
-      return [`Acao ${action.type} aponta para objeto inexistente: ${action.objectId || "(vazio)"}`];
+    if (
+      (action.type === "enableObject" || action.type === "disableObject") &&
+      !this.hasObject(action.objectId)
+    ) {
+      return [
+        `Acao ${action.type} aponta para objeto inexistente: ${action.objectId || "(vazio)"}`,
+      ];
     }
 
     if (action.type === "spawnEnemy" && !this.hasEnemy(action.objectId)) {
-      return [`Acao spawnEnemy aponta para objeto que nao e inimigo: ${action.objectId || "(vazio)"}`];
+      return [
+        `Acao spawnEnemy aponta para objeto que nao e inimigo: ${action.objectId || "(vazio)"}`,
+      ];
     }
 
     if (action.type === "giveWeapon" && !isValidWeaponId(action.weaponId)) {
@@ -1153,11 +1524,27 @@ export class LogicPanel {
     }
 
     if (action.type === "completeObjective" && !this.hasObjective(action.objectiveId)) {
-      return [`Acao completeObjective aponta para objetivo inexistente: ${action.objectiveId || "(vazio)"}`];
+      return [
+        `Acao completeObjective aponta para objetivo inexistente: ${action.objectiveId || "(vazio)"}`,
+      ];
     }
 
     if (action.type === "showDialogue" && !this.hasNpc(action.objectId)) {
       return [`Acao showDialogue aponta para NPC inexistente: ${action.objectId || "(vazio)"}`];
+    }
+
+    if (
+      (action.type === "addScore" || action.type === "addTeamScore") &&
+      !Number.isFinite(action.amount)
+    ) {
+      return [`Acao ${action.type} precisa de quantidade valida.`];
+    }
+
+    if (
+      (action.type === "addTeamScore" || action.type === "setTeam") &&
+      !this.hasTeam(action.teamId)
+    ) {
+      return [`Acao ${action.type} aponta time inexistente: ${action.teamId || "(vazio)"}`];
     }
 
     return [];
@@ -1175,8 +1562,10 @@ export class LogicPanel {
         rule.name,
         getTriggerLabel(rule.trigger),
         ...rule.actions.map((action) => action.type),
-        ...rule.conditions.map((condition) => condition.type)
-      ].join(" ").toLowerCase();
+        ...rule.conditions.map((condition) => condition.type),
+      ]
+        .join(" ")
+        .toLowerCase();
 
       return haystack.includes(query);
     });
@@ -1220,8 +1609,45 @@ export class LogicPanel {
 
   private getObjectiveOptions(): Array<{ id: string; label: string }> {
     return structuredClone(this.map?.objectives ?? [])
-      .filter((objective) => typeof objective.id === "string" && typeof objective.title === "string")
+      .filter(
+        (objective) => typeof objective.id === "string" && typeof objective.title === "string"
+      )
       .map((objective) => ({ id: objective.id, label: objective.title }));
+  }
+
+  private getTeamOptions(): Array<{ id: string; label: string }> {
+    const mapTeams = structuredClone(this.map?.teams ?? [])
+      .filter((team) => typeof team.id === "string" && typeof team.name === "string")
+      .map((team) => ({ id: team.id, label: team.name }));
+    const spawnTeams = this.getObjects()
+      .filter(
+        (object) => object.type === "teamSpawn" && typeof object.properties?.teamId === "string"
+      )
+      .map((object) => ({
+        id: String(object.properties?.teamId),
+        label: object.name ?? String(object.properties?.teamId),
+      }));
+    const teams = new Map<string, { id: string; label: string }>();
+
+    for (const team of [...mapTeams, ...spawnTeams]) {
+      if (team.id.length > 0) {
+        teams.set(team.id, team);
+      }
+    }
+
+    return [...teams.values()];
+  }
+
+  private getCapturePointOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter((object) => object.type === "capturePoint")
+      .map((point) => ({
+        id:
+          typeof point.properties?.pointId === "string" && point.properties.pointId.length > 0
+            ? point.properties.pointId
+            : point.id,
+        label: point.name ?? point.id,
+      }));
   }
 
   private hasObject(objectId: string): boolean {
@@ -1229,7 +1655,10 @@ export class LogicPanel {
   }
 
   private hasCheckpoint(objectId: string): boolean {
-    return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId && object.type === "checkpoint");
+    return (
+      objectId.length > 0 &&
+      this.getObjects().some((object) => object.id === objectId && object.type === "checkpoint")
+    );
   }
 
   private hasDoor(doorId: string): boolean {
@@ -1241,15 +1670,34 @@ export class LogicPanel {
   }
 
   private hasEnemy(objectId: string): boolean {
-    return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId && object.type === "enemy");
+    return (
+      objectId.length > 0 &&
+      this.getObjects().some((object) => object.id === objectId && object.type === "enemy")
+    );
   }
 
   private hasNpc(objectId: string): boolean {
-    return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId && object.type === "npc");
+    return (
+      objectId.length > 0 &&
+      this.getObjects().some((object) => object.id === objectId && object.type === "npc")
+    );
   }
 
   private hasObjective(objectiveId: string): boolean {
-    return objectiveId.length > 0 && this.getObjectiveOptions().some((objective) => objective.id === objectiveId);
+    return (
+      objectiveId.length > 0 &&
+      this.getObjectiveOptions().some((objective) => objective.id === objectiveId)
+    );
+  }
+
+  private hasTeam(teamId: string): boolean {
+    return teamId.length > 0 && this.getTeamOptions().some((team) => team.id === teamId);
+  }
+
+  private hasCapturePoint(pointId: string): boolean {
+    return (
+      pointId.length > 0 && this.getCapturePointOptions().some((point) => point.id === pointId)
+    );
   }
 }
 
@@ -1265,7 +1713,11 @@ const TRIGGER_OPTIONS: Array<{ type: TriggerType; label: string }> = [
   { type: "onPlayerDamaged", label: "Player recebeu dano" },
   { type: "onItemCollected", label: "Item coletado" },
   { type: "onNpcInteracted", label: "NPC interagido" },
-  { type: "onObjectiveCompleted", label: "Objetivo concluido" }
+  { type: "onObjectiveCompleted", label: "Objetivo concluido" },
+  { type: "onScoreReached", label: "Pontuacao atingida" },
+  { type: "onTeamScoreReached", label: "Pontuacao do time atingida" },
+  { type: "onCapturePointCaptured", label: "Capture point capturado" },
+  { type: "onGameModeWon", label: "Modo vencido" },
 ];
 
 const CONDITION_OPTIONS: Array<{ type: ConditionType; label: string }> = [
@@ -1276,7 +1728,7 @@ const CONDITION_OPTIONS: Array<{ type: ConditionType; label: string }> = [
   { type: "enemyDefeated", label: "Inimigo derrotado" },
   { type: "enemiesDefeatedAtLeast", label: "Inimigos derrotados pelo menos" },
   { type: "hasWeapon", label: "Tem arma" },
-  { type: "healthBelow", label: "Vida abaixo" }
+  { type: "healthBelow", label: "Vida abaixo" },
 ];
 
 const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
@@ -1294,18 +1746,20 @@ const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
   { type: "damagePlayer", label: "Dar dano no player" },
   { type: "giveWeapon", label: "Dar arma" },
   { type: "completeObjective", label: "Completar objetivo" },
-  { type: "showDialogue", label: "Mostrar fala de NPC" }
+  { type: "showDialogue", label: "Mostrar fala de NPC" },
+  { type: "addScore", label: "Adicionar pontos" },
+  { type: "addTeamScore", label: "Adicionar pontos ao time" },
+  { type: "setTeam", label: "Definir time" },
+  { type: "endRound", label: "Encerrar rodada" },
 ];
 
 const ITEM_TYPE_OPTIONS = [
   { id: "health", label: "Cura" },
   { id: "coin", label: "Moeda" },
-  { id: "weapon_basic", label: "Arma basica" }
+  { id: "weapon_basic", label: "Arma basica" },
 ] as const;
 
-const WEAPON_OPTIONS = [
-  { id: "basic_sword", label: "Basica" }
-] as const;
+const WEAPON_OPTIONS = [{ id: "basic_sword", label: "Basica" }] as const;
 
 const PRESET_OPTIONS: Array<{ id: LogicPresetId; label: string }> = [
   { id: "messageOnEnter", label: "Mostrar mensagem ao entrar em zona" },
@@ -1313,7 +1767,7 @@ const PRESET_OPTIONS: Array<{ id: LogicPresetId; label: string }> = [
   { id: "keyOpensDoor", label: "Abrir porta ao coletar chave" },
   { id: "finishOnEnter", label: "Finalizar mapa ao entrar em objeto" },
   { id: "teleportOnEnter", label: "Teleportar player ao entrar em zona" },
-  { id: "giveCoins", label: "Dar moedas ao coletar/entrar" }
+  { id: "giveCoins", label: "Dar moedas ao coletar/entrar" },
 ];
 
 function createDefaultRule(
@@ -1327,7 +1781,7 @@ function createDefaultRule(
     enabled: true,
     trigger: createDefaultTrigger("onMapStart", objects, keys),
     conditions: [],
-    actions: [{ type: "showMessage", message: "Bem-vindo!" }]
+    actions: [{ type: "showMessage", message: "Bem-vindo!" }],
   };
 }
 
@@ -1338,7 +1792,8 @@ function createPresetRule(
   keys: Array<{ id: string; label: string }>
 ): LogicRule {
   const doorId = getPreferredDoorId(objects);
-  const zoneId = getPreferredObjectId(objects, "messageZone") || getPreferredObjectId(objects, "cube");
+  const zoneId =
+    getPreferredObjectId(objects, "messageZone") || getPreferredObjectId(objects, "cube");
   const buttonId = getPreferredObjectId(objects, "button");
   const keyId = keys[0]?.id ?? "";
   const coinId = getPreferredObjectId(objects, "coin");
@@ -1350,7 +1805,7 @@ function createPresetRule(
       enabled: true,
       trigger: { type: "onButtonActivated", objectId: buttonId },
       conditions: [],
-      actions: [{ type: "openDoor", doorId }]
+      actions: [{ type: "openDoor", doorId }],
     };
   }
 
@@ -1363,8 +1818,8 @@ function createPresetRule(
       conditions: [],
       actions: [
         { type: "showMessage", message: "Porta liberada pela chave." },
-        { type: "openDoor", doorId }
-      ]
+        { type: "openDoor", doorId },
+      ],
     };
   }
 
@@ -1373,9 +1828,12 @@ function createPresetRule(
       id: createId("logic"),
       name: `Final ao entrar ${index}`,
       enabled: true,
-      trigger: { type: "onPlayerEnterObject", objectId: getPreferredObjectId(objects, "finish") || zoneId },
+      trigger: {
+        type: "onPlayerEnterObject",
+        objectId: getPreferredObjectId(objects, "finish") || zoneId,
+      },
       conditions: [{ type: "once" }],
-      actions: [{ type: "finishMap" }]
+      actions: [{ type: "finishMap" }],
     };
   }
 
@@ -1386,7 +1844,7 @@ function createPresetRule(
       enabled: true,
       trigger: { type: "onPlayerEnterObject", objectId: zoneId },
       conditions: [],
-      actions: [{ type: "teleportPlayer", targetObjectId: getPreferredObjectId(objects, "spawn") }]
+      actions: [{ type: "teleportPlayer", targetObjectId: getPreferredObjectId(objects, "spawn") }],
     };
   }
 
@@ -1401,8 +1859,8 @@ function createPresetRule(
       conditions: [{ type: "once" }],
       actions: [
         { type: "giveCoins", amount: 5 },
-        { type: "showMessage", message: "Bonus de moedas!" }
-      ]
+        { type: "showMessage", message: "Bonus de moedas!" },
+      ],
     };
   }
 
@@ -1412,7 +1870,7 @@ function createPresetRule(
     enabled: true,
     trigger: { type: "onPlayerEnterObject", objectId: zoneId },
     conditions: [{ type: "once" }],
-    actions: [{ type: "showMessage", message: "Voce entrou na zona." }]
+    actions: [{ type: "showMessage", message: "Voce entrou na zona." }],
   };
 }
 
@@ -1422,7 +1880,11 @@ function createDefaultTrigger(
   keys: Array<{ id: string; label: string }>
 ): LogicTrigger {
   if (type === "onPlayerEnterObject") {
-    return { type, objectId: getPreferredObjectId(objects, "messageZone") || getPreferredObjectId(objects, "cube") };
+    return {
+      type,
+      objectId:
+        getPreferredObjectId(objects, "messageZone") || getPreferredObjectId(objects, "cube"),
+    };
   }
 
   if (type === "onButtonActivated") {
@@ -1453,10 +1915,23 @@ function createDefaultTrigger(
     return { type, objectiveId: "" };
   }
 
+  if (type === "onScoreReached") {
+    return { type, amount: 100 };
+  }
+
+  if (type === "onTeamScoreReached") {
+    return { type, teamId: getPreferredTeamId(objects), amount: 100 };
+  }
+
+  if (type === "onCapturePointCaptured") {
+    return { type, pointId: getPreferredCapturePointId(objects) };
+  }
+
   if (
     type === "onAnyEnemyDefeated" ||
     type === "onAllEnemiesDefeated" ||
-    type === "onPlayerDamaged"
+    type === "onPlayerDamaged" ||
+    type === "onGameModeWon"
   ) {
     return { type };
   }
@@ -1545,6 +2020,22 @@ function createDefaultAction(type: ActionType, objects: MapObject[]): LogicActio
     return { type, objectId: getPreferredObjectId(objects, "npc"), message: "Nova fala do NPC." };
   }
 
+  if (type === "addScore") {
+    return { type, amount: 10 };
+  }
+
+  if (type === "addTeamScore") {
+    return { type, teamId: getPreferredTeamId(objects), amount: 10 };
+  }
+
+  if (type === "setTeam") {
+    return { type, teamId: getPreferredTeamId(objects) };
+  }
+
+  if (type === "endRound") {
+    return { type, result: "win" };
+  }
+
   if (type === "finishMap") {
     return { type };
   }
@@ -1556,7 +2047,7 @@ function duplicateRule(rule: LogicRule): LogicRule {
   return {
     ...structuredClone(rule),
     id: createId("logic"),
-    name: getCopyName(rule.name)
+    name: getCopyName(rule.name),
   };
 }
 
@@ -1567,6 +2058,18 @@ function getCopyName(name: string): string {
 
 function getPreferredObjectId(objects: MapObject[], preferredType: string): string {
   return objects.find((object) => object.type === preferredType)?.id ?? "";
+}
+
+function getPreferredTeamId(objects: MapObject[]): string {
+  const spawn = objects.find((object) => object.type === "teamSpawn");
+  const teamId = spawn?.properties?.teamId;
+  return typeof teamId === "string" && teamId.length > 0 ? teamId : "red";
+}
+
+function getPreferredCapturePointId(objects: MapObject[]): string {
+  const point = objects.find((object) => object.type === "capturePoint");
+  const pointId = point?.properties?.pointId;
+  return typeof pointId === "string" && pointId.length > 0 ? pointId : (point?.id ?? "");
 }
 
 function getPreferredDoorId(objects: MapObject[]): string {
@@ -1591,25 +2094,29 @@ function getTriggerLabel(trigger: LogicTrigger): string {
 
 function toTriggerType(value: string): TriggerType {
   return TRIGGER_OPTIONS.some((option) => option.type === value)
-    ? value as TriggerType
+    ? (value as TriggerType)
     : "onMapStart";
 }
 
 function toConditionType(value: string): ConditionType {
   return CONDITION_OPTIONS.some((option) => option.type === value)
-    ? value as ConditionType
+    ? (value as ConditionType)
     : "once";
 }
 
 function toActionType(value: string): ActionType {
   return ACTION_OPTIONS.some((option) => option.type === value)
-    ? value as ActionType
+    ? (value as ActionType)
     : "showMessage";
+}
+
+function toRoundResult(value: string): "win" | "lose" | "draw" {
+  return value === "lose" || value === "draw" ? value : "win";
 }
 
 function toPresetId(value: string): LogicPresetId {
   return PRESET_OPTIONS.some((preset) => preset.id === value)
-    ? value as LogicPresetId
+    ? (value as LogicPresetId)
     : "messageOnEnter";
 }
 

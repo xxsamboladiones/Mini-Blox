@@ -34,7 +34,7 @@ export class ObjectiveRuntime {
       this.states.set(objective.id, {
         objective,
         completed: false,
-        progress: 0
+        progress: 0,
       });
     }
 
@@ -144,19 +144,20 @@ export class ObjectiveRuntime {
   }
 
   getRequiredSummary(): { completed: number; total: number } {
-    const requiredStates = [...this.states.values()].filter((state) => state.objective.required !== false);
+    const requiredStates = [...this.states.values()].filter(
+      (state) => state.objective.required !== false
+    );
     return {
       completed: requiredStates.filter((state) => state.completed).length,
-      total: requiredStates.length
+      total: requiredStates.length,
     };
   }
 
   getCurrentHint(): string | null {
-    const next = [...this.states.values()].find((state) => (
-      !state.completed &&
-      state.objective.visible !== false &&
-      state.objective.required !== false
-    ));
+    const next = [...this.states.values()].find(
+      (state) =>
+        !state.completed && state.objective.visible !== false && state.objective.required !== false
+    );
 
     return next ? next.objective.title : null;
   }
@@ -171,23 +172,30 @@ export class ObjectiveRuntime {
     this.updateHud();
     this.audio.play("checkpoint");
     this.feedback.spawn("objective", position, "Objetivo");
-    this.hud.showMessage(state.objective.completedMessage || `Objetivo concluido: ${state.objective.title}`, 2400);
+    this.hud.showMessage(
+      state.objective.completedMessage || `Objetivo concluido: ${state.objective.title}`,
+      2400
+    );
     this.options.onObjectiveCompleted(state.objective);
     return true;
   }
 
   private updateHud(): void {
-    this.hud.setObjectives([...this.states.values()]
-      .filter((state) => state.objective.visible !== false)
-      .map((state): HudObjectiveState => ({
-        id: state.objective.id,
-        title: state.objective.title,
-        description: state.objective.description,
-        completed: state.completed,
-        progress: getProgressValue(state),
-        target: getTargetValue(state, this.map),
-        required: state.objective.required !== false
-      })));
+    this.hud.setObjectives(
+      [...this.states.values()]
+        .filter((state) => state.objective.visible !== false)
+        .map(
+          (state): HudObjectiveState => ({
+            id: state.objective.id,
+            title: state.objective.title,
+            description: state.objective.description,
+            completed: state.completed,
+            progress: getProgressValue(state),
+            target: getTargetValue(state, this.map),
+            required: state.objective.required !== false,
+          })
+        )
+    );
   }
 
   private getObjectivePosition(objective: MapObjective): Vector3 | undefined {
@@ -211,25 +219,30 @@ export class ObjectiveRuntime {
   }
 
   private getKeyPosition(keyId: string): Vector3 | undefined {
-    return this.map.objects.find((object) => object.type === "key" && getKeyId(object) === keyId)?.position;
+    return this.map.objects.find((object) => object.type === "key" && getKeyId(object) === keyId)
+      ?.position;
   }
 
   private getDoorPosition(doorId: string): Vector3 | undefined {
-    return this.map.objects.find((object) => object.type === "door" && getDoorId(object) === doorId)?.position;
+    return this.map.objects.find((object) => object.type === "door" && getDoorId(object) === doorId)
+      ?.position;
   }
 }
 
 function getObjectives(map: GameMap): MapObjective[] {
-  return (map.objectives ?? []).filter((objective) => (
-    typeof objective.id === "string" &&
-    typeof objective.title === "string" &&
-    typeof objective.type === "string"
-  ));
+  return (map.objectives ?? []).filter(
+    (objective) =>
+      typeof objective.id === "string" &&
+      typeof objective.title === "string" &&
+      typeof objective.type === "string"
+  );
 }
 
 function getProgressValue(state: ObjectiveState): number | undefined {
   if (state.objective.type === "collectCoins" || state.objective.type === "defeatEnemies") {
-    return state.completed ? getObjectiveTargetAmount(state.objective, Math.max(1, state.progress)) : state.progress;
+    return state.completed
+      ? getObjectiveTargetAmount(state.objective, Math.max(1, state.progress))
+      : state.progress;
   }
 
   return undefined;
@@ -249,7 +262,10 @@ function getTargetValue(state: ObjectiveState, map: GameMap): number | undefined
 }
 
 function getObjectiveTargetAmount(objective: MapObjective, fallback: number): number {
-  return Math.max(1, Math.floor(typeof objective.targetAmount === "number" ? objective.targetAmount : fallback));
+  return Math.max(
+    1,
+    Math.floor(typeof objective.targetAmount === "number" ? objective.targetAmount : fallback)
+  );
 }
 
 function getDoorId(object: MapObject): string {

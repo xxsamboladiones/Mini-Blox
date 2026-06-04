@@ -1,11 +1,14 @@
 import { createIcons, icons } from "lucide";
 import { GameRuntime } from "../../engine/GameRuntime";
 import { LocalMapMetadataStorage } from "../../storage/LocalMapMetadataStorage";
+import { LocalProfileStorage } from "../../storage/LocalProfileStorage.js";
 import type { GameMap } from "../../shared/types/MapSchema";
 import type { PlayScreenActions, Screen } from "../AppState";
+import { MultiplayerSessionAdapter } from "../../engine/session/MultiplayerSessionAdapter.js";
 
 export class PlayScreen implements Screen {
   private runtime: GameRuntime | null = null;
+  private sessionAdapter: MultiplayerSessionAdapter | null = null;
 
   constructor(
     private readonly root: HTMLElement,
@@ -54,12 +57,25 @@ export class PlayScreen implements Screen {
       throw new Error("Missing #play-root element.");
     }
 
+    let sessionAdapter = null;
+
+    if (this.actions.mode === "multiplayer" && this.actions.roomId && this.actions.onlineMapId) {
+      const playerName = LocalProfileStorage.getDisplayName();
+      this.sessionAdapter = new MultiplayerSessionAdapter(
+        this.actions.roomId,
+        this.map.id,
+        playerName
+      );
+      sessionAdapter = this.sessionAdapter;
+    }
+
     this.runtime = new GameRuntime(playRoot, {
       onBackToMenu: this.actions.onBackToMenu,
       onEditMap: (map) => this.actions.onEditMap(map),
       onMapCompleted: ({ map, coinsCollected }) => {
         LocalMapMetadataStorage.recordCompletion(map.id, coinsCollected);
-      }
+      },
+      sessionAdapter: sessionAdapter ?? undefined,
     });
     LocalMapMetadataStorage.recordPlay(this.map.id);
     void this.runtime.loadMap(this.map);
@@ -72,7 +88,9 @@ export class PlayScreen implements Screen {
   }
 
   private readonly handleClick = (event: MouseEvent): void => {
-    const button = (event.target as Element | null)?.closest<HTMLButtonElement>("[data-play-action]");
+    const button = (event.target as Element | null)?.closest<HTMLButtonElement>(
+      "[data-play-action]"
+    );
 
     if (!button || !this.root.contains(button)) {
       return;

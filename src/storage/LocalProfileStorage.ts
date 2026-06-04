@@ -11,6 +11,7 @@ export type LocalProfile = {
   avatarColors: AvatarColors;
   createdAt: string;
   updatedAt: string;
+  clientId: string;
 };
 
 export type LocalProfilePatch = Partial<{
@@ -28,7 +29,7 @@ export const DEFAULT_AVATAR_COLORS: AvatarColors = {
   head: "#f2c49b",
   body: "#3b82f6",
   arms: "#f2c49b",
-  legs: "#1f2937"
+  legs: "#1f2937",
 };
 
 export const LocalProfileStorage = {
@@ -51,7 +52,7 @@ export const LocalProfileStorage = {
       displayName: normalizeDisplayName(patch.displayName ?? current.displayName),
       bio: normalizeBio(patch.bio ?? current.bio),
       avatarColors: normalizeAvatarColors(patch.avatarColors, current.avatarColors),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     writeProfile(next);
@@ -62,10 +63,15 @@ export const LocalProfileStorage = {
     return this.getProfile().displayName;
   },
 
+  getClientId(): string {
+    const profile = this.getProfile();
+    return profile.clientId;
+  },
+
   isCreatorNameFromProfile(creatorName: string | undefined, profile?: LocalProfile): boolean {
     const activeProfile = profile ?? LocalProfileStorage.getProfile();
     return normalizeCreatorName(creatorName) === normalizeCreatorName(activeProfile.displayName);
-  }
+  },
 };
 
 export function normalizeCreatorName(value: string | undefined): string {
@@ -76,6 +82,15 @@ export function normalizeCreatorName(value: string | undefined): string {
     .trim();
 }
 
+function generateClientId(): string {
+  let clientId = localStorage.getItem("mini-blox-client-id");
+  if (!clientId) {
+    clientId = crypto.randomUUID();
+    localStorage.setItem("mini-blox-client-id", clientId);
+  }
+  return clientId;
+}
+
 function createDefaultProfile(): LocalProfile {
   const now = new Date().toISOString();
 
@@ -84,7 +99,8 @@ function createDefaultProfile(): LocalProfile {
     bio: "",
     avatarColors: { ...DEFAULT_AVATAR_COLORS },
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
+    clientId: generateClientId(),
   };
 }
 
@@ -117,12 +133,14 @@ function normalizeProfile(value: unknown): LocalProfile | null {
       isRecord(value.avatarColors) ? value.avatarColors : undefined,
       DEFAULT_AVATAR_COLORS
     ),
-    createdAt: typeof value.createdAt === "string" && value.createdAt.trim()
-      ? value.createdAt
-      : now,
-    updatedAt: typeof value.updatedAt === "string" && value.updatedAt.trim()
-      ? value.updatedAt
-      : now
+    createdAt:
+      typeof value.createdAt === "string" && value.createdAt.trim() ? value.createdAt : now,
+    updatedAt:
+      typeof value.updatedAt === "string" && value.updatedAt.trim() ? value.updatedAt : now,
+    clientId:
+      typeof value.clientId === "string" && value.clientId.trim()
+        ? value.clientId
+        : generateClientId(),
   };
 }
 
@@ -136,22 +154,17 @@ function normalizeDisplayName(value: unknown): string {
 }
 
 function normalizeBio(value: unknown): string {
-  return typeof value === "string"
-    ? value.trim().slice(0, MAX_BIO_LENGTH)
-    : "";
+  return typeof value === "string" ? value.trim().slice(0, MAX_BIO_LENGTH) : "";
 }
 
-function normalizeAvatarColors(
-  patch: unknown,
-  fallback: AvatarColors
-): AvatarColors {
+function normalizeAvatarColors(patch: unknown, fallback: AvatarColors): AvatarColors {
   const colors = isRecord(patch) ? patch : {};
 
   return {
     head: normalizeColor(colors.head, fallback.head),
     body: normalizeColor(colors.body, fallback.body),
     arms: normalizeColor(colors.arms, fallback.arms),
-    legs: normalizeColor(colors.legs, fallback.legs)
+    legs: normalizeColor(colors.legs, fallback.legs),
   };
 }
 

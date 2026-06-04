@@ -19,6 +19,8 @@ export const BUILT_IN_OBJECT_TYPES = [
   "npc",
   "enemy",
   "itemSpawner",
+  "teamSpawn",
+  "capturePoint",
   "movingPlatform",
   "disappearingBlock",
   "jumpPad",
@@ -32,7 +34,7 @@ export const BUILT_IN_OBJECT_TYPES = [
   "sign",
   "lamp",
   "arch",
-  "pillar"
+  "pillar",
 ] as const;
 
 export type BuiltInObjectType = (typeof BUILT_IN_OBJECT_TYPES)[number];
@@ -94,6 +96,12 @@ export type MapObjectProperties = Record<string, unknown> & {
   weaponId?: string;
   itemId?: string;
   sourceSpawnerId?: string;
+  teamId?: string;
+  pointId?: string;
+  ownerTeamId?: string;
+  captureTime?: number;
+  scorePerSecond?: number;
+  radius?: number;
   startOffset?: Vector3;
   endOffset?: Vector3;
   speed?: number;

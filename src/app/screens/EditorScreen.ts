@@ -15,7 +15,7 @@ export class EditorScreen implements Screen {
     this.editorApp = new EditorApp(this.root, {
       initialMap: this.map,
       onBackToMenu: this.actions.onBackToMenu,
-      onPlayMap: this.actions.onPlayMap
+      onPlayMap: this.actions.onPlayMap,
     });
     this.editorApp.start();
   }

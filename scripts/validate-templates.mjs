@@ -14,6 +14,10 @@ const MIN_OBJECTS = {
   combatArena: 150,
   combatDungeon: 220,
   guideMission: 160,
+  localTeamArena: 170,
+  localCapturePoint: 160,
+  competitiveCoin: 190,
+  objectiveArena: 190,
   keyPuzzle: 350,
   logic: 250,
   forest: 500,
@@ -24,28 +28,126 @@ const MIN_OBJECTS = {
   keyDungeon: 700,
   testCity: 1000,
   adventureIsland: 900,
-  stressTest: 1500
+  stressTest: 1500,
 };
 
 const REQUIRED_MINIMUMS = {
-  obby: { coins: 20, checkpoints: 4, damage: 3, jumpPads: 2, movingPlatforms: 1, disappearingBlocks: 2 },
+  obby: {
+    coins: 20,
+    checkpoints: 4,
+    damage: 3,
+    jumpPads: 2,
+    movingPlatforms: 1,
+    disappearingBlocks: 2,
+  },
   coin: { coins: 50, checkpoints: 2, teleporters: 2, keys: 1, doors: 1 },
   door: { doors: 10, buttons: 10, keys: 3, logic: 8 },
-  checkpoint: { checkpoints: 12, damage: 15, jumpPads: 8, disappearingBlocks: 8, movingPlatforms: 6 },
-  mechanics: { checkpoints: 1, damage: 1, jumpPads: 1, teleporters: 2, movingPlatforms: 1, disappearingBlocks: 1, doors: 1, buttons: 1, keys: 1 },
-  combatArena: { coins: 12, checkpoints: 1, enemies: 3, itemSpawners: 3, messageZones: 3, doors: 1, logic: 3 },
-  combatDungeon: { coins: 25, checkpoints: 4, enemies: 8, itemSpawners: 4, messageZones: 5, doors: 3, logic: 6 },
-  guideMission: { coins: 16, npcs: 1, objectives: 6, enemies: 2, itemSpawners: 2, keys: 1, doors: 1, logic: 4 },
+  checkpoint: {
+    checkpoints: 12,
+    damage: 15,
+    jumpPads: 8,
+    disappearingBlocks: 8,
+    movingPlatforms: 6,
+  },
+  mechanics: {
+    checkpoints: 1,
+    damage: 1,
+    jumpPads: 1,
+    teleporters: 2,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
+    doors: 1,
+    buttons: 1,
+    keys: 1,
+  },
+  combatArena: {
+    coins: 12,
+    checkpoints: 1,
+    enemies: 3,
+    itemSpawners: 3,
+    messageZones: 3,
+    doors: 1,
+    logic: 3,
+  },
+  combatDungeon: {
+    coins: 25,
+    checkpoints: 4,
+    enemies: 8,
+    itemSpawners: 4,
+    messageZones: 5,
+    doors: 3,
+    logic: 6,
+  },
+  guideMission: {
+    coins: 16,
+    npcs: 1,
+    objectives: 6,
+    enemies: 2,
+    itemSpawners: 2,
+    keys: 1,
+    doors: 1,
+    logic: 4,
+  },
+  localTeamArena: {
+    checkpoints: 2,
+    enemies: 4,
+    itemSpawners: 4,
+    messageZones: 2,
+    teamSpawns: 2,
+    logic: 3,
+  },
+  localCapturePoint: {
+    checkpoints: 2,
+    itemSpawners: 2,
+    messageZones: 1,
+    teamSpawns: 2,
+    capturePoints: 1,
+    logic: 3,
+  },
+  competitiveCoin: { coins: 28, checkpoints: 2, damage: 1, jumpPads: 1, messageZones: 1, logic: 2 },
+  objectiveArena: {
+    coins: 12,
+    checkpoints: 2,
+    enemies: 3,
+    itemSpawners: 2,
+    objectives: 5,
+    doors: 1,
+    buttons: 1,
+    capturePoints: 1,
+    logic: 5,
+  },
   keyPuzzle: { keys: 6, doors: 10, buttons: 8, logic: 10 },
   logic: { logic: 20, coins: 20, doors: 6, buttons: 6, keys: 2, checkpoints: 5, teleporters: 2 },
   forest: { coins: 80, checkpoints: 5, keys: 3, doors: 4, teleporters: 4 },
   desert: { coins: 70, checkpoints: 5, doors: 6, buttons: 6, teleporters: 6 },
-  neonObby: { coins: 80, checkpoints: 12, damage: 20, jumpPads: 15, movingPlatforms: 10, disappearingBlocks: 15 },
-  megaObby: { coins: 100, checkpoints: 15, damage: 20, jumpPads: 20, movingPlatforms: 15, disappearingBlocks: 20 },
+  neonObby: {
+    coins: 80,
+    checkpoints: 12,
+    damage: 20,
+    jumpPads: 15,
+    movingPlatforms: 10,
+    disappearingBlocks: 15,
+  },
+  megaObby: {
+    coins: 100,
+    checkpoints: 15,
+    damage: 20,
+    jumpPads: 20,
+    movingPlatforms: 15,
+    disappearingBlocks: 20,
+  },
   megaCoinWorld: { coins: 180, teleporters: 8, keys: 8, doors: 10 },
   keyDungeon: { keys: 10, doors: 20, buttons: 20, logic: 30, coins: 100 },
   testCity: { coins: 100, doors: 10, buttons: 10, teleporters: 8, checkpoints: 8 },
-  adventureIsland: { coins: 150, checkpoints: 8, keys: 8, doors: 12, teleporters: 8, jumpPads: 10, movingPlatforms: 8 },
+  adventureIsland: {
+    coins: 150,
+    checkpoints: 8,
+    keys: 8,
+    doors: 12,
+    teleporters: 8,
+    jumpPads: 10,
+    movingPlatforms: 8,
+  },
   stressTest: {
     coins: 250,
     doors: 30,
@@ -58,8 +160,8 @@ const REQUIRED_MINIMUMS = {
     movingPlatforms: 20,
     disappearingBlocks: 20,
     messageZones: 30,
-    logic: 50
-  }
+    logic: 50,
+  },
 };
 
 async function main() {
@@ -75,7 +177,7 @@ async function main() {
       bundle: true,
       format: "esm",
       platform: "node",
-      logLevel: "silent"
+      logLevel: "silent",
     });
 
     const templatesModule = await import(`${pathToFileURL(outfile).href}?t=${Date.now()}`);
@@ -92,31 +194,37 @@ async function main() {
       warnings.push(...collectLevelDesignWarnings(template, map, summary));
     }
 
-    console.table(summaries.map((summary) => ({
-      id: summary.id,
-      nome: summary.name,
-      objetos: summary.objects,
-      moedas: summary.coins,
-      portas: summary.doors,
-      botoes: summary.buttons,
-      chaves: summary.keys,
-      checkpoints: summary.checkpoints,
-      npcs: summary.npcs,
-      inimigos: summary.enemies,
-      spawners: summary.itemSpawners,
-      objetivos: summary.objectives,
-      dano: summary.damage,
-      jumpPads: summary.jumpPads,
-      teleportes: summary.teleporters,
-      moveis: summary.movingPlatforms,
-      somem: summary.disappearingBlocks,
-      mensagens: summary.messageZones,
-      placas: summary.signs,
-      logica: summary.logic,
-      void: summary.voidDeath,
-      voidY: summary.voidY,
-      jsonKB: summary.jsonKB
-    })));
+    console.table(
+      summaries.map((summary) => ({
+        id: summary.id,
+        nome: summary.name,
+        objetos: summary.objects,
+        moedas: summary.coins,
+        portas: summary.doors,
+        botoes: summary.buttons,
+        chaves: summary.keys,
+        checkpoints: summary.checkpoints,
+        npcs: summary.npcs,
+        inimigos: summary.enemies,
+        spawners: summary.itemSpawners,
+        objetivos: summary.objectives,
+        modo: summary.mode,
+        times: summary.teams,
+        teamSpawns: summary.teamSpawns,
+        capturePoints: summary.capturePoints,
+        dano: summary.damage,
+        jumpPads: summary.jumpPads,
+        teleportes: summary.teleporters,
+        moveis: summary.movingPlatforms,
+        somem: summary.disappearingBlocks,
+        mensagens: summary.messageZones,
+        placas: summary.signs,
+        logica: summary.logic,
+        void: summary.voidDeath,
+        voidY: summary.voidY,
+        jsonKB: summary.jsonKB,
+      }))
+    );
 
     if (errors.length > 0) {
       console.error(`\n${errors.length} problema(s) encontrado(s):`);
@@ -157,6 +265,10 @@ function summarizeMap(template, map) {
     npcs: count("npc"),
     itemSpawners: count("itemSpawner"),
     objectives: Array.isArray(map.objectives) ? map.objectives.length : 0,
+    mode: map.gameModeSettings?.mode ?? "freeplay",
+    teams: Array.isArray(map.teams) ? map.teams.length : 0,
+    teamSpawns: count("teamSpawn"),
+    capturePoints: count("capturePoint"),
     damage: count("damage"),
     jumpPads: count("jumpPad"),
     teleporters: count("teleporter"),
@@ -167,7 +279,7 @@ function summarizeMap(template, map) {
     logic: Array.isArray(map.logic) ? map.logic.length : 0,
     voidDeath: map.gameplaySettings?.voidDeathEnabled === false ? "off" : "on",
     voidY: Number(getVoidDeathY(map).toFixed(1)),
-    jsonKB: Number((jsonBytes / 1024).toFixed(1))
+    jsonKB: Number((jsonBytes / 1024).toFixed(1)),
   };
 }
 
@@ -180,6 +292,8 @@ function validateTemplate(template, map, summary) {
   const enemyIds = new Set();
   const npcIds = new Set();
   const objectiveIds = new Set();
+  const teamIds = new Set();
+  const capturePointIds = new Set();
   const expectedMin = MIN_OBJECTS[template.id];
 
   if (!template.id) {
@@ -208,6 +322,29 @@ function validateTemplate(template, map, summary) {
 
   if (summary.objects >= 300 && summary.checkpoints < 1) {
     errors.push(`${template.id}: mapa grande sem checkpoint.`);
+  }
+
+  if (Array.isArray(map.teams)) {
+    for (const team of map.teams) {
+      if (!team?.id || typeof team.id !== "string") {
+        errors.push(`${template.id}: time sem id valido.`);
+        continue;
+      }
+
+      if (teamIds.has(team.id)) {
+        errors.push(`${template.id}: teamId duplicado ${team.id}.`);
+      }
+
+      teamIds.add(team.id);
+
+      if (!team.name || typeof team.name !== "string") {
+        errors.push(`${template.id}: time ${team.id} sem nome.`);
+      }
+
+      if (!isVector(team.spawnPoint)) {
+        errors.push(`${template.id}: time ${team.id} sem spawnPoint valido.`);
+      }
+    }
   }
 
   for (const object of map.objects) {
@@ -256,6 +393,28 @@ function validateTemplate(template, map, summary) {
       npcIds.add(object.id);
     }
 
+    if (object.type === "teamSpawn") {
+      const teamId = getString(object.properties?.teamId, "");
+
+      if (!teamId) {
+        errors.push(`${template.id}: teamSpawn ${object.id} sem teamId.`);
+      } else if (teamIds.size > 0 && !teamIds.has(teamId)) {
+        errors.push(`${template.id}: teamSpawn ${object.id} aponta time inexistente ${teamId}.`);
+      }
+    }
+
+    if (object.type === "capturePoint") {
+      const pointId = getString(object.properties?.pointId, object.id);
+
+      if (!pointId) {
+        errors.push(`${template.id}: capturePoint ${object.id} sem pointId.`);
+      } else if (capturePointIds.has(pointId)) {
+        errors.push(`${template.id}: pointId duplicado ${pointId}.`);
+      }
+
+      capturePointIds.add(pointId);
+    }
+
     if (object.type === "teleporter") {
       const teleporterId = getString(object.properties?.teleporterId, object.id);
 
@@ -268,7 +427,9 @@ function validateTemplate(template, map, summary) {
   }
 
   for (const object of map.objects) {
-    const targetDoorId = getString(object.properties?.targetDoorId, "") || getString(object.properties?.buttonTargetId, "");
+    const targetDoorId =
+      getString(object.properties?.targetDoorId, "") ||
+      getString(object.properties?.buttonTargetId, "");
     const requiredKeyId = getString(object.properties?.requiredKeyId, "");
     const targetTeleporterId = getString(object.properties?.targetTeleporterId, "");
 
@@ -277,11 +438,15 @@ function validateTemplate(template, map, summary) {
     }
 
     if (requiredKeyId && !keyIds.has(requiredKeyId)) {
-      errors.push(`${template.id}: ${object.id} aponta requiredKeyId inexistente ${requiredKeyId}.`);
+      errors.push(
+        `${template.id}: ${object.id} aponta requiredKeyId inexistente ${requiredKeyId}.`
+      );
     }
 
     if (targetTeleporterId && !teleporterIds.has(targetTeleporterId)) {
-      errors.push(`${template.id}: ${object.id} aponta targetTeleporterId inexistente ${targetTeleporterId}.`);
+      errors.push(
+        `${template.id}: ${object.id} aponta targetTeleporterId inexistente ${targetTeleporterId}.`
+      );
     }
   }
 
@@ -293,16 +458,39 @@ function validateTemplate(template, map, summary) {
     }
   }
 
-  errors.push(...validateObjectives(template.id, map, {
-    objectIds,
-    doorIds,
-    keyIds,
-    enemyIds,
-    objectiveIds
-  }));
+  errors.push(
+    ...validateObjectives(template.id, map, {
+      objectIds,
+      doorIds,
+      keyIds,
+      enemyIds,
+      objectiveIds,
+    })
+  );
+
+  errors.push(
+    ...validateGameMode(template.id, map, summary, {
+      teamIds,
+      capturePointIds,
+    })
+  );
 
   for (const rule of map.logic ?? []) {
-    errors.push(...validateLogicRule(template.id, rule, objectIds, doorIds, keyIds, enemyIds, npcIds, objectiveIds, map));
+    errors.push(
+      ...validateLogicRule(
+        template.id,
+        rule,
+        objectIds,
+        doorIds,
+        keyIds,
+        enemyIds,
+        npcIds,
+        objectiveIds,
+        teamIds,
+        capturePointIds,
+        map
+      )
+    );
   }
 
   errors.push(...validateLevelDesign(template, map, summary, { doorIds, keyIds, teleporterIds }));
@@ -335,32 +523,176 @@ function validateObjectives(templateId, map, refs) {
       continue;
     }
 
-    if ((objective.type === "collectCoins" || objective.type === "defeatEnemies") &&
+    if (
+      (objective.type === "collectCoins" || objective.type === "defeatEnemies") &&
       (!Number.isFinite(objective.targetAmount) || objective.targetAmount < 1)
     ) {
       errors.push(`${templateId}: objetivo ${objective.id} precisa de targetAmount positivo.`);
     }
 
-    if ((objective.type === "reachObject" || objective.type === "activateButton") &&
+    if (
+      (objective.type === "reachObject" || objective.type === "activateButton") &&
       !refs.objectIds.has(objective.targetObjectId)
     ) {
-      errors.push(`${templateId}: objetivo ${objective.id} aponta objeto inexistente ${objective.targetObjectId}.`);
+      errors.push(
+        `${templateId}: objetivo ${objective.id} aponta objeto inexistente ${objective.targetObjectId}.`
+      );
     }
 
     if (objective.type === "collectKey" && !refs.keyIds.has(objective.targetKeyId)) {
-      errors.push(`${templateId}: objetivo ${objective.id} aponta chave inexistente ${objective.targetKeyId}.`);
+      errors.push(
+        `${templateId}: objetivo ${objective.id} aponta chave inexistente ${objective.targetKeyId}.`
+      );
     }
 
     if (objective.type === "openDoor" && !refs.doorIds.has(objective.targetDoorId)) {
-      errors.push(`${templateId}: objetivo ${objective.id} aponta porta inexistente ${objective.targetDoorId}.`);
+      errors.push(
+        `${templateId}: objetivo ${objective.id} aponta porta inexistente ${objective.targetDoorId}.`
+      );
     }
   }
 
-  if (map.gameplaySettings?.requireObjectivesToFinish && objectives.every((objective) => objective.required === false)) {
-    errors.push(`${templateId}: exige objetivos para finalizar, mas nenhum objetivo e obrigatorio.`);
+  if (
+    map.gameplaySettings?.requireObjectivesToFinish &&
+    objectives.every((objective) => objective.required === false)
+  ) {
+    errors.push(
+      `${templateId}: exige objetivos para finalizar, mas nenhum objetivo e obrigatorio.`
+    );
   }
 
   return errors;
+}
+
+function validateGameMode(templateId, map, summary, refs) {
+  const errors = [];
+  const settings = map.gameModeSettings;
+  const validModes = new Set([
+    "freeplay",
+    "obby",
+    "coinCollect",
+    "combatArena",
+    "objectiveRun",
+    "teamBattle",
+    "capturePoint",
+  ]);
+  const validWinConditions = new Set([
+    "none",
+    "finish",
+    "collectCoins",
+    "defeatEnemies",
+    "completeObjectives",
+    "score",
+    "capturePoint",
+  ]);
+  const requiredObjectives = Array.isArray(map.objectives)
+    ? map.objectives.filter((objective) => objective.required !== false).length
+    : 0;
+
+  if (!settings || typeof settings !== "object") {
+    errors.push(`${templateId}: mapa sem gameModeSettings.`);
+    return errors;
+  }
+
+  if (!validModes.has(settings.mode)) {
+    errors.push(`${templateId}: gameModeSettings.mode invalido ${settings.mode}.`);
+  }
+
+  const winCondition = settings.winCondition ?? { type: "none" };
+
+  if (!validWinConditions.has(winCondition.type)) {
+    errors.push(`${templateId}: winCondition invalida ${winCondition.type}.`);
+  }
+
+  if (
+    (settings.teamsEnabled || settings.mode === "teamBattle" || settings.mode === "capturePoint") &&
+    refs.teamIds.size === 0
+  ) {
+    errors.push(`${templateId}: modo com times sem times configurados.`);
+  }
+
+  if (
+    (settings.teamsEnabled || settings.mode === "teamBattle" || settings.mode === "capturePoint") &&
+    summary.teamSpawns < Math.max(1, refs.teamIds.size)
+  ) {
+    errors.push(
+      `${templateId}: times sem teamSpawn suficiente (${summary.teamSpawns}/${Math.max(1, refs.teamIds.size)}).`
+    );
+  }
+
+  if (settings.mode === "capturePoint" && summary.capturePoints < 1) {
+    errors.push(`${templateId}: modo capturePoint sem objeto capturePoint.`);
+  }
+
+  if (
+    settings.mode === "teamBattle" &&
+    summary.enemies + summary.capturePoints + summary.coins < 1
+  ) {
+    errors.push(`${templateId}: teamBattle sem fonte clara de pontuacao.`);
+  }
+
+  if (settings.mode === "coinCollect" && summary.coins < 1) {
+    errors.push(`${templateId}: coinCollect sem moedas.`);
+  }
+
+  if (settings.mode === "combatArena" && summary.enemies < 1) {
+    errors.push(`${templateId}: combatArena sem inimigos.`);
+  }
+
+  if (settings.mode === "objectiveRun" && requiredObjectives < 1) {
+    errors.push(`${templateId}: objectiveRun sem objetivos obrigatorios.`);
+  }
+
+  if (settings.requireObjectivesToFinish && requiredObjectives < 1) {
+    errors.push(`${templateId}: requireObjectivesToFinish sem objetivos obrigatorios.`);
+  }
+
+  if (winCondition.type === "collectCoins") {
+    validatePositiveTarget(errors, templateId, winCondition, "collectCoins");
+
+    if (Number.isFinite(winCondition.targetAmount) && winCondition.targetAmount > summary.coins) {
+      errors.push(
+        `${templateId}: meta de moedas maior que moedas do mapa (${winCondition.targetAmount}/${summary.coins}).`
+      );
+    }
+  }
+
+  if (winCondition.type === "defeatEnemies") {
+    validatePositiveTarget(errors, templateId, winCondition, "defeatEnemies");
+
+    if (summary.enemies < 1) {
+      errors.push(`${templateId}: derrota de inimigos configurada sem inimigos.`);
+    }
+  }
+
+  if (winCondition.type === "completeObjectives") {
+    validatePositiveTarget(errors, templateId, winCondition, "completeObjectives");
+
+    if (
+      Number.isFinite(winCondition.targetAmount) &&
+      winCondition.targetAmount > requiredObjectives
+    ) {
+      errors.push(
+        `${templateId}: meta de objetivos maior que objetivos obrigatorios (${winCondition.targetAmount}/${requiredObjectives}).`
+      );
+    }
+  }
+
+  if (winCondition.type === "score" || winCondition.type === "capturePoint") {
+    validatePositiveTarget(errors, templateId, winCondition, winCondition.type);
+  }
+
+  if (winCondition.type === "capturePoint" && refs.capturePointIds.size < 1) {
+    errors.push(`${templateId}: winCondition capturePoint sem capturePoint.`);
+  }
+
+  return errors;
+}
+
+function validatePositiveTarget(errors, templateId, winCondition, label) {
+  if (!Number.isFinite(winCondition.targetAmount) || winCondition.targetAmount < 1) {
+    errors.push(`${templateId}: ${label} precisa de targetAmount positivo.`);
+  }
 }
 
 function validateLevelDesign(template, map, summary, refs) {
@@ -381,7 +713,9 @@ function validateLevelDesign(template, map, summary, refs) {
   }
 
   if (damageZones.length > 0 && checkpoints.length < Math.ceil(damageZones.length / 4)) {
-    errors.push(`${template.id}: perigos sem checkpoints suficientes (${checkpoints.length}/${Math.ceil(damageZones.length / 4)}).`);
+    errors.push(
+      `${template.id}: perigos sem checkpoints suficientes (${checkpoints.length}/${Math.ceil(damageZones.length / 4)}).`
+    );
   }
 
   if (damageZones.some((damage) => distance2D(damage.position, map.spawnPoint) < 8)) {
@@ -405,11 +739,15 @@ function validateLevelDesign(template, map, summary, refs) {
   }
 
   for (const button of buttons) {
-    const targetDoorId = getString(button.properties?.targetDoorId, "") || getString(button.properties?.buttonTargetId, "");
+    const targetDoorId =
+      getString(button.properties?.targetDoorId, "") ||
+      getString(button.properties?.buttonTargetId, "");
     const door = doors.find((candidate) => getDoorId(candidate) === targetDoorId);
 
     if (targetDoorId && door && distance2D(button.position, door.position) > 34) {
-      errors.push(`${template.id}: botao ${button.id} esta distante demais da porta ${targetDoorId}.`);
+      errors.push(
+        `${template.id}: botao ${button.id} esta distante demais da porta ${targetDoorId}.`
+      );
     }
   }
 
@@ -418,13 +756,17 @@ function validateLevelDesign(template, map, summary, refs) {
     const key = keys.find((candidate) => getKeyId(candidate) === requiredKeyId);
 
     if (requiredKeyId && key && !isPlacedBeforeOrNear(key, door)) {
-      errors.push(`${template.id}: chave ${requiredKeyId} parece estar depois da porta que ela abre.`);
+      errors.push(
+        `${template.id}: chave ${requiredKeyId} parece estar depois da porta que ela abre.`
+      );
     }
   }
 
   for (const teleporter of teleporters) {
     const targetTeleporterId = getString(teleporter.properties?.targetTeleporterId, "");
-    const target = teleporters.find((candidate) => getTeleporterId(candidate) === targetTeleporterId);
+    const target = teleporters.find(
+      (candidate) => getTeleporterId(candidate) === targetTeleporterId
+    );
 
     if (targetTeleporterId && target) {
       const reciprocalTargetId = getString(target.properties?.targetTeleporterId, "");
@@ -467,8 +809,8 @@ function validateVoidGameplay(templateId, map) {
   const voidDeathEnabled = map.gameplaySettings?.voidDeathEnabled !== false;
   const voidDeathY = getVoidDeathY(map);
   const spawnSupports = getSpawnSupports(map);
-  const initialFloors = map.objects.filter((object) =>
-    isFloorSupportObject(object) && distance2D(object.position, map.spawnPoint) <= 12
+  const initialFloors = map.objects.filter(
+    (object) => isFloorSupportObject(object) && distance2D(object.position, map.spawnPoint) <= 12
   );
   const globalFloors = map.objects.filter((object) => {
     if (!isFloorSupportObject(object)) {
@@ -498,7 +840,9 @@ function validateVoidGameplay(templateId, map) {
   }
 
   if (globalFloors.length > 0) {
-    errors.push(`${templateId}: possui piso gigante que parece chao global (${globalFloors.map((object) => object.id).join(", ")}).`);
+    errors.push(
+      `${templateId}: possui piso gigante que parece chao global (${globalFloors.map((object) => object.id).join(", ")}).`
+    );
   }
 
   return errors;
@@ -514,14 +858,19 @@ function collectLevelDesignWarnings(template, map, summary) {
   const checkpoints = getObjectsByType(map, "checkpoint");
   const damageZones = getObjectsByType(map, "damage");
   const jumpPads = getObjectsByType(map, "jumpPad");
-  const finishObjects = map.objects.filter((object) => object.type === "finish" || object.type === "goal");
+  const capturePoints = getObjectsByType(map, "capturePoint");
+  const teamSpawns = getObjectsByType(map, "teamSpawn");
+  const finishObjects = map.objects.filter(
+    (object) => object.type === "finish" || object.type === "goal"
+  );
   const signs = getObjectsByType(map, "sign");
-  const walkableObjects = map.objects.filter((object) =>
-    object.type === "platform" ||
-    object.type === "cube" ||
-    object.type === "ramp" ||
-    object.type === "movingPlatform" ||
-    object.type === "disappearingBlock"
+  const walkableObjects = map.objects.filter(
+    (object) =>
+      object.type === "platform" ||
+      object.type === "cube" ||
+      object.type === "ramp" ||
+      object.type === "movingPlatform" ||
+      object.type === "disappearingBlock"
   );
   const buttonTargets = new Set();
   const requiredKeys = new Set();
@@ -529,7 +878,9 @@ function collectLevelDesignWarnings(template, map, summary) {
   const logicKeyIds = new Set();
 
   for (const button of buttons) {
-    const targetDoorId = getString(button.properties?.targetDoorId, "") || getString(button.properties?.buttonTargetId, "");
+    const targetDoorId =
+      getString(button.properties?.targetDoorId, "") ||
+      getString(button.properties?.buttonTargetId, "");
 
     if (!targetDoorId) {
       warnings.push(`${template.id}: botao ${button.id} nao possui porta alvo.`);
@@ -573,7 +924,9 @@ function collectLevelDesignWarnings(template, map, summary) {
     const requiredKeyId = getString(door.properties?.requiredKeyId, "");
 
     if (!buttonTargets.has(doorId) && !requiredKeyId && !logicDoorIds.has(doorId)) {
-      warnings.push(`${template.id}: porta ${doorId} nao parece estar ligada a botao, chave ou regra.`);
+      warnings.push(
+        `${template.id}: porta ${doorId} nao parece estar ligada a botao, chave ou regra.`
+      );
     }
   }
 
@@ -597,26 +950,40 @@ function collectLevelDesignWarnings(template, map, summary) {
     const farCoins = coins.filter((coin) => getNearestDistance(coin, walkableObjects) > 12);
 
     if (farCoins.length > Math.max(2, Math.floor(coins.length * 0.08))) {
-      warnings.push(`${template.id}: ${farCoins.length} moeda(s) parecem longe de plataformas/caminhos.`);
+      warnings.push(
+        `${template.id}: ${farCoins.length} moeda(s) parecem longe de plataformas/caminhos.`
+      );
     }
   }
 
   for (const checkpoint of checkpoints) {
     if (damageZones.some((damage) => distance2D(checkpoint.position, damage.position) < 2.2)) {
-      warnings.push(`${template.id}: checkpoint ${checkpoint.id} esta muito perto de uma zona de dano.`);
+      warnings.push(
+        `${template.id}: checkpoint ${checkpoint.id} esta muito perto de uma zona de dano.`
+      );
     }
 
     if (walkableObjects.length > 0 && getNearestDistance(checkpoint, walkableObjects) > 10) {
-      warnings.push(`${template.id}: checkpoint ${checkpoint.id} parece longe do caminho principal.`);
+      warnings.push(
+        `${template.id}: checkpoint ${checkpoint.id} parece longe do caminho principal.`
+      );
     }
   }
 
   for (const button of buttons) {
-    const targetDoorId = getString(button.properties?.targetDoorId, "") || getString(button.properties?.buttonTargetId, "");
+    const targetDoorId =
+      getString(button.properties?.targetDoorId, "") ||
+      getString(button.properties?.buttonTargetId, "");
     const door = doors.find((candidate) => getDoorId(candidate) === targetDoorId);
 
-    if (door && distance2D(button.position, door.position) > 22 && !hasSignNearConnection(signs, button.position, door.position)) {
-      warnings.push(`${template.id}: botao ${button.id} esta distante da porta ${targetDoorId} sem placa proxima.`);
+    if (
+      door &&
+      distance2D(button.position, door.position) > 22 &&
+      !hasSignNearConnection(signs, button.position, door.position)
+    ) {
+      warnings.push(
+        `${template.id}: botao ${button.id} esta distante da porta ${targetDoorId} sem placa proxima.`
+      );
     }
   }
 
@@ -628,34 +995,71 @@ function collectLevelDesignWarnings(template, map, summary) {
 
   for (const finish of finishObjects) {
     if (walkableObjects.length > 0 && getNearestDistance(finish, walkableObjects) > 8) {
-      warnings.push(`${template.id}: final ${finish.id} parece longe de uma plataforma alcancavel.`);
+      warnings.push(
+        `${template.id}: final ${finish.id} parece longe de uma plataforma alcancavel.`
+      );
     }
   }
 
-  if ((template.id === "obby" || template.id === "neonObby" || template.id === "megaObby") &&
-    checkpoints.length < Math.ceil((damageZones.length + jumpPads.length + movingPlatformCount(summary) + summary.disappearingBlocks) / 4)
+  for (const capturePoint of capturePoints) {
+    if (walkableObjects.length > 0 && getNearestDistance(capturePoint, walkableObjects) > 8) {
+      warnings.push(
+        `${template.id}: capturePoint ${capturePoint.id} parece longe de uma plataforma alcancavel.`
+      );
+    }
+
+    if (!signs.some((sign) => distance2D(sign.position, capturePoint.position) <= 12)) {
+      warnings.push(
+        `${template.id}: capturePoint ${capturePoint.id} sem placa proxima explicando o objetivo.`
+      );
+    }
+  }
+
+  if (
+    map.gameModeSettings?.teamsEnabled &&
+    teamSpawns.length < Math.max(1, Array.isArray(map.teams) ? map.teams.length : 0)
+  ) {
+    warnings.push(`${template.id}: modo com times possui poucos teamSpawns visiveis.`);
+  }
+
+  if (
+    (template.id === "obby" || template.id === "neonObby" || template.id === "megaObby") &&
+    checkpoints.length <
+      Math.ceil(
+        (damageZones.length +
+          jumpPads.length +
+          movingPlatformCount(summary) +
+          summary.disappearingBlocks) /
+          4
+      )
   ) {
     warnings.push(`${template.id}: obby com poucos checkpoints para a quantidade de desafios.`);
   }
 
-  const decorativeCount = map.objects.filter((object) =>
-    object.type === "tree" ||
-    object.type === "rock" ||
-    object.type === "crate" ||
-    object.type === "barrel" ||
-    object.type === "lamp" ||
-    object.type === "arch" ||
-    object.type === "pillar"
+  const decorativeCount = map.objects.filter(
+    (object) =>
+      object.type === "tree" ||
+      object.type === "rock" ||
+      object.type === "crate" ||
+      object.type === "barrel" ||
+      object.type === "lamp" ||
+      object.type === "arch" ||
+      object.type === "pillar"
   ).length;
 
   if (summary.objects >= 350 && decorativeCount > 180 && summary.signs < 8) {
-    warnings.push(`${template.id}: muita decoracao com pouca sinalizacao (${decorativeCount} decorativos, ${summary.signs} placas).`);
+    warnings.push(
+      `${template.id}: muita decoracao com pouca sinalizacao (${decorativeCount} decorativos, ${summary.signs} placas).`
+    );
   }
 
-  const interactiveCount = summary.doors + summary.buttons + summary.keys + summary.teleporters + summary.messageZones;
+  const interactiveCount =
+    summary.doors + summary.buttons + summary.keys + summary.teleporters + summary.messageZones;
 
   if (interactiveCount >= 25 && summary.logic < 5) {
-    warnings.push(`${template.id}: muitos objetos interativos com pouca logica associada (${interactiveCount} interativos, ${summary.logic} regras).`);
+    warnings.push(
+      `${template.id}: muitos objetos interativos com pouca logica associada (${interactiveCount} interativos, ${summary.logic} regras).`
+    );
   }
 
   return warnings;
@@ -689,7 +1093,13 @@ function validateLogicCoverage(templateId, map) {
     }
   }
 
-  const requiredTriggers = ["onMapStart", "onPlayerEnterObject", "onButtonActivated", "onCoinCollected", "onKeyCollected"];
+  const requiredTriggers = [
+    "onMapStart",
+    "onPlayerEnterObject",
+    "onButtonActivated",
+    "onCoinCollected",
+    "onKeyCollected",
+  ];
   const requiredConditions = ["once", "hasKey", "coinsAtLeast", "doorIsOpen"];
   const requiredActions = [
     "showMessage",
@@ -700,7 +1110,7 @@ function validateLogicCoverage(templateId, map) {
     "setCheckpoint",
     "finishMap",
     "enableObject",
-    "disableObject"
+    "disableObject",
   ];
 
   for (const trigger of requiredTriggers) {
@@ -749,16 +1159,20 @@ function getObjectsByType(map, type) {
 }
 
 function getSpawnSupports(map) {
-  return map.objects.filter((object) => isFloorSupportObject(object) && isObjectUnderSpawn(map.spawnPoint, object));
+  return map.objects.filter(
+    (object) => isFloorSupportObject(object) && isObjectUnderSpawn(map.spawnPoint, object)
+  );
 }
 
 function isFloorSupportObject(object) {
-  return object.type === "platform" ||
+  return (
+    object.type === "platform" ||
     object.type === "cube" ||
     object.type === "ramp" ||
     object.type === "movingPlatform" ||
     object.type === "disappearingBlock" ||
-    object.type === "model";
+    object.type === "model"
+  );
 }
 
 function isObjectUnderSpawn(spawnPoint, object) {
@@ -776,7 +1190,11 @@ function getObjectScale(object) {
     return object.scale;
   }
 
-  if (object.type === "platform" || object.type === "movingPlatform" || object.type === "disappearingBlock") {
+  if (
+    object.type === "platform" ||
+    object.type === "movingPlatform" ||
+    object.type === "disappearingBlock"
+  ) {
     return { x: 6, y: 0.4, z: 6 };
   }
 
@@ -788,7 +1206,8 @@ function getObjectScale(object) {
 }
 
 function getVoidDeathY(map) {
-  return typeof map.gameplaySettings?.voidDeathY === "number" && Number.isFinite(map.gameplaySettings.voidDeathY)
+  return typeof map.gameplaySettings?.voidDeathY === "number" &&
+    Number.isFinite(map.gameplaySettings.voidDeathY)
     ? map.gameplaySettings.voidDeathY
     : map.spawnPoint.y - 25;
 }
@@ -799,7 +1218,7 @@ function getSpread(objects) {
 
   return {
     x: Math.max(...xs) - Math.min(...xs),
-    z: Math.max(...zs) - Math.min(...zs)
+    z: Math.max(...zs) - Math.min(...zs),
   };
 }
 
@@ -808,20 +1227,24 @@ function distance2D(a, b) {
 }
 
 function getNearestDistance(object, candidates) {
-  return candidates.reduce((nearest, candidate) => Math.min(nearest, distance2D(object.position, candidate.position)), Infinity);
+  return candidates.reduce(
+    (nearest, candidate) => Math.min(nearest, distance2D(object.position, candidate.position)),
+    Infinity
+  );
 }
 
 function hasSignNearConnection(signs, from, to) {
   const mid = {
     x: (from.x + to.x) / 2,
     y: Math.max(from.y, to.y),
-    z: (from.z + to.z) / 2
+    z: (from.z + to.z) / 2,
   };
 
-  return signs.some((sign) =>
-    distance2D(sign.position, from) <= 8 ||
-    distance2D(sign.position, to) <= 8 ||
-    distance2D(sign.position, mid) <= 8
+  return signs.some(
+    (sign) =>
+      distance2D(sign.position, from) <= 8 ||
+      distance2D(sign.position, to) <= 8 ||
+      distance2D(sign.position, mid) <= 8
   );
 }
 
@@ -834,10 +1257,7 @@ function hasJumpPadDestination(jumpPad, walkableObjects) {
     const distance = distance2D(jumpPad.position, object.position);
     const verticalDelta = object.position.y - jumpPad.position.y;
 
-    return distance >= 2.5 &&
-      distance <= 18 &&
-      verticalDelta >= -0.5 &&
-      verticalDelta <= 7.5;
+    return distance >= 2.5 && distance <= 18 && verticalDelta >= -0.5 && verticalDelta <= 7.5;
   });
 }
 
@@ -857,7 +1277,19 @@ function getTeleporterId(object) {
   return getString(object.properties?.teleporterId, object.id);
 }
 
-function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, enemyIds, npcIds, objectiveIds, map) {
+function validateLogicRule(
+  templateId,
+  rule,
+  objectIds,
+  doorIds,
+  keyIds,
+  enemyIds,
+  npcIds,
+  objectiveIds,
+  teamIds,
+  capturePointIds,
+  map
+) {
   const errors = [];
 
   if (!rule.id || !rule.name) {
@@ -877,28 +1309,73 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, enemyId
     rule.trigger.type === "onNpcInteracted"
   ) {
     if (!objectIds.has(rule.trigger.objectId)) {
-      errors.push(`${templateId}: regra ${rule.id} trigger aponta objeto inexistente ${rule.trigger.objectId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} trigger aponta objeto inexistente ${rule.trigger.objectId}.`
+      );
     }
 
     if (rule.trigger.type === "onEnemyDefeated" && !enemyIds.has(rule.trigger.objectId)) {
-      errors.push(`${templateId}: regra ${rule.id} onEnemyDefeated aponta inimigo inexistente ${rule.trigger.objectId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} onEnemyDefeated aponta inimigo inexistente ${rule.trigger.objectId}.`
+      );
     }
 
     if (rule.trigger.type === "onNpcInteracted" && !npcIds.has(rule.trigger.objectId)) {
-      errors.push(`${templateId}: regra ${rule.id} onNpcInteracted aponta NPC inexistente ${rule.trigger.objectId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} onNpcInteracted aponta NPC inexistente ${rule.trigger.objectId}.`
+      );
     }
   }
 
   if (rule.trigger.type === "onObjectiveCompleted" && !objectiveIds.has(rule.trigger.objectiveId)) {
-    errors.push(`${templateId}: regra ${rule.id} onObjectiveCompleted aponta objetivo inexistente ${rule.trigger.objectiveId}.`);
+    errors.push(
+      `${templateId}: regra ${rule.id} onObjectiveCompleted aponta objetivo inexistente ${rule.trigger.objectiveId}.`
+    );
   }
 
   if (rule.trigger.type === "onKeyCollected" && !keyIds.has(rule.trigger.keyId)) {
-    errors.push(`${templateId}: regra ${rule.id} trigger aponta chave inexistente ${rule.trigger.keyId}.`);
+    errors.push(
+      `${templateId}: regra ${rule.id} trigger aponta chave inexistente ${rule.trigger.keyId}.`
+    );
   }
 
   if (rule.trigger.type === "onItemCollected" && !isValidItemType(rule.trigger.itemType)) {
-    errors.push(`${templateId}: regra ${rule.id} onItemCollected usa item invalido ${rule.trigger.itemType}.`);
+    errors.push(
+      `${templateId}: regra ${rule.id} onItemCollected usa item invalido ${rule.trigger.itemType}.`
+    );
+  }
+
+  if (
+    rule.trigger.type === "onScoreReached" &&
+    (!Number.isFinite(rule.trigger.amount) || rule.trigger.amount < 1)
+  ) {
+    errors.push(`${templateId}: regra ${rule.id} onScoreReached precisa de amount positivo.`);
+  }
+
+  if (rule.trigger.type === "onTeamScoreReached") {
+    if (!teamIds.has(rule.trigger.teamId)) {
+      errors.push(
+        `${templateId}: regra ${rule.id} onTeamScoreReached aponta time inexistente ${rule.trigger.teamId}.`
+      );
+    }
+
+    if (!Number.isFinite(rule.trigger.amount) || rule.trigger.amount < 1) {
+      errors.push(`${templateId}: regra ${rule.id} onTeamScoreReached precisa de amount positivo.`);
+    }
+  }
+
+  if (rule.trigger.type === "onCapturePointCaptured") {
+    if (!capturePointIds.has(rule.trigger.pointId)) {
+      errors.push(
+        `${templateId}: regra ${rule.id} onCapturePointCaptured aponta ponto inexistente ${rule.trigger.pointId}.`
+      );
+    }
+
+    if (rule.trigger.teamId && !teamIds.has(rule.trigger.teamId)) {
+      errors.push(
+        `${templateId}: regra ${rule.id} onCapturePointCaptured aponta time inexistente ${rule.trigger.teamId}.`
+      );
+    }
   }
 
   for (const condition of rule.conditions ?? []) {
@@ -915,7 +1392,9 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, enemyId
     }
 
     if (condition.type === "enemyDefeated" && !enemyIds.has(condition.objectId)) {
-      errors.push(`${templateId}: regra ${rule.id} enemyDefeated aponta inimigo inexistente ${condition.objectId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} enemyDefeated aponta inimigo inexistente ${condition.objectId}.`
+      );
     }
 
     if (condition.type === "enemiesDefeatedAtLeast" && !Number.isFinite(condition.amount)) {
@@ -932,35 +1411,54 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, enemyId
   }
 
   for (const action of rule.actions ?? []) {
-    if ((action.type === "openDoor" || action.type === "closeDoor") && !doorIds.has(action.doorId)) {
-      errors.push(`${templateId}: regra ${rule.id} ${action.type} aponta porta inexistente ${action.doorId}.`);
+    if (
+      (action.type === "openDoor" || action.type === "closeDoor") &&
+      !doorIds.has(action.doorId)
+    ) {
+      errors.push(
+        `${templateId}: regra ${rule.id} ${action.type} aponta porta inexistente ${action.doorId}.`
+      );
     }
 
     if (action.type === "teleportPlayer" && !objectIds.has(action.targetObjectId)) {
-      errors.push(`${templateId}: regra ${rule.id} teleportPlayer aponta objeto inexistente ${action.targetObjectId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} teleportPlayer aponta objeto inexistente ${action.targetObjectId}.`
+      );
     }
 
     if (action.type === "setCheckpoint") {
       const target = map.objects.find((object) => object.id === action.objectId);
 
       if (!target || target.type !== "checkpoint") {
-        errors.push(`${templateId}: regra ${rule.id} setCheckpoint aponta checkpoint inexistente ${action.objectId}.`);
+        errors.push(
+          `${templateId}: regra ${rule.id} setCheckpoint aponta checkpoint inexistente ${action.objectId}.`
+        );
       }
     }
 
-    if ((action.type === "enableObject" || action.type === "disableObject") && !objectIds.has(action.objectId)) {
-      errors.push(`${templateId}: regra ${rule.id} ${action.type} aponta objeto inexistente ${action.objectId}.`);
+    if (
+      (action.type === "enableObject" || action.type === "disableObject") &&
+      !objectIds.has(action.objectId)
+    ) {
+      errors.push(
+        `${templateId}: regra ${rule.id} ${action.type} aponta objeto inexistente ${action.objectId}.`
+      );
     }
 
     if (action.type === "spawnEnemy" && !enemyIds.has(action.objectId)) {
-      errors.push(`${templateId}: regra ${rule.id} spawnEnemy aponta inimigo inexistente ${action.objectId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} spawnEnemy aponta inimigo inexistente ${action.objectId}.`
+      );
     }
 
     if (action.type === "giveCoins" && !Number.isFinite(action.amount)) {
       errors.push(`${templateId}: regra ${rule.id} giveCoins invalido.`);
     }
 
-    if ((action.type === "healPlayer" || action.type === "damagePlayer") && !Number.isFinite(action.amount)) {
+    if (
+      (action.type === "healPlayer" || action.type === "damagePlayer") &&
+      !Number.isFinite(action.amount)
+    ) {
       errors.push(`${templateId}: regra ${rule.id} ${action.type} invalido.`);
     }
 
@@ -969,12 +1467,44 @@ function validateLogicRule(templateId, rule, objectIds, doorIds, keyIds, enemyId
     }
 
     if (action.type === "completeObjective" && !objectiveIds.has(action.objectiveId)) {
-      errors.push(`${templateId}: regra ${rule.id} completeObjective aponta objetivo inexistente ${action.objectiveId}.`);
+      errors.push(
+        `${templateId}: regra ${rule.id} completeObjective aponta objetivo inexistente ${action.objectiveId}.`
+      );
+    }
+
+    if (action.type === "addScore" && !Number.isFinite(action.amount)) {
+      errors.push(`${templateId}: regra ${rule.id} addScore invalido.`);
+    }
+
+    if (action.type === "addTeamScore") {
+      if (!teamIds.has(action.teamId)) {
+        errors.push(
+          `${templateId}: regra ${rule.id} addTeamScore aponta time inexistente ${action.teamId}.`
+        );
+      }
+
+      if (!Number.isFinite(action.amount)) {
+        errors.push(`${templateId}: regra ${rule.id} addTeamScore invalido.`);
+      }
+    }
+
+    if (action.type === "setTeam" && !teamIds.has(action.teamId)) {
+      errors.push(
+        `${templateId}: regra ${rule.id} setTeam aponta time inexistente ${action.teamId}.`
+      );
+    }
+
+    if (action.type === "endRound" && !isValidRoundResult(action.result)) {
+      errors.push(
+        `${templateId}: regra ${rule.id} endRound usa resultado invalido ${action.result}.`
+      );
     }
 
     if (action.type === "showDialogue") {
       if (!npcIds.has(action.objectId)) {
-        errors.push(`${templateId}: regra ${rule.id} showDialogue aponta NPC inexistente ${action.objectId}.`);
+        errors.push(
+          `${templateId}: regra ${rule.id} showDialogue aponta NPC inexistente ${action.objectId}.`
+        );
       }
 
       if (typeof action.message !== "string" || action.message.length === 0) {
@@ -994,28 +1524,28 @@ function isValidWeaponId(value) {
   return value === "basic_sword";
 }
 
+function isValidRoundResult(value) {
+  return value === "win" || value === "lose" || value === "draw";
+}
+
 function isValidObjectiveType(value) {
-  return value === "collectCoins" ||
+  return (
+    value === "collectCoins" ||
     value === "reachObject" ||
     value === "collectKey" ||
     value === "activateButton" ||
     value === "openDoor" ||
     value === "defeatEnemies" ||
-    value === "customLogic";
+    value === "customLogic"
+  );
 }
 
 function isVector(value) {
-  return value &&
-    Number.isFinite(value.x) &&
-    Number.isFinite(value.y) &&
-    Number.isFinite(value.z);
+  return value && Number.isFinite(value.x) && Number.isFinite(value.y) && Number.isFinite(value.z);
 }
 
 function isPositiveScale(value) {
-  return isVector(value) &&
-    value.x > 0 &&
-    value.y > 0 &&
-    value.z > 0;
+  return isVector(value) && value.x > 0 && value.y > 0 && value.z > 0;
 }
 
 function getString(value, fallback) {

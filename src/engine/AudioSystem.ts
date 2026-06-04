@@ -51,7 +51,7 @@ export class AudioSystem {
     this.settings = {
       ...this.mapSettings,
       masterVolume: this.localPreferences.masterVolume ?? this.mapSettings.masterVolume,
-      muted: Boolean(this.mapSettings.muted || this.localPreferences.muted)
+      muted: Boolean(this.mapSettings.muted || this.localPreferences.muted),
     };
     this.updateGainValues();
     this.updateAmbientMusic();
@@ -88,7 +88,7 @@ export class AudioSystem {
   setMuted(muted: boolean): void {
     this.localPreferences = {
       ...this.localPreferences,
-      muted
+      muted,
     };
     writeLocalAudioPreferences(this.localPreferences);
     this.applySettings(this.mapSettings);
@@ -122,7 +122,8 @@ export class AudioSystem {
       return this.context;
     }
 
-    const AudioContextConstructor = window.AudioContext ??
+    const AudioContextConstructor =
+      window.AudioContext ??
       (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
     if (!AudioContextConstructor) {
@@ -147,8 +148,16 @@ export class AudioSystem {
 
     const masterVolume = this.settings.muted ? 0 : this.settings.masterVolume;
     this.masterGain.gain.setTargetAtTime(masterVolume, this.masterGain.context.currentTime, 0.02);
-    this.sfxGain.gain.setTargetAtTime(this.settings.sfxVolume, this.sfxGain.context.currentTime, 0.02);
-    this.musicGain.gain.setTargetAtTime(this.settings.musicVolume, this.musicGain.context.currentTime, 0.08);
+    this.sfxGain.gain.setTargetAtTime(
+      this.settings.sfxVolume,
+      this.sfxGain.context.currentTime,
+      0.02
+    );
+    this.musicGain.gain.setTargetAtTime(
+      this.settings.musicVolume,
+      this.musicGain.context.currentTime,
+      0.08
+    );
   }
 
   private playTone(
@@ -171,10 +180,14 @@ export class AudioSystem {
     gain.connect(targetGain);
     oscillator.start(start);
     oscillator.stop(start + duration + 0.02);
-    oscillator.addEventListener("ended", () => {
-      oscillator.disconnect();
-      gain.disconnect();
-    }, { once: true });
+    oscillator.addEventListener(
+      "ended",
+      () => {
+        oscillator.disconnect();
+        gain.disconnect();
+      },
+      { once: true }
+    );
   }
 
   private updateAmbientMusic(): void {
@@ -207,39 +220,81 @@ export class AudioSystem {
     const notes = MUSIC_PATTERNS[music];
     const frequency = notes[this.musicStep % notes.length];
     this.musicStep += 1;
-    this.playTone(context, musicGain, frequency, {
-      frequencies: [frequency],
-      duration: 0.34,
-      type: music === "neon" ? "triangle" : "sine",
-      volume: music === "dark" ? 0.045 : 0.055
-    }, 0);
+    this.playTone(
+      context,
+      musicGain,
+      frequency,
+      {
+        frequencies: [frequency],
+        duration: 0.34,
+        type: music === "neon" ? "triangle" : "sine",
+        volume: music === "dark" ? 0.045 : 0.055,
+      },
+      0
+    );
   }
 }
 
 const CUE_DEFINITIONS: Record<AudioCue, CueDefinition> = {
   coin: { frequencies: [880, 1320], duration: 0.12, type: "triangle", volume: 0.12 },
   checkpoint: { frequencies: [523, 659, 784], duration: 0.13, type: "sine", volume: 0.11 },
-  door: { frequencies: [196, 245, 294], duration: 0.18, type: "sawtooth", volume: 0.075, gap: 0.035 },
+  door: {
+    frequencies: [196, 245, 294],
+    duration: 0.18,
+    type: "sawtooth",
+    volume: 0.075,
+    gap: 0.035,
+  },
   button: { frequencies: [370, 554], duration: 0.08, type: "square", volume: 0.075 },
-  jumpPad: { frequencies: [330, 660, 990], duration: 0.11, type: "triangle", volume: 0.1, gap: 0.03 },
-  teleporter: { frequencies: [740, 622, 932], duration: 0.18, type: "sine", volume: 0.08, gap: 0.025 },
+  jumpPad: {
+    frequencies: [330, 660, 990],
+    duration: 0.11,
+    type: "triangle",
+    volume: 0.1,
+    gap: 0.03,
+  },
+  teleporter: {
+    frequencies: [740, 622, 932],
+    duration: 0.18,
+    type: "sine",
+    volume: 0.08,
+    gap: 0.025,
+  },
   key: { frequencies: [988, 1175], duration: 0.1, type: "triangle", volume: 0.105 },
   item: { frequencies: [587, 784], duration: 0.1, type: "triangle", volume: 0.095 },
   damage: { frequencies: [180], duration: 0.2, type: "sawtooth", volume: 0.11 },
-  death: { frequencies: [240, 180, 120], duration: 0.18, type: "sawtooth", volume: 0.1, gap: 0.055 },
-  victory: { frequencies: [523, 659, 784, 1046], duration: 0.16, type: "triangle", volume: 0.12, gap: 0.06 },
+  death: {
+    frequencies: [240, 180, 120],
+    duration: 0.18,
+    type: "sawtooth",
+    volume: 0.1,
+    gap: 0.055,
+  },
+  victory: {
+    frequencies: [523, 659, 784, 1046],
+    duration: 0.16,
+    type: "triangle",
+    volume: 0.12,
+    gap: 0.06,
+  },
   uiClick: { frequencies: [620], duration: 0.055, type: "sine", volume: 0.05 },
-  disappearingBlock: { frequencies: [420, 210], duration: 0.14, type: "square", volume: 0.07, gap: 0.045 },
+  disappearingBlock: {
+    frequencies: [420, 210],
+    duration: 0.14,
+    type: "square",
+    volume: 0.07,
+    gap: 0.045,
+  },
   message: { frequencies: [440], duration: 0.08, type: "sine", volume: 0.045 },
   attack: { frequencies: [310, 220], duration: 0.08, type: "sawtooth", volume: 0.065, gap: 0.02 },
-  hit: { frequencies: [180, 120], duration: 0.11, type: "square", volume: 0.08, gap: 0.025 }
+  hit: { frequencies: [180, 120], duration: 0.11, type: "square", volume: 0.08, gap: 0.025 },
 };
 
 const MUSIC_PATTERNS: Record<Exclude<AmbientMusic, "none">, number[]> = {
   calm: [261.63, 329.63, 392, 329.63],
   adventure: [293.66, 369.99, 440, 493.88],
   dark: [196, 233.08, 261.63, 233.08],
-  neon: [329.63, 493.88, 659.25, 739.99]
+  neon: [329.63, 493.88, 659.25, 739.99],
 };
 
 function getCueThrottleMs(cue: AudioCue): number {
@@ -269,7 +324,7 @@ function readLocalAudioPreferences(): LocalAudioPreferences {
     const record = parsed as Record<string, unknown>;
     return {
       masterVolume: typeof record.masterVolume === "number" ? record.masterVolume : undefined,
-      muted: typeof record.muted === "boolean" ? record.muted : undefined
+      muted: typeof record.muted === "boolean" ? record.muted : undefined,
     };
   } catch {
     return {};
@@ -279,14 +334,16 @@ function readLocalAudioPreferences(): LocalAudioPreferences {
 function writeLocalAudioPreferences(preferences: LocalAudioPreferences): void {
   try {
     const current: unknown = JSON.parse(window.localStorage.getItem(LOCAL_SETTINGS_KEY) ?? "{}");
-    const record = typeof current === "object" && current !== null
-      ? current as Record<string, unknown>
-      : {};
-    window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify({
-      ...record,
-      masterVolume: preferences.masterVolume,
-      muted: preferences.muted
-    }));
+    const record =
+      typeof current === "object" && current !== null ? (current as Record<string, unknown>) : {};
+    window.localStorage.setItem(
+      LOCAL_SETTINGS_KEY,
+      JSON.stringify({
+        ...record,
+        masterVolume: preferences.masterVolume,
+        muted: preferences.muted,
+      })
+    );
   } catch {
     window.localStorage.setItem(LOCAL_SETTINGS_KEY, JSON.stringify(preferences));
   }

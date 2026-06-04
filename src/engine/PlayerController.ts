@@ -19,6 +19,7 @@ export class PlayerController {
   private readonly velocity = new THREE.Vector3();
   private readonly playerSize = new THREE.Vector3(0.72, 1.8, 0.72);
   private readonly avatar: AvatarParts;
+  private readonly teamMarker: THREE.Mesh;
   private active = false;
   private grounded = false;
   private jumpRequested = false;
@@ -40,7 +41,20 @@ export class PlayerController {
     private physicsSystem: PhysicsSystem | null = null
   ) {
     this.avatar = createAvatar(LocalProfileStorage.getProfile().avatarColors);
+    this.teamMarker = new THREE.Mesh(
+      new THREE.TorusGeometry(0.54, 0.045, 8, 32),
+      new THREE.MeshStandardMaterial({
+        color: "#ffffff",
+        roughness: 0.35,
+        emissive: "#ffffff",
+        emissiveIntensity: 0.18,
+      })
+    );
+    this.teamMarker.rotation.x = Math.PI / 2;
+    this.teamMarker.position.y = 0.08;
+    this.teamMarker.visible = false;
     this.player.add(
+      this.teamMarker,
       this.avatar.body,
       this.avatar.head,
       this.avatar.leftArm,
@@ -66,6 +80,16 @@ export class PlayerController {
 
   setViewYaw(yaw: number): void {
     this.viewYaw = yaw;
+  }
+
+  setTeamColor(color: string | null): void {
+    this.teamMarker.visible = Boolean(color);
+
+    if (color && this.teamMarker.material instanceof THREE.MeshStandardMaterial) {
+      this.teamMarker.material.color.set(color);
+      this.teamMarker.material.emissive.set(color);
+      this.teamMarker.material.needsUpdate = true;
+    }
   }
 
   start(spawnPoint: Vector3): void {
@@ -123,7 +147,8 @@ export class PlayerController {
     const delta = Math.min(deltaSeconds, 0.05);
     const direction = this.getMovementDirection();
     const moving = direction.lengthSq() > 0;
-    const speed = this.keys.has("shiftleft") || this.keys.has("shiftright") ? RUN_SPEED : WALK_SPEED;
+    const speed =
+      this.keys.has("shiftleft") || this.keys.has("shiftright") ? RUN_SPEED : WALK_SPEED;
     const wasGrounded = this.grounded;
 
     if (moving) {
@@ -150,11 +175,14 @@ export class PlayerController {
     this.velocity.y += GRAVITY * delta;
 
     if (this.physicsSystem) {
-      const result = this.physicsSystem.movePlayer({
-        position: this.player.position,
-        velocity: this.velocity,
-        size: this.playerSize
-      }, delta);
+      const result = this.physicsSystem.movePlayer(
+        {
+          position: this.player.position,
+          velocity: this.velocity,
+          size: this.playerSize,
+        },
+        delta
+      );
       this.player.position.copy(result.position);
       this.velocity.copy(result.velocity);
       this.grounded = result.grounded;
@@ -180,7 +208,7 @@ export class PlayerController {
     return {
       x: this.player.position.x,
       y: this.player.position.y,
-      z: this.player.position.z
+      z: this.player.position.z,
     };
   }
 
@@ -327,22 +355,87 @@ export class PlayerController {
     const idle = isMoving ? 0 : Math.sin(performance.now() * 0.002) * 0.025;
 
     if (!this.grounded) {
-      this.avatar.leftArm.rotation.x = THREE.MathUtils.damp(this.avatar.leftArm.rotation.x, -0.35, 12, deltaSeconds);
-      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(this.avatar.rightArm.rotation.x, -0.35, 12, deltaSeconds);
-      this.avatar.leftLeg.rotation.x = THREE.MathUtils.damp(this.avatar.leftLeg.rotation.x, 0.12, 12, deltaSeconds);
-      this.avatar.rightLeg.rotation.x = THREE.MathUtils.damp(this.avatar.rightLeg.rotation.x, -0.12, 12, deltaSeconds);
-      this.avatar.body.rotation.x = THREE.MathUtils.damp(this.avatar.body.rotation.x, -0.06, 10, deltaSeconds);
+      this.avatar.leftArm.rotation.x = THREE.MathUtils.damp(
+        this.avatar.leftArm.rotation.x,
+        -0.35,
+        12,
+        deltaSeconds
+      );
+      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
+        this.avatar.rightArm.rotation.x,
+        -0.35,
+        12,
+        deltaSeconds
+      );
+      this.avatar.leftLeg.rotation.x = THREE.MathUtils.damp(
+        this.avatar.leftLeg.rotation.x,
+        0.12,
+        12,
+        deltaSeconds
+      );
+      this.avatar.rightLeg.rotation.x = THREE.MathUtils.damp(
+        this.avatar.rightLeg.rotation.x,
+        -0.12,
+        12,
+        deltaSeconds
+      );
+      this.avatar.body.rotation.x = THREE.MathUtils.damp(
+        this.avatar.body.rotation.x,
+        -0.06,
+        10,
+        deltaSeconds
+      );
     } else {
-      this.avatar.leftArm.rotation.x = THREE.MathUtils.damp(this.avatar.leftArm.rotation.x, -swing + idle, 12, deltaSeconds);
-      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(this.avatar.rightArm.rotation.x, swing + idle, 12, deltaSeconds);
-      this.avatar.leftLeg.rotation.x = THREE.MathUtils.damp(this.avatar.leftLeg.rotation.x, swing, 12, deltaSeconds);
-      this.avatar.rightLeg.rotation.x = THREE.MathUtils.damp(this.avatar.rightLeg.rotation.x, -swing, 12, deltaSeconds);
-      this.avatar.body.rotation.x = THREE.MathUtils.damp(this.avatar.body.rotation.x, 0, 10, deltaSeconds);
+      this.avatar.leftArm.rotation.x = THREE.MathUtils.damp(
+        this.avatar.leftArm.rotation.x,
+        -swing + idle,
+        12,
+        deltaSeconds
+      );
+      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
+        this.avatar.rightArm.rotation.x,
+        swing + idle,
+        12,
+        deltaSeconds
+      );
+      this.avatar.leftLeg.rotation.x = THREE.MathUtils.damp(
+        this.avatar.leftLeg.rotation.x,
+        swing,
+        12,
+        deltaSeconds
+      );
+      this.avatar.rightLeg.rotation.x = THREE.MathUtils.damp(
+        this.avatar.rightLeg.rotation.x,
+        -swing,
+        12,
+        deltaSeconds
+      );
+      this.avatar.body.rotation.x = THREE.MathUtils.damp(
+        this.avatar.body.rotation.x,
+        0,
+        10,
+        deltaSeconds
+      );
     }
 
-    this.avatar.leftArm.rotation.z = THREE.MathUtils.damp(this.avatar.leftArm.rotation.z, -0.08 - counterSwing, 10, deltaSeconds);
-    this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(this.avatar.rightArm.rotation.z, 0.08 - counterSwing, 10, deltaSeconds);
-    this.avatar.head.position.y = THREE.MathUtils.damp(this.avatar.head.position.y, 1.55 + Math.abs(swing) * 0.025, 10, deltaSeconds);
+    this.avatar.leftArm.rotation.z = THREE.MathUtils.damp(
+      this.avatar.leftArm.rotation.z,
+      -0.08 - counterSwing,
+      10,
+      deltaSeconds
+    );
+    this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(
+      this.avatar.rightArm.rotation.z,
+      0.08 - counterSwing,
+      10,
+      deltaSeconds
+    );
+    this.avatar.head.position.y = THREE.MathUtils.damp(
+      this.avatar.head.position.y,
+      1.55 + Math.abs(swing) * 0.025,
+      10,
+      deltaSeconds
+    );
 
     if (this.attackPulse > 0.01) {
       const attack = Math.sin(this.attackPulse * Math.PI);
@@ -367,8 +460,17 @@ export class PlayerController {
     if (cameraForward.lengthSq() > 0) {
       cameraForward.normalize();
       const cameraYaw = Math.atan2(cameraForward.x, cameraForward.z) + Math.PI;
-      const relativeYaw = THREE.MathUtils.clamp(normalizeAngle(cameraYaw - this.player.rotation.y), -0.45, 0.45);
-      this.avatar.head.rotation.y = dampAngle(this.avatar.head.rotation.y, relativeYaw, 8, deltaSeconds);
+      const relativeYaw = THREE.MathUtils.clamp(
+        normalizeAngle(cameraYaw - this.player.rotation.y),
+        -0.45,
+        0.45
+      );
+      this.avatar.head.rotation.y = dampAngle(
+        this.avatar.head.rotation.y,
+        relativeYaw,
+        8,
+        deltaSeconds
+      );
     }
 
     this.applyBodyFeedback(deltaSeconds);
@@ -524,5 +626,5 @@ const MOVEMENT_KEYS = new Set([
   "arrowright",
   "shiftleft",
   "shiftright",
-  "space"
+  "space",
 ]);

@@ -9,7 +9,7 @@ export const DEFAULT_VISUAL_SETTINGS: Required<VisualSettings> = {
   fogNear: 18,
   fogFar: 90,
   ambientLightIntensity: 1.65,
-  sunLightIntensity: 2.35
+  sunLightIntensity: 2.35,
 };
 
 export const MAP_THEME_PRESETS: Record<VisualTheme, Required<VisualSettings>> = {
@@ -23,7 +23,7 @@ export const MAP_THEME_PRESETS: Record<VisualTheme, Required<VisualSettings>> = 
     fogNear: 34,
     fogFar: 122,
     ambientLightIntensity: 1.75,
-    sunLightIntensity: 2.55
+    sunLightIntensity: 2.55,
   },
   desert: {
     theme: "desert",
@@ -34,7 +34,7 @@ export const MAP_THEME_PRESETS: Record<VisualTheme, Required<VisualSettings>> = 
     fogNear: 30,
     fogFar: 118,
     ambientLightIntensity: 1.85,
-    sunLightIntensity: 2.9
+    sunLightIntensity: 2.9,
   },
   neon: {
     theme: "neon",
@@ -45,7 +45,7 @@ export const MAP_THEME_PRESETS: Record<VisualTheme, Required<VisualSettings>> = 
     fogNear: 16,
     fogFar: 88,
     ambientLightIntensity: 1.05,
-    sunLightIntensity: 2.05
+    sunLightIntensity: 2.05,
   },
   dark: {
     theme: "dark",
@@ -56,8 +56,8 @@ export const MAP_THEME_PRESETS: Record<VisualTheme, Required<VisualSettings>> = 
     fogNear: 14,
     fogFar: 76,
     ambientLightIntensity: 1.05,
-    sunLightIntensity: 1.45
-  }
+    sunLightIntensity: 1.45,
+  },
 };
 
 export const MAP_THEME_LABELS: Record<VisualTheme, string> = {
@@ -65,7 +65,7 @@ export const MAP_THEME_LABELS: Record<VisualTheme, string> = {
   grass: "Grass",
   desert: "Desert",
   neon: "Neon",
-  dark: "Dark"
+  dark: "Dark",
 };
 
 export function resolveVisualSettings(settings?: VisualSettings): Required<VisualSettings> {
@@ -76,7 +76,7 @@ export function resolveVisualSettings(settings?: VisualSettings): Required<Visua
     ...DEFAULT_VISUAL_SETTINGS,
     ...preset,
     ...settings,
-    theme
+    theme,
   };
 }
 

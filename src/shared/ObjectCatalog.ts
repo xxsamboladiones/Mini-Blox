@@ -3,7 +3,7 @@ import type {
   ColliderSchema,
   MapObject,
   MapObjectProperties,
-  Vector3
+  Vector3,
 } from "./types/ObjectSchema";
 
 export type ObjectCatalogItem = {
@@ -26,7 +26,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#58a6ff",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "box" },
-    properties: { collision: true }
+    properties: { collision: true },
   },
   {
     type: "ramp",
@@ -36,7 +36,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#9be564",
     defaultScale: { x: 2, y: 1, z: 2 },
     collider: { shape: "mesh" },
-    properties: { collision: true }
+    properties: { collision: true },
   },
   {
     type: "platform",
@@ -46,7 +46,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#d0d7de",
     defaultScale: { x: 4, y: 0.4, z: 4 },
     collider: { shape: "box" },
-    properties: { collision: true }
+    properties: { collision: true },
   },
   {
     type: "movingPlatform",
@@ -61,8 +61,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       startOffset: { x: 0, y: 0, z: 0 },
       endOffset: { x: 5, y: 0, z: 0 },
       speed: 1,
-      loop: true
-    }
+      loop: true,
+    },
   },
   {
     type: "disappearingBlock",
@@ -75,8 +75,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     properties: {
       collision: true,
       delayBeforeDisappear: 0.5,
-      respawnDelay: 3
-    }
+      respawnDelay: 3,
+    },
   },
   {
     type: "jumpPad",
@@ -86,7 +86,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#22c55e",
     defaultScale: { x: 1.4, y: 0.28, z: 1.4 },
     collider: { shape: "box", isTrigger: true },
-    properties: { collision: false, force: 12, cooldown: 0.4 }
+    properties: { collision: false, force: 12, cooldown: 0.4 },
   },
   {
     type: "spawn",
@@ -96,7 +96,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#19c37d",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "none" },
-    properties: { collision: false }
+    properties: { collision: false },
   },
   {
     type: "damage",
@@ -106,7 +106,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#ff5c7a",
     defaultScale: { x: 3, y: 0.25, z: 3 },
     collider: { shape: "box", isTrigger: true },
-    properties: { collision: false, mode: "kill", damage: 25, damagePerSecond: 25 }
+    properties: { collision: false, mode: "kill", damage: 25, damagePerSecond: 25 },
   },
   {
     type: "teleporter",
@@ -120,8 +120,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       collision: false,
       teleporterId: "tp_1",
       targetTeleporterId: "tp_2",
-      cooldown: 1
-    }
+      cooldown: 1,
+    },
   },
   {
     type: "messageZone",
@@ -134,8 +134,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     properties: {
       collision: false,
       message: "Bem-vindo ao mapa!",
-      oneTime: true
-    }
+      oneTime: true,
+    },
   },
   {
     type: "checkpoint",
@@ -145,7 +145,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#ffcc4d",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "sphere", isTrigger: true, radius: 1 },
-    properties: { collision: false, checkpointId: "checkpoint", activatedColor: "#22c55e" }
+    properties: { collision: false, checkpointId: "checkpoint", activatedColor: "#22c55e" },
   },
   {
     type: "coin",
@@ -155,7 +155,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#ffd166",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "sphere", isTrigger: true, radius: 0.6 },
-    properties: { collision: false, value: 1, coinValue: 1 }
+    properties: { collision: false, value: 1, coinValue: 1 },
   },
   {
     type: "key",
@@ -168,8 +168,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     properties: {
       collision: false,
       keyId: "blue_key",
-      label: "Chave Azul"
-    }
+      label: "Chave Azul",
+    },
   },
   {
     type: "door",
@@ -185,8 +185,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       openOffset: { x: 0, y: 4, z: 0 },
       startsOpen: false,
       requiredKeyId: "",
-      collision: true
-    }
+      collision: true,
+    },
   },
   {
     type: "button",
@@ -196,7 +196,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#f97316",
     defaultScale: { x: 1, y: 0.25, z: 1 },
     collider: { shape: "box", isTrigger: true },
-    properties: { collision: false, targetDoorId: "", buttonTargetId: "", oneTime: true }
+    properties: { collision: false, targetDoorId: "", buttonTargetId: "", oneTime: true },
   },
   {
     type: "finish",
@@ -209,8 +209,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     properties: {
       message: "Voce venceu!",
       requiresAllCoins: false,
-      collision: false
-    }
+      collision: false,
+    },
   },
   {
     type: "npc",
@@ -224,13 +224,10 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       collision: false,
       npcName: "Guia",
       dialog: "Ola, construtor!",
-      dialogue: [
-        "Ola, construtor!",
-        "Use objetivos para guiar o jogador pelo mapa."
-      ],
+      dialogue: ["Ola, construtor!", "Use objetivos para guiar o jogador pelo mapa."],
       interactionRange: 4,
-      showQuestHint: true
-    }
+      showQuestHint: true,
+    },
   },
   {
     type: "enemy",
@@ -250,8 +247,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       attackRange: 1.5,
       attackCooldown: 1,
       behavior: "chase",
-      patrolOffset: { x: 4, y: 0, z: 0 }
-    }
+      patrolOffset: { x: 4, y: 0, z: 0 },
+    },
   },
   {
     type: "itemSpawner",
@@ -269,8 +266,38 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       respawnTime: 10,
       spawnOnStart: true,
       maxSpawnedItems: 1,
-      amount: 25
-    }
+      amount: 25,
+    },
+  },
+  {
+    type: "teamSpawn",
+    label: "Spawn de Time",
+    icon: "flag",
+    description: "Ponto de nascimento usado por um time local.",
+    color: "#ef4444",
+    defaultScale: { x: 1.1, y: 1, z: 1.1 },
+    collider: { shape: "none" },
+    properties: {
+      collision: false,
+      teamId: "red",
+    },
+  },
+  {
+    type: "capturePoint",
+    label: "Capture Point",
+    icon: "badge-dot",
+    description: "Area local que pode ser capturada para gerar pontos.",
+    color: "#facc15",
+    defaultScale: { x: 4, y: 0.3, z: 4 },
+    collider: { shape: "box", isTrigger: true },
+    properties: {
+      collision: false,
+      pointId: "point_a",
+      ownerTeamId: "",
+      captureTime: 5,
+      scorePerSecond: 1,
+      radius: 4,
+    },
   },
   {
     type: "tree",
@@ -280,7 +307,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#2f9e44",
     defaultScale: { x: 1.4, y: 1.4, z: 1.4 },
     collider: { shape: "box" },
-    properties: { collision: true, material: "default" }
+    properties: { collision: true, material: "default" },
   },
   {
     type: "rock",
@@ -290,7 +317,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#7f8c8d",
     defaultScale: { x: 1.2, y: 0.8, z: 1.1 },
     collider: { shape: "box" },
-    properties: { collision: true, material: "default" }
+    properties: { collision: true, material: "default" },
   },
   {
     type: "crate",
@@ -300,7 +327,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#b7791f",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "box" },
-    properties: { collision: true, material: "default" }
+    properties: { collision: true, material: "default" },
   },
   {
     type: "barrel",
@@ -310,7 +337,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#8b5e34",
     defaultScale: { x: 1, y: 1.2, z: 1 },
     collider: { shape: "box" },
-    properties: { collision: true, material: "metal" }
+    properties: { collision: true, material: "metal" },
   },
   {
     type: "sign",
@@ -323,8 +350,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     properties: {
       collision: false,
       text: "Bem-vindo!",
-      material: "default"
-    }
+      material: "default",
+    },
   },
   {
     type: "lamp",
@@ -341,8 +368,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
       lightEnabled: true,
       lightColor: "#fff7aa",
       lightIntensity: 1.5,
-      lightRange: 8
-    }
+      lightRange: 8,
+    },
   },
   {
     type: "arch",
@@ -352,7 +379,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#a8a29e",
     defaultScale: { x: 2.6, y: 2.4, z: 1 },
     collider: { shape: "box" },
-    properties: { collision: true, material: "default" }
+    properties: { collision: true, material: "default" },
   },
   {
     type: "pillar",
@@ -362,7 +389,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#d6d3d1",
     defaultScale: { x: 1, y: 2.2, z: 1 },
     collider: { shape: "box" },
-    properties: { collision: true, material: "default" }
+    properties: { collision: true, material: "default" },
   },
   {
     type: "model",
@@ -372,8 +399,8 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     color: "#7c3aed",
     defaultScale: { x: 1, y: 1, z: 1 },
     collider: { shape: "mesh" },
-    properties: { collision: true }
-  }
+    properties: { collision: true },
+  },
 ];
 
 export function getObjectCatalogItem(type: string): ObjectCatalogItem {
@@ -390,25 +417,37 @@ export function createMapObject(
   const properties: MapObjectProperties = {
     color: item.color,
     ...item.properties,
-    ...overrides.properties
+    ...overrides.properties,
   };
 
   if (type === "door") {
-    properties.doorId = typeof overrides.properties?.doorId === "string" && overrides.properties.doorId.length > 0
-      ? overrides.properties.doorId
-      : id;
+    properties.doorId =
+      typeof overrides.properties?.doorId === "string" && overrides.properties.doorId.length > 0
+        ? overrides.properties.doorId
+        : id;
   }
 
   if (type === "checkpoint") {
-    properties.checkpointId = typeof overrides.properties?.checkpointId === "string" && overrides.properties.checkpointId.length > 0
-      ? overrides.properties.checkpointId
-      : id;
+    properties.checkpointId =
+      typeof overrides.properties?.checkpointId === "string" &&
+      overrides.properties.checkpointId.length > 0
+        ? overrides.properties.checkpointId
+        : id;
   }
 
   if (type === "teleporter") {
-    properties.teleporterId = typeof overrides.properties?.teleporterId === "string" && overrides.properties.teleporterId.length > 0
-      ? overrides.properties.teleporterId
-      : id;
+    properties.teleporterId =
+      typeof overrides.properties?.teleporterId === "string" &&
+      overrides.properties.teleporterId.length > 0
+        ? overrides.properties.teleporterId
+        : id;
+  }
+
+  if (type === "capturePoint") {
+    properties.pointId =
+      typeof overrides.properties?.pointId === "string" && overrides.properties.pointId.length > 0
+        ? overrides.properties.pointId
+        : id;
   }
 
   return {
@@ -420,7 +459,7 @@ export function createMapObject(
     scale: overrides.scale ?? { ...item.defaultScale },
     assetId: overrides.assetId,
     collider: overrides.collider ?? item.collider,
-    properties
+    properties,
   };
 }
 

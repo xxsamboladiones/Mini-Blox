@@ -58,20 +58,28 @@ export class MainMenuScreen implements Screen {
               <i data-lucide="map"></i>
               <span>Jogar Mapas</span>
             </button>
-            ${lastPlayedMap ? `
+            ${
+              lastPlayedMap
+                ? `
               <button class="menu-action" type="button" data-action="continue-playing">
                 <i data-lucide="play"></i>
                 <span>Continuar Jogando</span>
                 <small>${escapeHtml(lastPlayedMap.name)}</small>
               </button>
-            ` : ""}
-            ${lastEditedMap ? `
+            `
+                : ""
+            }
+            ${
+              lastEditedMap
+                ? `
               <button class="menu-action" type="button" data-action="continue">
                 <i data-lucide="history"></i>
                 <span>Continuar Editando</span>
                 <small>${escapeHtml(lastEditedMap.name)}</small>
               </button>
-            ` : ""}
+            `
+                : ""
+            }
             <button class="menu-action" type="button" data-action="import">
               <i data-lucide="file-up"></i>
               <span>Importar Mapa</span>
@@ -84,13 +92,15 @@ export class MainMenuScreen implements Screen {
               <span>Escolha uma base e edite livremente.</span>
             </div>
             <div class="template-grid">
-              ${MAP_TEMPLATES.map((template) => `
+              ${MAP_TEMPLATES.map(
+                (template) => `
                 <button class="template-card" type="button" data-action="template" data-template="${template.id}">
                   <i data-lucide="${template.icon}"></i>
                   <strong>${escapeHtml(template.name)}</strong>
                   <span>${escapeHtml(template.description)}</span>
                 </button>
-              `).join("")}
+              `
+              ).join("")}
             </div>
           </section>
         </section>
@@ -99,7 +109,8 @@ export class MainMenuScreen implements Screen {
     `;
 
     this.root.addEventListener("click", this.handleClick);
-    this.root.querySelector<HTMLInputElement>("#menu-map-import")
+    this.root
+      .querySelector<HTMLInputElement>("#menu-map-import")
       ?.addEventListener("change", this.handleImportChange);
 
     createIcons({ icons });
@@ -107,7 +118,8 @@ export class MainMenuScreen implements Screen {
 
   destroy(): void {
     this.root.removeEventListener("click", this.handleClick);
-    this.root.querySelector<HTMLInputElement>("#menu-map-import")
+    this.root
+      .querySelector<HTMLInputElement>("#menu-map-import")
       ?.removeEventListener("change", this.handleImportChange);
   }
 
@@ -173,7 +185,7 @@ function getMiniAvatarStyle(colors: AvatarColors): string {
     `--avatar-head:${escapeAttribute(colors.head)}`,
     `--avatar-body:${escapeAttribute(colors.body)}`,
     `--avatar-arms:${escapeAttribute(colors.arms)}`,
-    `--avatar-legs:${escapeAttribute(colors.legs)}`
+    `--avatar-legs:${escapeAttribute(colors.legs)}`,
   ].join(";");
 }
 

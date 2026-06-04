@@ -31,6 +31,55 @@ export type GameplaySettings = {
   requireObjectivesToFinish?: boolean;
 };
 
+export type GameMode =
+  | "freeplay"
+  | "obby"
+  | "coinCollect"
+  | "combatArena"
+  | "objectiveRun"
+  | "teamBattle"
+  | "capturePoint";
+
+export type WinConditionType =
+  | "none"
+  | "finish"
+  | "collectCoins"
+  | "defeatEnemies"
+  | "completeObjectives"
+  | "score"
+  | "capturePoint";
+
+export type GameModeWinCondition = {
+  type: WinConditionType;
+  targetAmount?: number;
+  requireAll?: boolean;
+};
+
+export type ScoringSettings = {
+  coinScore?: number;
+  enemyDefeatScore?: number;
+  objectiveScore?: number;
+  deathPenalty?: number;
+};
+
+export type GameModeSettings = {
+  mode: GameMode;
+  roundEnabled?: boolean;
+  roundTimeLimit?: number;
+  respawnDelay?: number;
+  teamsEnabled?: boolean;
+  requireObjectivesToFinish?: boolean;
+  winCondition?: GameModeWinCondition;
+  scoring?: ScoringSettings;
+};
+
+export type TeamDefinition = {
+  id: string;
+  name: string;
+  color: string;
+  spawnPoint?: Vector3;
+};
+
 export type ObjectiveType =
   | "collectCoins"
   | "reachObject"
@@ -64,6 +113,8 @@ export type GameMap = {
   spawnPoint: Vector3;
   objects: MapObject[];
   objectives?: MapObjective[];
+  gameModeSettings?: GameModeSettings;
+  teams?: TeamDefinition[];
   logic?: LogicRule[];
   logicDebug?: boolean;
   visualSettings?: VisualSettings;
@@ -76,6 +127,12 @@ export type GameMap = {
   tags?: string[];
   isPublished?: boolean;
   publishedAt?: string;
+  onlineMetadata?: {
+    onlineId?: string;
+    publishedAt?: string;
+    updatedAt?: string;
+    ownerClientId?: string;
+  };
 };
 
 export function createEmptyGameMap(name = "Novo mapa"): GameMap {
@@ -100,20 +157,34 @@ export function createEmptyGameMap(name = "Novo mapa"): GameMap {
       fogNear: 18,
       fogFar: 90,
       ambientLightIntensity: 1.8,
-      sunLightIntensity: 2.2
+      sunLightIntensity: 2.2,
     },
     audioSettings: {
       masterVolume: 0.8,
       sfxVolume: 0.9,
       musicVolume: 0.35,
       muted: false,
-      ambientMusic: "none"
+      ambientMusic: "none",
     },
     gameplaySettings: {
-      voidDeathEnabled: true
+      voidDeathEnabled: true,
     },
+    gameModeSettings: {
+      mode: "freeplay",
+      roundEnabled: false,
+      respawnDelay: 1,
+      teamsEnabled: false,
+      winCondition: { type: "none" },
+      scoring: {
+        coinScore: 10,
+        enemyDefeatScore: 100,
+        objectiveScore: 250,
+        deathPenalty: 25,
+      },
+    },
+    teams: [],
     tags: [],
-    isPublished: false
+    isPublished: false,
   };
 }
 
@@ -140,8 +211,10 @@ export function isGameMap(value: unknown): value is GameMap {
     value.objects.every(isMapObject) &&
     (value.objectives === undefined ||
       (Array.isArray(value.objectives) && value.objectives.every(isMapObjective))) &&
-    (value.logic === undefined ||
-      (Array.isArray(value.logic) && value.logic.every(isLogicRule))) &&
+    (value.gameModeSettings === undefined || isGameModeSettings(value.gameModeSettings)) &&
+    (value.teams === undefined ||
+      (Array.isArray(value.teams) && value.teams.every(isTeamDefinition))) &&
+    (value.logic === undefined || (Array.isArray(value.logic) && value.logic.every(isLogicRule))) &&
     (value.logicDebug === undefined || typeof value.logicDebug === "boolean") &&
     (value.visualSettings === undefined || isVisualSettings(value.visualSettings)) &&
     (value.audioSettings === undefined || isAudioSettings(value.audioSettings)) &&
@@ -278,18 +351,101 @@ function isGameplaySettings(value: unknown): value is GameplaySettings {
   return (
     (value.voidDeathEnabled === undefined || typeof value.voidDeathEnabled === "boolean") &&
     (value.voidDeathY === undefined || Number.isFinite(value.voidDeathY)) &&
-    (value.requireObjectivesToFinish === undefined || typeof value.requireObjectivesToFinish === "boolean")
+    (value.requireObjectivesToFinish === undefined ||
+      typeof value.requireObjectivesToFinish === "boolean")
+  );
+}
+
+function isGameModeSettings(value: unknown): value is GameModeSettings {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isGameMode(value.mode) &&
+    (value.roundEnabled === undefined || typeof value.roundEnabled === "boolean") &&
+    (value.roundTimeLimit === undefined || Number.isFinite(value.roundTimeLimit)) &&
+    (value.respawnDelay === undefined || Number.isFinite(value.respawnDelay)) &&
+    (value.teamsEnabled === undefined || typeof value.teamsEnabled === "boolean") &&
+    (value.requireObjectivesToFinish === undefined ||
+      typeof value.requireObjectivesToFinish === "boolean") &&
+    (value.winCondition === undefined || isGameModeWinCondition(value.winCondition)) &&
+    (value.scoring === undefined || isScoringSettings(value.scoring))
+  );
+}
+
+function isGameModeWinCondition(value: unknown): value is GameModeWinCondition {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isWinConditionType(value.type) &&
+    (value.targetAmount === undefined || Number.isFinite(value.targetAmount)) &&
+    (value.requireAll === undefined || typeof value.requireAll === "boolean")
+  );
+}
+
+function isScoringSettings(value: unknown): value is ScoringSettings {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value.coinScore === undefined || Number.isFinite(value.coinScore)) &&
+    (value.enemyDefeatScore === undefined || Number.isFinite(value.enemyDefeatScore)) &&
+    (value.objectiveScore === undefined || Number.isFinite(value.objectiveScore)) &&
+    (value.deathPenalty === undefined || Number.isFinite(value.deathPenalty))
+  );
+}
+
+function isTeamDefinition(value: unknown): value is TeamDefinition {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.color === "string" &&
+    (value.spawnPoint === undefined || isVector3(value.spawnPoint))
+  );
+}
+
+function isGameMode(value: unknown): value is GameMode {
+  return (
+    value === "freeplay" ||
+    value === "obby" ||
+    value === "coinCollect" ||
+    value === "combatArena" ||
+    value === "objectiveRun" ||
+    value === "teamBattle" ||
+    value === "capturePoint"
+  );
+}
+
+function isWinConditionType(value: unknown): value is WinConditionType {
+  return (
+    value === "none" ||
+    value === "finish" ||
+    value === "collectCoins" ||
+    value === "defeatEnemies" ||
+    value === "completeObjectives" ||
+    value === "score" ||
+    value === "capturePoint"
   );
 }
 
 function isObjectiveType(value: unknown): value is ObjectiveType {
-  return value === "collectCoins" ||
+  return (
+    value === "collectCoins" ||
     value === "reachObject" ||
     value === "collectKey" ||
     value === "activateButton" ||
     value === "openDoor" ||
     value === "defeatEnemies" ||
-    value === "customLogic";
+    value === "customLogic"
+  );
 }
 
 function isVector3(value: unknown): value is Vector3 {
@@ -297,11 +453,7 @@ function isVector3(value: unknown): value is Vector3 {
     return false;
   }
 
-  return (
-    Number.isFinite(value.x) &&
-    Number.isFinite(value.y) &&
-    Number.isFinite(value.z)
-  );
+  return Number.isFinite(value.x) && Number.isFinite(value.y) && Number.isFinite(value.z);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

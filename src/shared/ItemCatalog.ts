@@ -12,7 +12,7 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     stackable: false,
     damage: 20,
     cooldown: 0.35,
-    range: 24
+    range: 24,
   },
   {
     id: "rifle",
@@ -25,7 +25,7 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     stackable: false,
     damage: 16,
     cooldown: 0.12,
-    range: 34
+    range: 34,
   },
   {
     id: "shotgun",
@@ -38,7 +38,7 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     stackable: false,
     damage: 48,
     cooldown: 0.85,
-    range: 12
+    range: 12,
   },
   {
     id: "sword",
@@ -51,7 +51,7 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     stackable: false,
     damage: 32,
     cooldown: 0.45,
-    range: 2
+    range: 2,
   },
   {
     id: "weapon_basic",
@@ -64,7 +64,7 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     stackable: false,
     damage: 25,
     cooldown: 0.5,
-    range: 2
+    range: 2,
   },
   {
     id: "health_pack",
@@ -73,8 +73,8 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     description: "Item de cura preparado para minigames futuros.",
     icon: "heart-plus",
     color: "#ef4444",
-    stackable: true
-  }
+    stackable: true,
+  },
 ];
 
 export function getItemDefinition(itemId: string): CatalogItemDefinition | undefined {

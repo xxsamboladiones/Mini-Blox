@@ -84,7 +84,7 @@ export const LocalMapMetadataStorage = {
         playCount: getNumber(record.playCount, 0),
         completedCount: getNumber(record.completedCount, 0),
         bestCoinsCollected: getNumber(record.bestCoinsCollected, 0),
-        lastPlayedAt: typeof record.lastPlayedAt === "string" ? record.lastPlayedAt : undefined
+        lastPlayedAt: typeof record.lastPlayedAt === "string" ? record.lastPlayedAt : undefined,
       };
     }
 
@@ -92,11 +92,13 @@ export const LocalMapMetadataStorage = {
   },
 
   getStats(mapId: string): LocalMapStats {
-    return this.getAllStats()[mapId] ?? {
-      playCount: 0,
-      completedCount: 0,
-      bestCoinsCollected: 0
-    };
+    return (
+      this.getAllStats()[mapId] ?? {
+        playCount: 0,
+        completedCount: 0,
+        bestCoinsCollected: 0,
+      }
+    );
   },
 
   recordPlay(mapId: string): LocalMapStats {
@@ -104,12 +106,12 @@ export const LocalMapMetadataStorage = {
     const current = allStats[mapId] ?? {
       playCount: 0,
       completedCount: 0,
-      bestCoinsCollected: 0
+      bestCoinsCollected: 0,
     };
     const next: LocalMapStats = {
       ...current,
       playCount: current.playCount + 1,
-      lastPlayedAt: new Date().toISOString()
+      lastPlayedAt: new Date().toISOString(),
     };
     allStats[mapId] = next;
     writeRecord(MAP_STATS_KEY, allStats);
@@ -121,12 +123,15 @@ export const LocalMapMetadataStorage = {
     const current = allStats[mapId] ?? {
       playCount: 0,
       completedCount: 0,
-      bestCoinsCollected: 0
+      bestCoinsCollected: 0,
     };
     const next: LocalMapStats = {
       ...current,
       completedCount: current.completedCount + 1,
-      bestCoinsCollected: Math.max(current.bestCoinsCollected, Math.max(0, Math.floor(coinsCollected)))
+      bestCoinsCollected: Math.max(
+        current.bestCoinsCollected,
+        Math.max(0, Math.floor(coinsCollected))
+      ),
     };
     allStats[mapId] = next;
     writeRecord(MAP_STATS_KEY, allStats);
@@ -160,7 +165,7 @@ export const LocalMapMetadataStorage = {
     }
 
     return result?.mapId ?? null;
-  }
+  },
 };
 
 function readStringArray(key: string): string[] {
@@ -181,9 +186,7 @@ function writeStringArray(key: string, value: string[]): void {
 function readRecord(key: string): Record<string, unknown> {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "{}");
-    return typeof parsed === "object" && parsed !== null
-      ? parsed as Record<string, unknown>
-      : {};
+    return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
   } catch {
     return {};
   }

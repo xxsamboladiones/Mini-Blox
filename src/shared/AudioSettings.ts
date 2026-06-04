@@ -5,7 +5,7 @@ export const DEFAULT_AUDIO_SETTINGS: Required<AudioSettings> = {
   sfxVolume: 0.9,
   musicVolume: 0.35,
   muted: false,
-  ambientMusic: "none"
+  ambientMusic: "none",
 };
 
 export const AMBIENT_MUSIC_LABELS: Record<AmbientMusic, string> = {
@@ -13,7 +13,7 @@ export const AMBIENT_MUSIC_LABELS: Record<AmbientMusic, string> = {
   calm: "Calma",
   adventure: "Aventura",
   dark: "Dark",
-  neon: "Neon"
+  neon: "Neon",
 };
 
 export function resolveAudioSettings(settings?: AudioSettings): Required<AudioSettings> {
@@ -24,17 +24,12 @@ export function resolveAudioSettings(settings?: AudioSettings): Required<AudioSe
     sfxVolume: clampVolume(settings?.sfxVolume ?? DEFAULT_AUDIO_SETTINGS.sfxVolume),
     musicVolume: clampVolume(settings?.musicVolume ?? DEFAULT_AUDIO_SETTINGS.musicVolume),
     muted: settings?.muted ?? DEFAULT_AUDIO_SETTINGS.muted,
-    ambientMusic: getAmbientMusic(settings?.ambientMusic)
+    ambientMusic: getAmbientMusic(settings?.ambientMusic),
   };
 }
 
 function getAmbientMusic(value: unknown): AmbientMusic {
-  if (
-    value === "calm" ||
-    value === "adventure" ||
-    value === "dark" ||
-    value === "neon"
-  ) {
+  if (value === "calm" || value === "adventure" || value === "dark" || value === "neon") {
     return value;
   }
 

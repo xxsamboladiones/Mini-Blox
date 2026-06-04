@@ -21,12 +21,16 @@ export class AssetPanel {
       </button>
       <div class="asset-list">
         ${this.assets.length === 0 ? `<div class="empty-row">Nenhum asset</div>` : ""}
-        ${this.assets.map((asset) => `
+        ${this.assets
+          .map(
+            (asset) => `
           <div class="asset-row" title="${asset.name}">
             <i data-lucide="box"></i>
             <span>${asset.name}</span>
           </div>
-        `).join("")}
+        `
+          )
+          .join("")}
       </div>
     `;
 

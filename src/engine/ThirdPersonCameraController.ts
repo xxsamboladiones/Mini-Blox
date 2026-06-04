@@ -55,7 +55,10 @@ export class ThirdPersonCameraController {
     window.removeEventListener("keydown", this.handleKeyDown);
     this.currentTargetId = null;
 
-    if (document.pointerLockElement === this.options.domElement && typeof document.exitPointerLock === "function") {
+    if (
+      document.pointerLockElement === this.options.domElement &&
+      typeof document.exitPointerLock === "function"
+    ) {
       document.exitPointerLock();
     }
 
@@ -75,7 +78,10 @@ export class ThirdPersonCameraController {
   }
 
   releasePointerLock(): void {
-    if (document.pointerLockElement === this.options.domElement && typeof document.exitPointerLock === "function") {
+    if (
+      document.pointerLockElement === this.options.domElement &&
+      typeof document.exitPointerLock === "function"
+    ) {
       document.exitPointerLock();
     }
 
@@ -141,7 +147,9 @@ export class ThirdPersonCameraController {
     this.crosshair.classList.toggle("visible", this.active);
     this.crosshair.classList.toggle("locked", this.locked);
 
-    const hint = this.currentTargetId ? this.options.getInteractionHint(this.currentTargetId) : null;
+    const hint = this.currentTargetId
+      ? this.options.getInteractionHint(this.currentTargetId)
+      : null;
     this.hint.textContent = hint ? `${hint} - Pressione E para interagir` : "";
     this.hint.classList.toggle("visible", Boolean(hint));
   }

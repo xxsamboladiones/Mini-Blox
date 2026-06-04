@@ -32,7 +32,8 @@ export class PropertiesPanel {
     const object = this.selectedObject;
     const rotation = object.rotation ?? { x: 0, y: 0, z: 0 };
     const scale = object.scale ?? { x: 1, y: 1, z: 1 };
-    const color = typeof object.properties?.color === "string" ? object.properties.color : "#58a6ff";
+    const color =
+      typeof object.properties?.color === "string" ? object.properties.color : "#58a6ff";
 
     this.root.innerHTML = `
       <div class="panel-heading">
@@ -88,7 +89,11 @@ export class PropertiesPanel {
     this.render();
   }
 
-  private renderVectorFields(name: "position" | "rotation" | "scale", label: string, value: Vector3): string {
+  private renderVectorFields(
+    name: "position" | "rotation" | "scale",
+    label: string,
+    value: Vector3
+  ): string {
     return `
       <fieldset class="vector-field">
         <legend>${label}</legend>
@@ -112,12 +117,14 @@ export class PropertiesPanel {
     switch (object.type) {
       case "damage":
       case "damageZone":
-        return this.renderNumberField(
-          "damage",
-          "Dano",
-          Number(object.properties?.damage ?? object.properties?.damagePerSecond ?? 25),
-          1
-        ) + `
+        return (
+          this.renderNumberField(
+            "damage",
+            "Dano",
+            Number(object.properties?.damage ?? object.properties?.damagePerSecond ?? 25),
+            1
+          ) +
+          `
           <label class="field">
             <span>Modo</span>
             <select data-property="mode">
@@ -125,9 +132,15 @@ export class PropertiesPanel {
               <option value="damage" ${object.properties?.mode === "damage" ? "selected" : ""}>Damage</option>
             </select>
           </label>
-        `;
+        `
+        );
       case "coin":
-        return this.renderNumberField("value", "Valor", Number(object.properties?.value ?? object.properties?.coinValue ?? 1), 1);
+        return this.renderNumberField(
+          "value",
+          "Valor",
+          Number(object.properties?.value ?? object.properties?.coinValue ?? 1),
+          1
+        );
       case "key":
         return `
           ${this.renderTextField("keyId", "Key ID", String(object.properties?.keyId ?? "blue_key"))}
@@ -197,7 +210,10 @@ export class PropertiesPanel {
           ${this.renderTextareaPropertyField(
             "dialogue",
             "Falas",
-            getDialogueLines(object.properties?.dialogue, String(object.properties?.dialog ?? "Ola!")).join("\n")
+            getDialogueLines(
+              object.properties?.dialogue,
+              String(object.properties?.dialog ?? "Ola!")
+            ).join("\n")
           )}
           ${this.renderNumberField("interactionRange", "Alcance interacao", Number(object.properties?.interactionRange ?? 4), 0.5)}
           ${this.renderCheckboxField("showQuestHint", "Mostrar dica de objetivo", object.properties?.showQuestHint !== false)}
@@ -227,7 +243,11 @@ export class PropertiesPanel {
           ${this.renderPropertyVectorFields("patrolOffset", "Offset patrulha", getVectorProperty(object.properties?.patrolOffset, { x: 4, y: 0, z: 0 }))}
         `;
       case "sign":
-        return this.renderTextField("text", "Texto da placa", String(object.properties?.text ?? "Bem-vindo!"));
+        return this.renderTextField(
+          "text",
+          "Texto da placa",
+          String(object.properties?.text ?? "Bem-vindo!")
+        );
       case "lamp":
         return `
           ${this.renderCheckboxField("lightEnabled", "Luz ligada", object.properties?.lightEnabled !== false)}
@@ -258,6 +278,18 @@ export class PropertiesPanel {
           ${this.renderCheckboxField("spawnOnStart", "Spawn ao iniciar", object.properties?.spawnOnStart !== false)}
           ${this.renderNumberField("maxSpawnedItems", "Max itens ativos", Number(object.properties?.maxSpawnedItems ?? 1), 1)}
         `;
+      case "teamSpawn":
+        return `
+          ${this.renderTextField("teamId", "Team ID", String(object.properties?.teamId ?? "red"))}
+        `;
+      case "capturePoint":
+        return `
+          ${this.renderTextField("pointId", "Point ID", String(object.properties?.pointId ?? object.id))}
+          ${this.renderTextField("ownerTeamId", "Time dono inicial", String(object.properties?.ownerTeamId ?? ""))}
+          ${this.renderNumberField("captureTime", "Tempo de captura", Number(object.properties?.captureTime ?? 5), 0.5)}
+          ${this.renderNumberField("scorePerSecond", "Pontos por segundo", Number(object.properties?.scorePerSecond ?? 1), 0.5)}
+          ${this.renderNumberField("radius", "Raio de captura", Number(object.properties?.radius ?? 4), 0.5)}
+        `;
       case "itemPickup":
         return this.renderTextField("itemId", "Item ID", String(object.properties?.itemId ?? ""));
       default:
@@ -266,20 +298,24 @@ export class PropertiesPanel {
   }
 
   private renderCollisionField(object: MapObject): string {
-    const isOpenDoor = object.type === "door" && (object.properties?.startsOpen || object.properties?.doorState === "open");
+    const isOpenDoor =
+      object.type === "door" &&
+      (object.properties?.startsOpen || object.properties?.doorState === "open");
     const checked = isOpenDoor
       ? false
       : typeof object.properties?.collision === "boolean"
-      ? object.properties.collision
-      : getDefaultCollisionValue(object);
+        ? object.properties.collision
+        : getDefaultCollisionValue(object);
 
     return this.renderCheckboxField("collision", "Colisao solida", checked);
   }
 
   private renderMaterialFields(object: MapObject): string {
-    const material = typeof object.properties?.material === "string" ? object.properties.material : "default";
+    const material =
+      typeof object.properties?.material === "string" ? object.properties.material : "default";
     const opacity = typeof object.properties?.opacity === "number" ? object.properties.opacity : 1;
-    const emissive = typeof object.properties?.emissive === "string" ? object.properties.emissive : "#000000";
+    const emissive =
+      typeof object.properties?.emissive === "string" ? object.properties.emissive : "#000000";
 
     return `
       <label class="field">
@@ -373,25 +409,31 @@ export class PropertiesPanel {
   }
 
   private bindInputs(): void {
-    this.root.querySelector<HTMLInputElement>('[data-field="name"]')?.addEventListener("input", (event) => {
-      const value = (event.currentTarget as HTMLInputElement).value;
-      this.selectedObject = this.selectedObject ? { ...this.selectedObject, name: value } : null;
-      this.onChange({ name: value });
-    });
+    this.root
+      .querySelector<HTMLInputElement>('[data-field="name"]')
+      ?.addEventListener("input", (event) => {
+        const value = (event.currentTarget as HTMLInputElement).value;
+        this.selectedObject = this.selectedObject ? { ...this.selectedObject, name: value } : null;
+        this.onChange({ name: value });
+      });
 
-    this.root.querySelector<HTMLInputElement>('[data-field="color"]')?.addEventListener("input", (event) => {
-      const color = (event.currentTarget as HTMLInputElement).value;
-      this.onChange({ properties: { color } });
-    });
+    this.root
+      .querySelector<HTMLInputElement>('[data-field="color"]')
+      ?.addEventListener("input", (event) => {
+        const color = (event.currentTarget as HTMLInputElement).value;
+        this.onChange({ properties: { color } });
+      });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-vector]").forEach((input) => {
       input.addEventListener("input", () => this.handleVectorInput(input));
     });
 
-    this.root.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[data-property]").forEach((input) => {
-      input.addEventListener("input", () => this.handlePropertyInput(input));
-      input.addEventListener("change", () => this.handlePropertyInput(input));
-    });
+    this.root
+      .querySelectorAll<HTMLInputElement | HTMLSelectElement>("[data-property]")
+      .forEach((input) => {
+        input.addEventListener("input", () => this.handlePropertyInput(input));
+        input.addEventListener("change", () => this.handlePropertyInput(input));
+      });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-property-vector]").forEach((input) => {
       input.addEventListener("input", () => this.handlePropertyVectorInput(input));
@@ -405,9 +447,15 @@ export class PropertiesPanel {
       textarea.addEventListener("input", () => this.handlePropertyLinesInput(textarea));
     });
 
-    this.root.querySelector<HTMLButtonElement>("[data-duplicate]")?.addEventListener("click", this.onDuplicate);
-    this.root.querySelector<HTMLButtonElement>("[data-delete]")?.addEventListener("click", this.onDelete);
-    this.root.querySelector<HTMLButtonElement>("[data-focus]")?.addEventListener("click", this.onFocus);
+    this.root
+      .querySelector<HTMLButtonElement>("[data-duplicate]")
+      ?.addEventListener("click", this.onDuplicate);
+    this.root
+      .querySelector<HTMLButtonElement>("[data-delete]")
+      ?.addEventListener("click", this.onDelete);
+    this.root
+      .querySelector<HTMLButtonElement>("[data-focus]")
+      ?.addEventListener("click", this.onFocus);
   }
 
   private handleVectorInput(input: HTMLInputElement): void {
@@ -418,9 +466,10 @@ export class PropertiesPanel {
       return;
     }
 
-    const current = vectorName === "rotation"
-      ? radiansToDegreesVector(this.selectedObject.rotation ?? { x: 0, y: 0, z: 0 })
-      : { ...(this.selectedObject[vectorName] ?? getDefaultVector(vectorName)) };
+    const current =
+      vectorName === "rotation"
+        ? radiansToDegreesVector(this.selectedObject.rotation ?? { x: 0, y: 0, z: 0 })
+        : { ...(this.selectedObject[vectorName] ?? getDefaultVector(vectorName)) };
     current[axis] = Number(input.value);
 
     const next = vectorName === "rotation" ? degreesToRadiansVector(current) : current;
@@ -435,11 +484,12 @@ export class PropertiesPanel {
       return;
     }
 
-    const value = input instanceof HTMLInputElement && input.type === "number"
-      ? Number(input.value)
-      : input instanceof HTMLInputElement && input.type === "checkbox"
-        ? input.checked
-      : input.value;
+    const value =
+      input instanceof HTMLInputElement && input.type === "number"
+        ? Number(input.value)
+        : input instanceof HTMLInputElement && input.type === "checkbox"
+          ? input.checked
+          : input.value;
 
     const properties: Record<string, unknown> = { [property]: value };
 
@@ -462,14 +512,18 @@ export class PropertiesPanel {
       return;
     }
 
-    const current = getVectorProperty(this.selectedObject.properties?.[property], { x: 0, y: 0, z: 0 });
+    const current = getVectorProperty(this.selectedObject.properties?.[property], {
+      x: 0,
+      y: 0,
+      z: 0,
+    });
     current[axis] = Number(input.value);
     this.selectedObject = {
       ...this.selectedObject,
       properties: {
         ...this.selectedObject.properties,
-        [property]: current
-      }
+        [property]: current,
+      },
     };
     this.onChange({ properties: { [property]: current } });
   }
@@ -487,12 +541,12 @@ export class PropertiesPanel {
       .filter((value) => value.length > 0);
     this.selectedObject = this.selectedObject
       ? {
-        ...this.selectedObject,
-        properties: {
-          ...this.selectedObject.properties,
-          [property]: values
+          ...this.selectedObject,
+          properties: {
+            ...this.selectedObject.properties,
+            [property]: values,
+          },
         }
-      }
       : null;
     this.onChange({ properties: { [property]: values } });
   }
@@ -516,12 +570,12 @@ export class PropertiesPanel {
 
     this.selectedObject = this.selectedObject
       ? {
-        ...this.selectedObject,
-        properties: {
-          ...this.selectedObject.properties,
-          ...properties
+          ...this.selectedObject,
+          properties: {
+            ...this.selectedObject.properties,
+            ...properties,
+          },
         }
-      }
       : null;
     this.onChange({ properties });
   }
@@ -531,7 +585,7 @@ function radiansToDegreesVector(vector: Vector3): Vector3 {
   return {
     x: round(THREE_RAD_TO_DEG * vector.x),
     y: round(THREE_RAD_TO_DEG * vector.y),
-    z: round(THREE_RAD_TO_DEG * vector.z)
+    z: round(THREE_RAD_TO_DEG * vector.z),
   };
 }
 
@@ -539,7 +593,7 @@ function degreesToRadiansVector(vector: Vector3): Vector3 {
   return {
     x: round(THREE_DEG_TO_RAD * vector.x),
     y: round(THREE_DEG_TO_RAD * vector.y),
-    z: round(THREE_DEG_TO_RAD * vector.z)
+    z: round(THREE_DEG_TO_RAD * vector.z),
   };
 }
 
@@ -563,9 +617,7 @@ const THREE_RAD_TO_DEG = 180 / Math.PI;
 const THREE_DEG_TO_RAD = Math.PI / 180;
 
 function getDefaultVector(vectorName: "position" | "rotation" | "scale"): Vector3 {
-  return vectorName === "scale"
-    ? { x: 1, y: 1, z: 1 }
-    : { x: 0, y: 0, z: 0 };
+  return vectorName === "scale" ? { x: 1, y: 1, z: 1 } : { x: 0, y: 0, z: 0 };
 }
 
 function getVectorProperty(value: unknown, fallback: Vector3): Vector3 {
@@ -595,7 +647,9 @@ function getStringArrayProperty(value: unknown, fallback: string[]): string[] {
 
 function getDialogueLines(value: unknown, fallback: string): string[] {
   if (Array.isArray(value)) {
-    const lines = value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+    const lines = value.filter(
+      (item): item is string => typeof item === "string" && item.trim().length > 0
+    );
 
     if (lines.length > 0) {
       return lines;
@@ -610,7 +664,8 @@ function getDefaultCollisionValue(object: MapObject): boolean {
     return !(object.properties?.startsOpen || object.properties?.doorState === "open");
   }
 
-  return object.type === "cube" ||
+  return (
+    object.type === "cube" ||
     object.type === "platform" ||
     object.type === "ramp" ||
     object.type === "model" ||
@@ -621,5 +676,6 @@ function getDefaultCollisionValue(object: MapObject): boolean {
     object.type === "crate" ||
     object.type === "barrel" ||
     object.type === "arch" ||
-    object.type === "pillar";
+    object.type === "pillar"
+  );
 }

@@ -9,6 +9,7 @@ import { LocalProfileStorage } from "../storage/LocalProfileStorage";
 import { MapStorage } from "../storage/MapStorage";
 import { createMapFromTemplate, type MapTemplateId } from "../shared/MapTemplates";
 import { assertGameMap, type GameMap } from "../shared/types/MapSchema";
+import { multiplayerService } from "../services/MultiplayerService.js";
 
 export class App {
   private activeScreen: Screen | null = null;
@@ -20,53 +21,100 @@ export class App {
   }
 
   private showMainMenu(): void {
-    this.replaceScreen(new MainMenuScreen(this.root, {
-      onCreateMap: (templateId) => this.showEditor(this.createProfileMap(templateId)),
-      onOpenMapList: () => this.showMapList(),
-      onOpenProfile: () => this.showProfile(),
-      onContinueLastMap: () => this.showEditor(MapStorage.getLastMap() ?? this.createProfileMap("empty")),
-      onContinueLastPlayed: () => {
-        const mapId = LocalMapMetadataStorage.getLastPlayedMapId();
-        const map = mapId ? MapStorage.getMap(mapId) : null;
-        this.showPlay(map ?? MapStorage.getLastMap() ?? this.createProfileMap("empty"));
-      },
-      onImportMap: (file) => void this.importMap(file)
-    }));
+    this.replaceScreen(
+      new MainMenuScreen(this.root, {
+        onCreateMap: (templateId) => this.showEditor(this.createProfileMap(templateId)),
+        onOpenMapList: () => this.showMapList(),
+        onOpenProfile: () => this.showProfile(),
+        onContinueLastMap: () =>
+          this.showEditor(MapStorage.getLastMap() ?? this.createProfileMap("empty")),
+        onContinueLastPlayed: () => {
+          const mapId = LocalMapMetadataStorage.getLastPlayedMapId();
+          const map = mapId ? MapStorage.getMap(mapId) : null;
+          this.showPlay(map ?? MapStorage.getLastMap() ?? this.createProfileMap("empty"));
+        },
+        onImportMap: (file) => void this.importMap(file),
+      })
+    );
   }
 
   private showMapList(): void {
-    this.replaceScreen(new MapListScreen(this.root, {
-      onBackToMenu: () => this.showMainMenu(),
-      onCreateMap: () => this.showEditor(this.createProfileMap("empty")),
-      onEditMap: (map) => this.showEditor(map),
-      onPlayMap: (map) => this.showPlay(map)
-    }));
+    this.replaceScreen(
+      new MapListScreen(this.root, {
+        onBackToMenu: () => this.showMainMenu(),
+        onCreateMap: () => this.showEditor(this.createProfileMap("empty")),
+        onEditMap: (map) => this.showEditor(map),
+        onPlayMap: (map) => this.showPlay(map),
+        onPlayMultiplayer: async (map, roomId, onlineMapId) => {
+          this.showPlayMultiplayer(map, roomId, onlineMapId ?? map.onlineMetadata?.onlineId);
+        },
+        onCreateMultiplayerRoom: async (map, onlineMapId) => {
+          await this.createAndJoinMultiplayerRoom(map, onlineMapId);
+        },
+      })
+    );
   }
 
   private showProfile(): void {
-    this.replaceScreen(new ProfileScreen(this.root, {
-      onBackToMenu: () => this.showMainMenu()
-    }));
+    this.replaceScreen(
+      new ProfileScreen(this.root, {
+        onBackToMenu: () => this.showMainMenu(),
+      })
+    );
   }
 
   private showEditor(map: GameMap): void {
-    this.replaceScreen(new EditorScreen(this.root, map, {
-      onBackToMenu: (currentMap) => {
-        MapStorage.saveMap(currentMap);
-        this.showMainMenu();
-      },
-      onPlayMap: (currentMap) => {
-        MapStorage.saveMap(currentMap);
-        this.showPlay(currentMap);
-      }
-    }));
+    this.replaceScreen(
+      new EditorScreen(this.root, map, {
+        onBackToMenu: (currentMap) => {
+          MapStorage.saveMap(currentMap);
+          this.showMainMenu();
+        },
+        onPlayMap: (currentMap) => {
+          MapStorage.saveMap(currentMap);
+          this.showPlay(currentMap);
+        },
+      })
+    );
   }
 
   private showPlay(map: GameMap): void {
-    this.replaceScreen(new PlayScreen(this.root, map, {
-      onBackToMenu: () => this.showMainMenu(),
-      onEditMap: (currentMap) => this.showEditor(currentMap)
-    }));
+    this.replaceScreen(
+      new PlayScreen(this.root, map, {
+        onBackToMenu: () => this.showMainMenu(),
+        onEditMap: (currentMap) => this.showEditor(currentMap),
+      })
+    );
+  }
+
+  private showPlayMultiplayer(map: GameMap, roomId: string, onlineMapId?: string): void {
+    this.replaceScreen(
+      new PlayScreen(this.root, map, {
+        onBackToMenu: () => {
+          multiplayerService.disconnect();
+          this.showMainMenu();
+        },
+        onEditMap: (currentMap) => this.showEditor(currentMap),
+        mode: "multiplayer",
+        roomId,
+        onlineMapId,
+      })
+    );
+  }
+
+  private async createAndJoinMultiplayerRoom(
+    map: GameMap,
+    providedOnlineMapId?: string
+  ): Promise<void> {
+    const playerName = LocalProfileStorage.getDisplayName();
+    const onlineMapId = providedOnlineMapId ?? map.onlineMetadata?.onlineId;
+
+    if (!onlineMapId) {
+      throw new Error("Este mapa nao esta publicado online.");
+    }
+
+    const response = await multiplayerService.createRoom(onlineMapId, playerName);
+    this.showPlayMultiplayer(map, response.roomId, onlineMapId);
   }
 
   private replaceScreen(screen: Screen): void {
@@ -104,7 +152,7 @@ function applyProfileCreatorName(map: GameMap): GameMap {
 
   return {
     ...map,
-    creatorName: profileName
+    creatorName: profileName,
   };
 }
 
@@ -136,7 +184,7 @@ function prepareImportedMap(map: GameMap): GameMap | null {
     isPublished: false,
     publishedAt: undefined,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
 }
 

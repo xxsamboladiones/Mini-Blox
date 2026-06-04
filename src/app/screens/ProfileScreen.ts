@@ -1,6 +1,11 @@
 import { createIcons, icons } from "lucide";
 import { LocalMapMetadataStorage } from "../../storage/LocalMapMetadataStorage";
-import { LocalProfileStorage, normalizeCreatorName, type AvatarColors, type LocalProfile } from "../../storage/LocalProfileStorage";
+import {
+  LocalProfileStorage,
+  normalizeCreatorName,
+  type AvatarColors,
+  type LocalProfile,
+} from "../../storage/LocalProfileStorage";
 import { MapStorage } from "../../storage/MapStorage";
 import type { GameMap } from "../../shared/types/MapSchema";
 import type { ProfileScreenActions, Screen } from "../AppState";
@@ -18,7 +23,7 @@ const COLOR_FIELDS: Array<{ key: keyof AvatarColors; label: string; icon: string
   { key: "head", label: "Cabeca", icon: "circle" },
   { key: "body", label: "Corpo", icon: "shirt" },
   { key: "arms", label: "Bracos", icon: "move-horizontal" },
-  { key: "legs", label: "Pernas", icon: "footprints" }
+  { key: "legs", label: "Pernas", icon: "footprints" },
 ];
 
 export class ProfileScreen implements Screen {
@@ -71,7 +76,8 @@ export class ProfileScreen implements Screen {
               </label>
 
               <div class="profile-color-grid">
-                ${COLOR_FIELDS.map((field) => `
+                ${COLOR_FIELDS.map(
+                  (field) => `
                   <label class="profile-color-field">
                     <span><i data-lucide="${field.icon}"></i>${field.label}</span>
                     <input
@@ -81,7 +87,8 @@ export class ProfileScreen implements Screen {
                       data-avatar-color="${field.key}"
                     />
                   </label>
-                `).join("")}
+                `
+                ).join("")}
               </div>
 
               <div class="profile-actions">
@@ -182,8 +189,8 @@ export class ProfileScreen implements Screen {
         head: getFormString(form, "head"),
         body: getFormString(form, "body"),
         arms: getFormString(form, "arms"),
-        legs: getFormString(form, "legs")
-      }
+        legs: getFormString(form, "legs"),
+      },
     });
     this.message = "Perfil salvo com sucesso.";
     this.render();
@@ -201,7 +208,7 @@ export class ProfileScreen implements Screen {
       head: getFormString(form, "head"),
       body: getFormString(form, "body"),
       arms: getFormString(form, "arms"),
-      legs: getFormString(form, "legs")
+      legs: getFormString(form, "legs"),
     };
 
     setAvatarPreviewColors(preview, colors);
@@ -217,10 +224,14 @@ function getProfileStats(profile: LocalProfile): ProfileStats {
   return {
     createdMaps: ownMaps.length,
     publishedMaps: ownMaps.filter((map) => map.isPublished).length,
-    favoriteMaps: [...LocalMapMetadataStorage.getFavoriteIds()].filter((mapId) => mapIds.has(mapId)).length,
-    receivedLikes: ownMaps.reduce((total, map) => total + LocalMapMetadataStorage.getLikeCount(map.id), 0),
+    favoriteMaps: [...LocalMapMetadataStorage.getFavoriteIds()].filter((mapId) => mapIds.has(mapId))
+      .length,
+    receivedLikes: ownMaps.reduce(
+      (total, map) => total + LocalMapMetadataStorage.getLikeCount(map.id),
+      0
+    ),
     ownMapPlays: ownMaps.reduce((total, map) => total + (allStats[map.id]?.playCount ?? 0), 0),
-    completedMaps: Object.values(allStats).filter((stats) => stats.completedCount > 0).length
+    completedMaps: Object.values(allStats).filter((stats) => stats.completedCount > 0).length,
   };
 }
 
@@ -229,8 +240,10 @@ function isProfileMap(map: GameMap, profile: LocalProfile): boolean {
     return true;
   }
 
-  return map.authorId === "local-builder" &&
-    normalizeCreatorName(map.creatorName) === normalizeCreatorName("Criador local");
+  return (
+    map.authorId === "local-builder" &&
+    normalizeCreatorName(map.creatorName) === normalizeCreatorName("Criador local")
+  );
 }
 
 function renderAvatarPreview(colors: AvatarColors): string {
@@ -281,7 +294,7 @@ function getAvatarPreviewStyle(colors: AvatarColors): string {
     `--avatar-head:${escapeAttribute(colors.head)}`,
     `--avatar-body:${escapeAttribute(colors.body)}`,
     `--avatar-arms:${escapeAttribute(colors.arms)}`,
-    `--avatar-legs:${escapeAttribute(colors.legs)}`
+    `--avatar-legs:${escapeAttribute(colors.legs)}`,
   ].join(";");
 }
 

@@ -26,11 +26,50 @@ export type HudObjectiveState = {
   required: boolean;
 };
 
+export type GameModeHudStatus = {
+  modeLabel: string;
+  teamLabel?: string;
+  score: number;
+  targetScore?: number;
+  progressLabel: string;
+  roundTime?: number;
+  teamScores: Array<{
+    id: string;
+    name: string;
+    color: string;
+    score: number;
+  }>;
+  capturePoints: Array<{
+    id: string;
+    label: string;
+    ownerLabel: string;
+    progress: number;
+  }>;
+};
+
+export type GameModeSummary = {
+  mode: string;
+  teamName?: string;
+  score: number;
+  teamScores: Array<{
+    id: string;
+    name: string;
+    color: string;
+    score: number;
+  }>;
+  coinsCollected: number;
+  enemiesDefeated: number;
+  deaths: number;
+  objectivesCompleted: number;
+  capturePointsOwned: number;
+};
+
 export class RuntimeHud {
   private readonly root = document.createElement("div");
   private readonly mapLabel = document.createElement("div");
   private readonly healthPanel = document.createElement("div");
   private readonly weaponPanel = document.createElement("div");
+  private readonly gameModePanel = document.createElement("div");
   private readonly coinCounter = document.createElement("div");
   private readonly keyInventory = document.createElement("div");
   private readonly inventory = document.createElement("div");
@@ -40,6 +79,7 @@ export class RuntimeHud {
   private readonly message = document.createElement("div");
   private readonly victoryPanel = document.createElement("div");
   private readonly pausePanel = document.createElement("div");
+  private readonly multiplayerPanel = document.createElement("div");
   private messageTimeout = 0;
   private actions: RuntimeHudActions | null = null;
 
@@ -48,6 +88,7 @@ export class RuntimeHud {
     this.mapLabel.className = "runtime-map-label";
     this.healthPanel.className = "runtime-health-panel";
     this.weaponPanel.className = "runtime-weapon-panel";
+    this.gameModePanel.className = "runtime-game-mode-panel";
     this.coinCounter.className = "runtime-coin-counter";
     this.keyInventory.className = "runtime-key-inventory";
     this.inventory.className = "runtime-inventory";
@@ -57,11 +98,13 @@ export class RuntimeHud {
     this.message.className = "runtime-message";
     this.victoryPanel.className = "runtime-victory hidden";
     this.pausePanel.className = "runtime-pause hidden";
+    this.multiplayerPanel.className = "runtime-multiplayer-panel hidden";
 
     this.root.append(
       this.mapLabel,
       this.healthPanel,
       this.weaponPanel,
+      this.gameModePanel,
       this.coinCounter,
       this.keyInventory,
       this.inventory,
@@ -70,12 +113,14 @@ export class RuntimeHud {
       this.actionBar,
       this.message,
       this.victoryPanel,
-      this.pausePanel
+      this.pausePanel,
+      this.multiplayerPanel
     );
     container.append(this.root);
     this.setMapName("Mini Blox");
     this.setHealth(100, 100);
     this.setWeapon(null);
+    this.setGameModeStatus(null);
     this.setCoins(0);
     this.setKeys([]);
     this.setInventory([]);
@@ -102,13 +147,17 @@ export class RuntimeHud {
         <span data-audio-muted-label>Som</span>
       </button>
     `;
-    this.actionBar.querySelector<HTMLButtonElement>('[data-runtime-action="menu"]')
+    this.actionBar
+      .querySelector<HTMLButtonElement>('[data-runtime-action="menu"]')
       ?.addEventListener("click", actions.onMenu);
-    this.actionBar.querySelector<HTMLButtonElement>('[data-runtime-action="restart"]')
+    this.actionBar
+      .querySelector<HTMLButtonElement>('[data-runtime-action="restart"]')
       ?.addEventListener("click", actions.onRestart);
-    this.actionBar.querySelector<HTMLButtonElement>('[data-runtime-action="edit"]')
+    this.actionBar
+      .querySelector<HTMLButtonElement>('[data-runtime-action="edit"]')
       ?.addEventListener("click", actions.onEdit);
-    this.actionBar.querySelector<HTMLButtonElement>('[data-runtime-action="mute"]')
+    this.actionBar
+      .querySelector<HTMLButtonElement>('[data-runtime-action="mute"]')
       ?.addEventListener("click", () => actions.onToggleMute?.());
     createIcons({ icons });
   }
@@ -139,9 +188,8 @@ export class RuntimeHud {
   }
 
   setCoins(count: number, total?: number): void {
-    this.coinCounter.textContent = typeof total === "number"
-      ? `Moedas: ${count}/${total}`
-      : `Moedas: ${count}`;
+    this.coinCounter.textContent =
+      typeof total === "number" ? `Moedas: ${count}/${total}` : `Moedas: ${count}`;
   }
 
   setHealth(current: number, max: number): void {
@@ -160,14 +208,73 @@ export class RuntimeHud {
     this.weaponPanel.textContent = `Arma: ${label ?? "nenhuma"}`;
   }
 
+  setGameModeStatus(status: GameModeHudStatus | null): void {
+    if (!status) {
+      this.gameModePanel.classList.add("hidden");
+      this.gameModePanel.replaceChildren();
+      return;
+    }
+
+    const scoreText =
+      typeof status.targetScore === "number"
+        ? `${status.score}/${status.targetScore}`
+        : String(status.score);
+    const teamRows =
+      status.teamScores.length > 0
+        ? `
+        <div class="runtime-mode-teams">
+          ${status.teamScores
+            .map(
+              (team) => `
+            <span><b style="background:${escapeAttribute(team.color)}"></b>${escapeHtml(team.name)} ${team.score}</span>
+          `
+            )
+            .join("")}
+        </div>
+      `
+        : "";
+    const captureRows =
+      status.capturePoints.length > 0
+        ? `
+        <div class="runtime-mode-captures">
+          ${status.capturePoints
+            .map(
+              (point) => `
+            <span>${escapeHtml(point.label)}: ${escapeHtml(point.ownerLabel)} ${Math.round(point.progress * 100)}%</span>
+          `
+            )
+            .join("")}
+        </div>
+      `
+        : "";
+
+    this.gameModePanel.classList.remove("hidden");
+    this.gameModePanel.innerHTML = `
+      <div class="runtime-mode-main">
+        <strong>Modo: ${escapeHtml(status.modeLabel)}</strong>
+        <span>${escapeHtml(status.progressLabel)}</span>
+      </div>
+      <div class="runtime-mode-meta">
+        ${status.teamLabel ? `<span>Time: ${escapeHtml(status.teamLabel)}</span>` : ""}
+        <span>Pontos: ${scoreText}</span>
+        ${typeof status.roundTime === "number" ? `<span>Tempo: ${formatTime(status.roundTime)}</span>` : ""}
+      </div>
+      ${teamRows}
+      ${captureRows}
+    `;
+  }
+
   setInventory(items: HudInventoryItem[]): void {
-    this.inventory.textContent = items.length === 0
-      ? "Itens: vazio"
-      : `Itens: ${items.map((item) => `${item.label} x${item.quantity}`).join(" - ")}`;
+    this.inventory.textContent =
+      items.length === 0
+        ? "Itens: vazio"
+        : `Itens: ${items.map((item) => `${item.label} x${item.quantity}`).join(" - ")}`;
   }
 
   setObjectives(objectives: HudObjectiveState[]): void {
-    const visibleObjectives = objectives.filter((objective) => objective.required || !objective.completed);
+    const visibleObjectives = objectives.filter(
+      (objective) => objective.required || !objective.completed
+    );
     this.objectivesPanel.classList.toggle("hidden", visibleObjectives.length === 0);
 
     if (visibleObjectives.length === 0) {
@@ -178,19 +285,29 @@ export class RuntimeHud {
     this.objectivesPanel.innerHTML = `
       <div class="runtime-objectives-title">Objetivos</div>
       <div class="runtime-objectives-list">
-        ${visibleObjectives.map((objective) => `
+        ${visibleObjectives
+          .map(
+            (objective) => `
           <div class="runtime-objective-row ${objective.completed ? "completed" : ""}">
             <span>${objective.completed ? "OK" : "-"}</span>
             <div>
               <strong>${escapeHtml(objective.title)}</strong>
-              ${objective.progress !== undefined && objective.target !== undefined ? `
+              ${
+                objective.progress !== undefined && objective.target !== undefined
+                  ? `
                 <small>${Math.min(objective.progress, objective.target)}/${objective.target}</small>
-              ` : objective.description ? `
+              `
+                  : objective.description
+                    ? `
                 <small>${escapeHtml(objective.description)}</small>
-              ` : ""}
+              `
+                    : ""
+              }
             </div>
           </div>
-        `).join("")}
+        `
+          )
+          .join("")}
       </div>
     `;
   }
@@ -210,9 +327,8 @@ export class RuntimeHud {
   }
 
   setKeys(labels: string[]): void {
-    this.keyInventory.textContent = labels.length === 0
-      ? "Chaves: nenhuma"
-      : `Chaves: ${labels.join(", ")}`;
+    this.keyInventory.textContent =
+      labels.length === 0 ? "Chaves: nenhuma" : `Chaves: ${labels.join(", ")}`;
   }
 
   showMessage(text: string, durationMs = 1800): void {
@@ -254,13 +370,17 @@ export class RuntimeHud {
       </div>
     `;
 
-    this.pausePanel.querySelector<HTMLButtonElement>('[data-pause-action="continue"]')
+    this.pausePanel
+      .querySelector<HTMLButtonElement>('[data-pause-action="continue"]')
       ?.addEventListener("click", this.actions.onContinue);
-    this.pausePanel.querySelector<HTMLButtonElement>('[data-pause-action="restart"]')
+    this.pausePanel
+      .querySelector<HTMLButtonElement>('[data-pause-action="restart"]')
       ?.addEventListener("click", this.actions.onRestart);
-    this.pausePanel.querySelector<HTMLButtonElement>('[data-pause-action="edit"]')
+    this.pausePanel
+      .querySelector<HTMLButtonElement>('[data-pause-action="edit"]')
       ?.addEventListener("click", this.actions.onEdit);
-    this.pausePanel.querySelector<HTMLButtonElement>('[data-pause-action="menu"]')
+    this.pausePanel
+      .querySelector<HTMLButtonElement>('[data-pause-action="menu"]')
       ?.addEventListener("click", this.actions.onMenu);
     createIcons({ icons });
   }
@@ -270,7 +390,12 @@ export class RuntimeHud {
     this.pausePanel.replaceChildren();
   }
 
-  showVictory(message: string, coinCount: number, actions: VictoryActions): void {
+  showVictory(
+    message: string,
+    coinCount: number,
+    actions: VictoryActions,
+    summary?: GameModeSummary
+  ): void {
     window.clearTimeout(this.messageTimeout);
     this.message.classList.remove("visible");
     this.hidePause();
@@ -280,6 +405,21 @@ export class RuntimeHud {
       <div class="runtime-victory-content">
         <strong>${escapeHtml(message)}</strong>
         <span>Moedas coletadas: ${coinCount}</span>
+        ${
+          summary
+            ? `
+          <div class="runtime-victory-summary">
+            <span>Modo: ${escapeHtml(summary.mode)}</span>
+            ${summary.teamName ? `<span>Time: ${escapeHtml(summary.teamName)}</span>` : ""}
+            <span>Pontos: ${summary.score}</span>
+            <span>Inimigos: ${summary.enemiesDefeated}</span>
+            <span>Objetivos: ${summary.objectivesCompleted}</span>
+            <span>Mortes: ${summary.deaths}</span>
+            ${summary.capturePointsOwned > 0 ? `<span>Pontos capturados: ${summary.capturePointsOwned}</span>` : ""}
+          </div>
+        `
+            : ""
+        }
         <div class="runtime-victory-actions">
           <button class="top-action primary" type="button" data-victory-action="restart">
             <i data-lucide="rotate-ccw"></i>
@@ -297,11 +437,14 @@ export class RuntimeHud {
       </div>
     `;
 
-    this.victoryPanel.querySelector<HTMLButtonElement>('[data-victory-action="restart"]')
+    this.victoryPanel
+      .querySelector<HTMLButtonElement>('[data-victory-action="restart"]')
       ?.addEventListener("click", actions.onRestart);
-    this.victoryPanel.querySelector<HTMLButtonElement>('[data-victory-action="edit"]')
+    this.victoryPanel
+      .querySelector<HTMLButtonElement>('[data-victory-action="edit"]')
       ?.addEventListener("click", actions.onEdit);
-    this.victoryPanel.querySelector<HTMLButtonElement>('[data-victory-action="menu"]')
+    this.victoryPanel
+      .querySelector<HTMLButtonElement>('[data-victory-action="menu"]')
       ?.addEventListener("click", actions.onMenu);
     createIcons({ icons });
   }
@@ -316,6 +459,36 @@ export class RuntimeHud {
     this.hideDialogue();
     this.root.remove();
   }
+
+  setMultiplayerInfo(roomId: string, playerCount: number, onLeaveRoom: () => void): void {
+    this.multiplayerPanel.classList.remove("hidden");
+    this.multiplayerPanel.innerHTML = `
+      <div class="multiplayer-info">
+        <span class="room-id">Sala: ${escapeHtml(roomId)}</span>
+        <span class="player-count">${playerCount} jogadores</span>
+      </div>
+      <button class="top-action danger" type="button" data-multiplayer-action="leave">
+        <i data-lucide="log-out"></i>
+        <span>Sair da Sala</span>
+      </button>
+    `;
+
+    this.multiplayerPanel
+      .querySelector<HTMLButtonElement>('[data-multiplayer-action="leave"]')
+      ?.addEventListener("click", onLeaveRoom);
+    createIcons({ icons });
+  }
+
+  hideMultiplayerInfo(): void {
+    this.multiplayerPanel.classList.add("hidden");
+  }
+
+  updatePlayerCount(count: number): void {
+    const playerCountEl = this.multiplayerPanel.querySelector(".player-count");
+    if (playerCountEl) {
+      playerCountEl.textContent = `${count} jogadores`;
+    }
+  }
 }
 
 function escapeHtml(value: string): string {
@@ -324,4 +497,15 @@ function escapeHtml(value: string): string {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function escapeAttribute(value: string): string {
+  return escapeHtml(value);
+}
+
+function formatTime(value: number): string {
+  const seconds = Math.max(0, Math.ceil(value));
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${minutes}:${String(rest).padStart(2, "0")}`;
 }

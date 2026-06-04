@@ -8,144 +8,178 @@ export type LogicValue =
 
 export type LogicTrigger =
   | {
-    type: "onPlayerEnterObject";
-    objectId: string;
-  }
+      type: "onPlayerEnterObject";
+      objectId: string;
+    }
   | {
-    type: "onButtonActivated";
-    objectId: string;
-  }
+      type: "onButtonActivated";
+      objectId: string;
+    }
   | {
-    type: "onCoinCollected";
-    objectId: string;
-  }
+      type: "onCoinCollected";
+      objectId: string;
+    }
   | {
-    type: "onKeyCollected";
-    keyId: string;
-  }
+      type: "onKeyCollected";
+      keyId: string;
+    }
   | {
-    type: "onEnemyDefeated";
-    objectId: string;
-  }
+      type: "onEnemyDefeated";
+      objectId: string;
+    }
   | {
-    type: "onAnyEnemyDefeated";
-  }
+      type: "onAnyEnemyDefeated";
+    }
   | {
-    type: "onAllEnemiesDefeated";
-  }
+      type: "onAllEnemiesDefeated";
+    }
   | {
-    type: "onPlayerDamaged";
-  }
+      type: "onPlayerDamaged";
+    }
   | {
-    type: "onItemCollected";
-    itemType: "health" | "coin" | "weapon_basic" | string;
-  }
+      type: "onItemCollected";
+      itemType: "health" | "coin" | "weapon_basic" | string;
+    }
   | {
-    type: "onNpcInteracted";
-    objectId: string;
-  }
+      type: "onNpcInteracted";
+      objectId: string;
+    }
   | {
-    type: "onObjectiveCompleted";
-    objectiveId: string;
-  }
+      type: "onObjectiveCompleted";
+      objectiveId: string;
+    }
   | {
-    type: "onMapStart";
-  };
+      type: "onScoreReached";
+      amount: number;
+    }
+  | {
+      type: "onTeamScoreReached";
+      teamId: string;
+      amount: number;
+    }
+  | {
+      type: "onCapturePointCaptured";
+      pointId: string;
+      teamId?: string;
+    }
+  | {
+      type: "onGameModeWon";
+    }
+  | {
+      type: "onMapStart";
+    };
 
 export type LogicCondition =
   | {
-    type: "hasKey";
-    keyId: string;
-  }
+      type: "hasKey";
+      keyId: string;
+    }
   | {
-    type: "coinsAtLeast";
-    amount: number;
-  }
+      type: "coinsAtLeast";
+      amount: number;
+    }
   | {
-    type: "doorIsOpen";
-    doorId: string;
-  }
+      type: "doorIsOpen";
+      doorId: string;
+    }
   | {
-    type: "enemyDefeated";
-    objectId: string;
-  }
+      type: "enemyDefeated";
+      objectId: string;
+    }
   | {
-    type: "enemiesDefeatedAtLeast";
-    amount: number;
-  }
+      type: "enemiesDefeatedAtLeast";
+      amount: number;
+    }
   | {
-    type: "hasWeapon";
-    weaponId: "basic_sword" | string;
-  }
+      type: "hasWeapon";
+      weaponId: "basic_sword" | string;
+    }
   | {
-    type: "healthBelow";
-    amount: number;
-  }
+      type: "healthBelow";
+      amount: number;
+    }
   | {
-    type: "once";
-  };
+      type: "once";
+    };
 
 export type LogicAction =
   | {
-    type: "showMessage";
-    message: string;
-  }
+      type: "showMessage";
+      message: string;
+    }
   | {
-    type: "openDoor";
-    doorId: string;
-  }
+      type: "openDoor";
+      doorId: string;
+    }
   | {
-    type: "closeDoor";
-    doorId: string;
-  }
+      type: "closeDoor";
+      doorId: string;
+    }
   | {
-    type: "teleportPlayer";
-    targetObjectId: string;
-  }
+      type: "teleportPlayer";
+      targetObjectId: string;
+    }
   | {
-    type: "giveCoins";
-    amount: number;
-  }
+      type: "giveCoins";
+      amount: number;
+    }
   | {
-    type: "setCheckpoint";
-    objectId: string;
-  }
+      type: "setCheckpoint";
+      objectId: string;
+    }
   | {
-    type: "finishMap";
-  }
+      type: "finishMap";
+    }
   | {
-    type: "enableObject";
-    objectId: string;
-  }
+      type: "enableObject";
+      objectId: string;
+    }
   | {
-    type: "disableObject";
-    objectId: string;
-  }
+      type: "disableObject";
+      objectId: string;
+    }
   | {
-    type: "spawnEnemy";
-    objectId: string;
-  }
+      type: "spawnEnemy";
+      objectId: string;
+    }
   | {
-    type: "healPlayer";
-    amount: number;
-  }
+      type: "healPlayer";
+      amount: number;
+    }
   | {
-    type: "damagePlayer";
-    amount: number;
-  }
+      type: "damagePlayer";
+      amount: number;
+    }
   | {
-    type: "giveWeapon";
-    weaponId: "basic_sword" | string;
-  }
+      type: "giveWeapon";
+      weaponId: "basic_sword" | string;
+    }
   | {
-    type: "completeObjective";
-    objectiveId: string;
-  }
+      type: "completeObjective";
+      objectiveId: string;
+    }
   | {
-    type: "showDialogue";
-    objectId: string;
-    message: string;
-  };
+      type: "showDialogue";
+      objectId: string;
+      message: string;
+    }
+  | {
+      type: "addScore";
+      amount: number;
+    }
+  | {
+      type: "addTeamScore";
+      teamId: string;
+      amount: number;
+    }
+  | {
+      type: "setTeam";
+      teamId: string;
+    }
+  | {
+      type: "endRound";
+      result: "win" | "lose" | "draw";
+    };
 
 export type LogicRule = {
   id: string;

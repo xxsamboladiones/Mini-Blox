@@ -1,55 +1,77 @@
 import type { GameMap } from "../shared/types/MapSchema";
 import type { MapObject } from "../shared/types/ObjectSchema";
-import type { LogicAction, LogicCondition, LogicRule, LogicTrigger } from "../shared/types/ScriptSchema";
+import type {
+  LogicAction,
+  LogicCondition,
+  LogicRule,
+  LogicTrigger,
+} from "../shared/types/ScriptSchema";
 
 export type LogicRuntimeEvent =
   | {
-    type: "onPlayerEnterObject";
-    objectId: string;
-  }
+      type: "onPlayerEnterObject";
+      objectId: string;
+    }
   | {
-    type: "onButtonActivated";
-    objectId: string;
-  }
+      type: "onButtonActivated";
+      objectId: string;
+    }
   | {
-    type: "onCoinCollected";
-    objectId: string;
-  }
+      type: "onCoinCollected";
+      objectId: string;
+    }
   | {
-    type: "onKeyCollected";
-    objectId: string;
-    keyId: string;
-  }
+      type: "onKeyCollected";
+      objectId: string;
+      keyId: string;
+    }
   | {
-    type: "onEnemyDefeated";
-    objectId: string;
-  }
+      type: "onEnemyDefeated";
+      objectId: string;
+    }
   | {
-    type: "onAnyEnemyDefeated";
-    objectId: string;
-  }
+      type: "onAnyEnemyDefeated";
+      objectId: string;
+    }
   | {
-    type: "onAllEnemiesDefeated";
-  }
+      type: "onAllEnemiesDefeated";
+    }
   | {
-    type: "onPlayerDamaged";
-    amount: number;
-  }
+      type: "onPlayerDamaged";
+      amount: number;
+    }
   | {
-    type: "onItemCollected";
-    itemType: string;
-  }
+      type: "onItemCollected";
+      itemType: string;
+    }
   | {
-    type: "onNpcInteracted";
-    objectId: string;
-  }
+      type: "onNpcInteracted";
+      objectId: string;
+    }
   | {
-    type: "onObjectiveCompleted";
-    objectiveId: string;
-  }
+      type: "onObjectiveCompleted";
+      objectiveId: string;
+    }
   | {
-    type: "onMapStart";
-  };
+      type: "onScoreReached";
+      amount: number;
+    }
+  | {
+      type: "onTeamScoreReached";
+      teamId: string;
+      amount: number;
+    }
+  | {
+      type: "onCapturePointCaptured";
+      pointId: string;
+      teamId?: string;
+    }
+  | {
+      type: "onGameModeWon";
+    }
+  | {
+      type: "onMapStart";
+    };
 
 export type LogicRuntimeContext = {
   hasKey: (keyId: string) => boolean;
@@ -73,6 +95,10 @@ export type LogicRuntimeContext = {
   giveWeapon: (weaponId: string) => void;
   completeObjective: (objectiveId: string) => boolean;
   showDialogue: (objectId: string, message: string) => void;
+  addScore: (amount: number) => void;
+  addTeamScore: (teamId: string, amount: number) => void;
+  setTeam: (teamId: string) => boolean;
+  endRound: (result: "win" | "lose" | "draw") => void;
   getObjectById: (objectId: string) => MapObject | null;
 };
 
@@ -159,6 +185,30 @@ export class LogicRuntime {
       return event.type === "onObjectiveCompleted" && trigger.objectiveId === event.objectiveId;
     }
 
+    if (trigger.type === "onScoreReached") {
+      return event.type === "onScoreReached" && event.amount >= trigger.amount;
+    }
+
+    if (trigger.type === "onTeamScoreReached") {
+      return (
+        event.type === "onTeamScoreReached" &&
+        event.teamId === trigger.teamId &&
+        event.amount >= trigger.amount
+      );
+    }
+
+    if (trigger.type === "onCapturePointCaptured") {
+      return (
+        event.type === "onCapturePointCaptured" &&
+        event.pointId === trigger.pointId &&
+        (!trigger.teamId || trigger.teamId === event.teamId)
+      );
+    }
+
+    if (trigger.type === "onGameModeWon") {
+      return event.type === "onGameModeWon";
+    }
+
     if (trigger.type === "onAnyEnemyDefeated") {
       return event.type === "onAnyEnemyDefeated";
     }
@@ -172,10 +222,6 @@ export class LogicRuntime {
     }
 
     return event.type === "onMapStart";
-  }
-
-  private conditionsPass(rule: LogicRule): boolean {
-    return rule.conditions.every((condition) => this.conditionPasses(rule, condition));
   }
 
   private conditionPasses(rule: LogicRule, condition: LogicCondition): boolean {
@@ -241,6 +287,14 @@ export class LogicRuntime {
       this.context.completeObjective(action.objectiveId);
     } else if (action.type === "showDialogue") {
       this.context.showDialogue(action.objectId, action.message);
+    } else if (action.type === "addScore") {
+      this.context.addScore(action.amount);
+    } else if (action.type === "addTeamScore") {
+      this.context.addTeamScore(action.teamId, action.amount);
+    } else if (action.type === "setTeam") {
+      this.context.setTeam(action.teamId);
+    } else if (action.type === "endRound") {
+      this.context.endRound(action.result);
     }
   }
 
@@ -283,6 +337,25 @@ function isLogicTrigger(value: unknown): value is LogicTrigger {
     return typeof value.objectiveId === "string";
   }
 
+  if (value.type === "onScoreReached") {
+    return typeof value.amount === "number" && Number.isFinite(value.amount);
+  }
+
+  if (value.type === "onTeamScoreReached") {
+    return (
+      typeof value.teamId === "string" &&
+      typeof value.amount === "number" &&
+      Number.isFinite(value.amount)
+    );
+  }
+
+  if (value.type === "onCapturePointCaptured") {
+    return (
+      typeof value.pointId === "string" &&
+      (value.teamId === undefined || typeof value.teamId === "string")
+    );
+  }
+
   if (value.type === "onKeyCollected") {
     return typeof value.keyId === "string";
   }
@@ -291,10 +364,13 @@ function isLogicTrigger(value: unknown): value is LogicTrigger {
     return typeof value.itemType === "string";
   }
 
-  return value.type === "onMapStart" ||
+  return (
+    value.type === "onMapStart" ||
     value.type === "onAnyEnemyDefeated" ||
     value.type === "onAllEnemiesDefeated" ||
-    value.type === "onPlayerDamaged";
+    value.type === "onPlayerDamaged" ||
+    value.type === "onGameModeWon"
+  );
 }
 
 function isLogicCondition(value: unknown): value is LogicCondition {
@@ -350,7 +426,11 @@ function isLogicAction(value: unknown): value is LogicAction {
     return typeof value.amount === "number" && Number.isFinite(value.amount);
   }
 
-  if (value.type === "setCheckpoint" || value.type === "enableObject" || value.type === "disableObject") {
+  if (
+    value.type === "setCheckpoint" ||
+    value.type === "enableObject" ||
+    value.type === "disableObject"
+  ) {
     return typeof value.objectId === "string";
   }
 
@@ -372,6 +452,26 @@ function isLogicAction(value: unknown): value is LogicAction {
 
   if (value.type === "showDialogue") {
     return typeof value.objectId === "string" && typeof value.message === "string";
+  }
+
+  if (value.type === "addScore") {
+    return typeof value.amount === "number" && Number.isFinite(value.amount);
+  }
+
+  if (value.type === "addTeamScore") {
+    return (
+      typeof value.teamId === "string" &&
+      typeof value.amount === "number" &&
+      Number.isFinite(value.amount)
+    );
+  }
+
+  if (value.type === "setTeam") {
+    return typeof value.teamId === "string";
+  }
+
+  if (value.type === "endRound") {
+    return value.result === "win" || value.result === "lose" || value.result === "draw";
   }
 
   return value.type === "finishMap";
@@ -396,6 +496,18 @@ function describeEvent(event: LogicRuntimeEvent): string {
 
   if (event.type === "onObjectiveCompleted") {
     return `${event.type} ${event.objectiveId}`;
+  }
+
+  if (event.type === "onScoreReached") {
+    return `${event.type} ${event.amount}`;
+  }
+
+  if (event.type === "onTeamScoreReached") {
+    return `${event.type} ${event.teamId} ${event.amount}`;
+  }
+
+  if (event.type === "onCapturePointCaptured") {
+    return `${event.type} ${event.pointId}`;
   }
 
   if ("objectId" in event) {
@@ -454,7 +566,11 @@ function describeAction(action: LogicAction): string {
     return `giveCoins ${action.amount}`;
   }
 
-  if (action.type === "setCheckpoint" || action.type === "enableObject" || action.type === "disableObject") {
+  if (
+    action.type === "setCheckpoint" ||
+    action.type === "enableObject" ||
+    action.type === "disableObject"
+  ) {
     return `${action.type} ${action.objectId}`;
   }
 
@@ -476,6 +592,22 @@ function describeAction(action: LogicAction): string {
 
   if (action.type === "showDialogue") {
     return `showDialogue ${action.objectId}`;
+  }
+
+  if (action.type === "addScore") {
+    return `addScore ${action.amount}`;
+  }
+
+  if (action.type === "addTeamScore") {
+    return `addTeamScore ${action.teamId} ${action.amount}`;
+  }
+
+  if (action.type === "setTeam") {
+    return `setTeam ${action.teamId}`;
+  }
+
+  if (action.type === "endRound") {
+    return `endRound ${action.result}`;
   }
 
   return "finishMap";

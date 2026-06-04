@@ -69,7 +69,7 @@ export class PhysicsSystem {
       type: String(mapObject.type),
       bounds,
       object3D,
-      solid: true
+      solid: true,
     });
   }
 
@@ -97,7 +97,7 @@ export class PhysicsSystem {
       type,
       bounds,
       object3D,
-      solid: true
+      solid: true,
     });
   }
 
@@ -146,7 +146,10 @@ export class PhysicsSystem {
     return new THREE.Box3(min, max);
   }
 
-  getGroundInfo(position: THREE.Vector3, size: THREE.Vector3): { grounded: boolean; groundY: number } {
+  getGroundInfo(
+    position: THREE.Vector3,
+    size: THREE.Vector3
+  ): { grounded: boolean; groundY: number } {
     const probePosition = position.clone();
     probePosition.y -= 0.04;
     const bounds = this.getPlayerBounds(probePosition, size);
@@ -296,7 +299,10 @@ export function isSolidMapObject(mapObject: MapObject): boolean {
 }
 
 export function getCollisionRole(mapObject: MapObject): CollisionRole {
-  if (mapObject.type === "door" && (mapObject.properties?.startsOpen || mapObject.properties?.doorState === "open")) {
+  if (
+    mapObject.type === "door" &&
+    (mapObject.properties?.startsOpen || mapObject.properties?.doorState === "open")
+  ) {
     return "none";
   }
 
@@ -333,7 +339,8 @@ export function getCollisionRole(mapObject: MapObject): CollisionRole {
 }
 
 function isTriggerMapObject(mapObject: MapObject): boolean {
-  return Boolean(mapObject.collider?.isTrigger) ||
+  return (
+    Boolean(mapObject.collider?.isTrigger) ||
     mapObject.type === "checkpoint" ||
     mapObject.type === "coin" ||
     mapObject.type === "button" ||
@@ -343,7 +350,10 @@ function isTriggerMapObject(mapObject: MapObject): boolean {
     mapObject.type === "teleporter" ||
     mapObject.type === "messageZone" ||
     mapObject.type === "key" ||
+    mapObject.type === "teamSpawn" ||
+    mapObject.type === "capturePoint" ||
     mapObject.type === "finish" ||
     mapObject.type === "goal" ||
-    mapObject.type === "itemPickup";
+    mapObject.type === "itemPickup"
+  );
 }

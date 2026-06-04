@@ -8,13 +8,32 @@ import { PhysicsSystem } from "./PhysicsSystem";
 import { RuntimeHud } from "./RuntimeHud";
 import { RuntimeMechanics } from "./RuntimeMechanics";
 import { ThirdPersonCameraController } from "./ThirdPersonCameraController";
+import { RemotePlayerView } from "./RemotePlayerView";
 import { resolveVisualSettings } from "../shared/VisualSettings";
 import type { GameMap } from "../shared/types/MapSchema";
+import type { GameSessionAdapter } from "./session/GameSessionAdapter";
+import type {
+  GameNetworkEvent,
+  PlayerNetState,
+  SessionState,
+} from "../shared/types/MultiplayerSchema";
+import type { Vector3 } from "../shared/types/ObjectSchema";
 
 type GameRuntimeOptions = {
   onEditMap?: (map: GameMap) => void;
   onBackToMenu?: () => void;
   onMapCompleted?: (summary: { map: GameMap; coinsCollected: number }) => void;
+  sessionAdapter?: GameSessionAdapter;
+};
+
+type PlayerStateSessionAdapter = GameSessionAdapter & {
+  sendPlayerState: (
+    position: Vector3,
+    rotationY: number,
+    health: number,
+    equippedWeaponId: string | null,
+    score: number
+  ) => void;
 };
 
 export class GameRuntime {
@@ -31,6 +50,7 @@ export class GameRuntime {
   private readonly audioSystem = new AudioSystem();
   private readonly feedbackSystem: FeedbackSystem;
   private readonly objectViews = new Map<string, THREE.Object3D>();
+  private readonly remotePlayers = new Map<string, RemotePlayerView>();
   private readonly resizeObserver: ResizeObserver;
   private ambientLight: THREE.HemisphereLight | null = null;
   private sunLight: THREE.DirectionalLight | null = null;
@@ -38,11 +58,14 @@ export class GameRuntime {
   private animationFrame = 0;
   private activeMap: GameMap | null = null;
   private paused = false;
+  private readonly sessionAdapter: GameSessionAdapter | undefined;
+  private networkSyncAccumulator = 0;
 
   constructor(
     private readonly container: HTMLElement,
     private readonly options: GameRuntimeOptions = {}
   ) {
+    this.sessionAdapter = options.sessionAdapter;
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
@@ -71,7 +94,7 @@ export class GameRuntime {
       objectViews: this.objectViews,
       getInteractionHint: (objectId) => this.mechanics?.getInteractionHint(objectId) ?? null,
       interact: (objectId) => this.mechanics?.interactWithObject(objectId) ?? false,
-      onPrimaryAction: () => this.mechanics?.attack()
+      onPrimaryAction: () => this.mechanics?.attack(),
     });
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(this.container);
@@ -87,6 +110,7 @@ export class GameRuntime {
     this.activeMap = structuredClone(map);
     this.paused = false;
     this.clearWorld();
+    this.clearRemotePlayers();
     this.objectViews.clear();
     this.mechanics = null;
     this.feedbackSystem.clear();
@@ -115,7 +139,7 @@ export class GameRuntime {
       onToggleMute: () => {
         this.audioSystem.toggleMuted();
         this.hud.setAudioMuted(this.audioSystem.isMuted());
-      }
+      },
     });
     this.hud.setAudioMuted(this.audioSystem.isMuted());
 
@@ -123,7 +147,9 @@ export class GameRuntime {
       const object3D = createMapObject3D(mapObject);
 
       if (mapObject.type === "model" && mapObject.assetId) {
-        const asset = this.activeMap.assets?.find((candidate) => candidate.id === mapObject.assetId);
+        const asset = this.activeMap.assets?.find(
+          (candidate) => candidate.id === mapObject.assetId
+        );
 
         if (asset) {
           disposeObject3D(object3D);
@@ -158,12 +184,128 @@ export class GameRuntime {
           if (this.activeMap) {
             this.options.onMapCompleted?.({
               map: structuredClone(this.activeMap),
-              coinsCollected
+              coinsCollected,
             });
           }
-        }
+        },
       }
     );
+
+    if (this.sessionAdapter) {
+      this.setupMultiplayer();
+    }
+  }
+
+  private setupMultiplayer(): void {
+    if (!this.sessionAdapter) return;
+
+    this.sessionAdapter.onStateChange((state) => {
+      this.handleRoomStateChange(state);
+    });
+
+    this.sessionAdapter.onNetworkEvent((event) => {
+      this.handleNetworkEvent(event);
+    });
+
+    void this.sessionAdapter.start().catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error("Failed to start multiplayer session:", error);
+      this.hud.showMessage("Nao foi possivel conectar ao multiplayer.", 2600);
+    });
+  }
+
+  private handleRoomStateChange(state: SessionState): void {
+    const currentPlayerIds = new Set(state.players.map((player) => player.id));
+
+    for (const playerId of this.remotePlayers.keys()) {
+      if (!currentPlayerIds.has(playerId)) {
+        this.removeRemotePlayer(playerId);
+      }
+    }
+
+    for (const player of state.players) {
+      if (!this.remotePlayers.has(player.id)) {
+        this.addRemotePlayer(player);
+      } else {
+        this.updateRemotePlayerState(player.id, player.position, player.rotationY);
+      }
+    }
+
+    this.updateMultiplayerHud(state.sessionId);
+  }
+
+  private handleNetworkEvent(event: GameNetworkEvent): void {
+    switch (event.type) {
+      case "playerJoined":
+        this.addRemotePlayer(event.player);
+        this.updateMultiplayerHud();
+        break;
+      case "playerLeft":
+        this.removeRemotePlayer(event.playerId);
+        this.updateMultiplayerHud();
+        break;
+      case "playerMoved":
+        this.updateRemotePlayerState(event.playerId, event.position, event.rotationY);
+        break;
+      case "matchEnded":
+        this.hud.showMessage(event.reason, 2600);
+        break;
+    }
+  }
+
+  private addRemotePlayer(player: PlayerNetState): void {
+    if (this.remotePlayers.has(player.id)) return;
+
+    const remotePlayer = new RemotePlayerView(
+      player.id,
+      player.name,
+      player.teamId,
+      player.clientId ?? player.id
+    );
+    remotePlayer.addToScene(this.scene);
+    remotePlayer.updateState(player);
+    this.remotePlayers.set(player.id, remotePlayer);
+  }
+
+  private removeRemotePlayer(playerId: string): void {
+    const remotePlayer = this.remotePlayers.get(playerId);
+    if (remotePlayer) {
+      remotePlayer.removeFromScene(this.scene);
+      remotePlayer.dispose();
+      this.remotePlayers.delete(playerId);
+    }
+  }
+
+  private updateRemotePlayerState(playerId: string, position: Vector3, rotationY: number): void {
+    const remotePlayer = this.remotePlayers.get(playerId);
+    if (remotePlayer) {
+      remotePlayer.updateState({
+        id: playerId,
+        name: "",
+        teamId: null,
+        position,
+        rotationY,
+        health: 100,
+        maxHealth: 100,
+        equippedWeaponId: null,
+        score: 0,
+        isAlive: true,
+      });
+    }
+  }
+
+  private updateMultiplayerHud(roomId = this.sessionAdapter?.getState()?.sessionId): void {
+    if (!roomId || !this.sessionAdapter || this.sessionAdapter.isLocal()) {
+      this.hud.hideMultiplayerInfo();
+      return;
+    }
+
+    this.hud.setMultiplayerInfo(roomId, this.remotePlayers.size + 1, () => {
+      void this.sessionAdapter?.stop();
+      this.clearRemotePlayers();
+      this.hud.hideMultiplayerInfo();
+      this.options.onBackToMenu?.();
+    });
   }
 
   getMap(): GameMap | null {
@@ -181,6 +323,10 @@ export class GameRuntime {
     this.hud.dispose();
     this.resizeObserver.disconnect();
     this.clearWorld();
+    this.clearRemotePlayers();
+    if (this.sessionAdapter) {
+      void this.sessionAdapter.stop();
+    }
     for (const child of [...this.scene.children]) {
       if (child !== this.world) {
         disposeObject3D(child);
@@ -188,6 +334,14 @@ export class GameRuntime {
     }
     this.renderer.dispose();
     this.container.replaceChildren();
+  }
+
+  private clearRemotePlayers(): void {
+    for (const remotePlayer of this.remotePlayers.values()) {
+      remotePlayer.removeFromScene(this.scene);
+      remotePlayer.dispose();
+    }
+    this.remotePlayers.clear();
   }
 
   private setupScene(): void {
@@ -248,11 +402,39 @@ export class GameRuntime {
       this.cameraController.update();
       this.mechanics?.update(delta);
       this.feedbackSystem.update(delta);
+
+      for (const remotePlayer of this.remotePlayers.values()) {
+        remotePlayer.update(delta);
+      }
+
+      this.syncMultiplayerState(delta);
     }
 
     this.renderer.render(this.scene, this.camera);
     this.animationFrame = requestAnimationFrame(this.animate);
   };
+
+  private syncMultiplayerState(delta: number): void {
+    if (!this.sessionAdapter || this.sessionAdapter.isLocal()) {
+      return;
+    }
+
+    this.networkSyncAccumulator += delta;
+    if (this.networkSyncAccumulator < 0.05) {
+      return;
+    }
+    this.networkSyncAccumulator = 0;
+
+    const position = this.playerController.getPosition();
+    const rotationY = this.cameraController.getYaw();
+    const health = 100;
+    const equippedWeaponId = null;
+    const score = 0;
+
+    if (canSendPlayerState(this.sessionAdapter)) {
+      this.sessionAdapter.sendPlayerState(position, rotationY, health, equippedWeaponId, score);
+    }
+  }
 
   private restart(): void {
     this.paused = false;
@@ -304,4 +486,10 @@ export class GameRuntime {
     event.preventDefault();
     this.togglePause();
   };
+}
+
+function canSendPlayerState(
+  sessionAdapter: GameSessionAdapter
+): sessionAdapter is PlayerStateSessionAdapter {
+  return "sendPlayerState" in sessionAdapter;
 }
