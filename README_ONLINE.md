@@ -70,8 +70,17 @@ Rotas:
 
 Mensagens principais:
 
-- Cliente: `join`, `leave`, `playerState`, `ping`.
-- Servidor: `welcome`, `roomState`, `playerJoined`, `playerLeft`, `playerUpdated`, `error`, `pong`.
+- Cliente: `join`, `leave`, `playerState`, `worldEvent`, `ping`.
+- Servidor: `welcome`, `roomState`, `worldState`, `worldEvent`, `playerJoined`, `playerLeft`, `playerUpdated`, `error`, `pong`.
+
+Estado compartilhado da sala:
+
+- `openedDoorIds`: portas abertas.
+- `activatedButtonIds`: botoes ativados.
+- `collectedCoinObjectIds`: moedas coletadas.
+- `collectedItemObjectIds`: pickups simples coletados.
+
+O estado fica apenas em memoria, dentro da sala. Quem entra depois recebe `worldState`; eventos novos sao enviados como `worldEvent`.
 
 ### Criar Sala
 
@@ -102,8 +111,12 @@ Use `Sair da Sala` no HUD do runtime. O cliente envia `leave`, fecha o WebSocket
 5. Na aba B, abra o mesmo mapa em `Online > Multiplayer` e entre na sala.
 6. Mova o jogador na aba A e confirme o avatar remoto na aba B.
 7. Mova o jogador na aba B e confirme o avatar remoto na aba A.
-8. Saia da sala em uma aba e confirme que o avatar desaparece na outra.
-9. Volte ao modo solo e abra um mapa local para confirmar que nao ha WebSocket no modo offline.
+8. Na aba A, ative um botao que abre uma porta e confirme a porta aberta na aba B.
+9. Na aba A, colete uma moeda e confirme que ela desaparece na aba B.
+10. Abra uma terceira aba, entre na mesma sala e confirme que ela ja recebe a porta aberta e a moeda coletada.
+11. Se o mapa tiver `itemSpawner`, colete um pickup em uma aba e confirme a remocao na outra.
+12. Saia da sala em uma aba e confirme que o avatar desaparece na outra.
+13. Volte ao modo solo e abra um mapa local para confirmar que nao ha WebSocket no modo offline.
 
 ## Validacoes
 
@@ -142,18 +155,21 @@ node smoke-multiplayer.mjs
 ```
 
 O smoke multiplayer cria servidor em porta temporaria, conecta dois clientes, valida `roomState`, `playerUpdated`, `playerLeft` e encerra WebSockets/HTTP sem `process.exit` agressivo.
+Ele tambem valida `worldEvent` para moeda coletada e `worldState` para cliente que entra depois.
 
 ## Limitacoes Atuais do Multiplayer
 
 - Nao sincroniza inimigos.
-- Nao sincroniza portas, moedas, objetivos ou estado de mecanicas.
+- Sincroniza apenas estado basico de portas, botoes, moedas e pickups simples.
+- Nao sincroniza objetivos completos como estado proprio.
+- Mecanicas avancadas do mapa ainda podem ser locais por cliente.
 - Nao e server-authoritative.
 - Nao tem PvP.
 - Nao tem chat.
 - Nao tem editor colaborativo.
 - Salas ficam apenas em memoria.
 - Salas vazias sao removidas por limpeza periodica.
-- Objetivo atual: ver jogadores no mesmo mapa e sincronizar posicao/rotacao.
+- Objetivo atual: ver jogadores no mesmo mapa, sincronizar posicao/rotacao e compartilhar interacoes basicas de mundo.
 
 ## Troubleshooting
 

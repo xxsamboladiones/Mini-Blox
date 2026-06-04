@@ -35,16 +35,6 @@ export class PlayScreen implements Screen {
             </button>
           </div>
         </header>
-        <div class="play-exit-bar" aria-label="Controles do jogo">
-          <button class="top-action" type="button" data-action="menu" data-play-action="menu">
-            <i data-lucide="house"></i>
-            <span>Voltar ao Menu</span>
-          </button>
-          <button class="top-action primary" type="button" data-action="edit" data-play-action="edit">
-            <i data-lucide="pencil"></i>
-            <span>Editar este mapa</span>
-          </button>
-        </div>
         <main id="play-root" class="play-root"></main>
       </div>
     `;

@@ -4,8 +4,10 @@ import type {
   NetworkEventCallback,
   PlayerInput,
   PlayerNetState,
+  SharedWorldState,
   SessionState,
   SessionStateChangeCallback,
+  WorldEvent,
 } from "../../shared/types/MultiplayerSchema.js";
 import { multiplayerService } from "../../services/MultiplayerService.js";
 import type { Vector3 } from "../../shared/types/ObjectSchema.js";
@@ -17,6 +19,8 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
   private callbacks = {
     onStateChange: null as SessionStateChangeCallback | null,
     onNetworkEvent: null as NetworkEventCallback | null,
+    onWorldState: null as ((state: SharedWorldState) => void) | null,
+    onWorldEvent: null as ((event: WorldEvent) => void) | null,
   };
 
   constructor(
@@ -73,6 +77,14 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
     multiplayerService.sendPlayerState(position, rotationY, health, equippedWeaponId, score);
   }
 
+  sendWorldEvent(event: WorldEvent): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendWorldEvent(event);
+  }
+
   getState(): SessionState | null {
     return this.state;
   }
@@ -91,6 +103,14 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
 
   onNetworkEvent(callback: NetworkEventCallback): void {
     this.callbacks.onNetworkEvent = callback;
+  }
+
+  onWorldState(callback: (state: SharedWorldState) => void): void {
+    this.callbacks.onWorldState = callback;
+  }
+
+  onWorldEvent(callback: (event: WorldEvent) => void): void {
+    this.callbacks.onWorldEvent = callback;
   }
 
   emitEvent(event: GameNetworkEvent): void {
@@ -149,6 +169,14 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
         position: player.position,
         rotationY: player.rotationY,
       });
+    });
+
+    multiplayerService.onWorldState((state) => {
+      this.callbacks.onWorldState?.(state);
+    });
+
+    multiplayerService.onWorldEvent((event) => {
+      this.callbacks.onWorldEvent?.(event);
     });
 
     multiplayerService.onError((message) => {

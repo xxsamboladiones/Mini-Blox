@@ -13,6 +13,7 @@ import { LogicRuntime } from "./LogicRuntime";
 import { ObjectiveRuntime } from "./ObjectiveRuntime";
 import { GameModeRuntime } from "./GameModeRuntime";
 import type { GameMap } from "../shared/types/MapSchema";
+import type { SharedWorldState, WorldEvent } from "../shared/types/MultiplayerSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
 import type { InventoryItem, ItemPickupObject, ItemSpawnMode } from "../shared/types/ItemSchema";
 import type { AudioSystem } from "./AudioSystem";
@@ -22,7 +23,38 @@ type RuntimeMechanicsOptions = {
   onRestart: () => void;
   onEdit: () => void;
   onMenu: () => void;
+  onWorldEvent?: (event: WorldEvent) => void;
   onComplete?: (coinsCollected: number) => void;
+};
+
+type DoorOpenOptions = {
+  showMessage?: boolean;
+  ignoreKeyRequirement?: boolean;
+  emitWorldEvent?: boolean;
+  dispatchRuntimeEvents?: boolean;
+};
+
+type DoorCloseOptions = {
+  showFeedback?: boolean;
+  emitWorldEvent?: boolean;
+};
+
+type ButtonActivationOptions = {
+  playFeedback?: boolean;
+  emitWorldEvent?: boolean;
+  triggerLinkedDoor?: boolean;
+  dispatchRuntimeEvents?: boolean;
+};
+
+type CoinCollectionOptions = {
+  playFeedback?: boolean;
+  emitWorldEvent?: boolean;
+  dispatchRuntimeEvents?: boolean;
+};
+
+type ItemCollectionOptions = {
+  applyEffects?: boolean;
+  emitWorldEvent?: boolean;
 };
 
 type ItemSpawnerRuntimeState = {
@@ -85,6 +117,7 @@ export class RuntimeMechanics {
   private readonly voidDeathEnabled: boolean;
   private readonly voidDeathY: number;
   private readonly collectedCoinIds = new Set<string>();
+  private readonly collectedItemObjectIds = new Set<string>();
   private readonly collectedKeyObjectIds = new Set<string>();
   private readonly collectedKeyIds = new Set<string>();
   private readonly keyLabels = new Map<string, string>();
@@ -105,6 +138,7 @@ export class RuntimeMechanics {
   private readonly jumpPadCooldowns = new Map<string, number>();
   private readonly teleporterCooldowns = new Map<string, number>();
   private warnedMissingDoorIds = new Set<string>();
+  private suppressWorldEvents = false;
   private coinCount = 0;
   private deathCooldown = 0;
   private messageCooldown = 0;
@@ -410,6 +444,7 @@ export class RuntimeMechanics {
 
   restart(): void {
     this.collectedCoinIds.clear();
+    this.collectedItemObjectIds.clear();
     this.collectedKeyObjectIds.clear();
     this.collectedKeyIds.clear();
     this.keyLabels.clear();
@@ -468,12 +503,12 @@ export class RuntimeMechanics {
     this.logicRuntime.start();
   }
 
-  openDoorById(doorId: string): boolean {
+  openDoorById(doorId: string, options: DoorOpenOptions = {}): boolean {
     const door = this.getDoorById(doorId);
-    return door ? this.openDoor(door) : false;
+    return door ? this.openDoor(door, options) : false;
   }
 
-  closeDoorById(doorId: string): boolean {
+  closeDoorById(doorId: string, options: DoorCloseOptions = {}): boolean {
     const door = this.getDoorById(doorId);
 
     if (!door) {
@@ -486,6 +521,12 @@ export class RuntimeMechanics {
       return false;
     }
 
+    const resolvedDoorId = getString(door.properties?.doorId, door.id);
+
+    if (!this.openedDoorIds.has(resolvedDoorId)) {
+      return false;
+    }
+
     const initialPosition = this.initialDoorPositions.get(door.id);
 
     if (initialPosition) {
@@ -494,12 +535,19 @@ export class RuntimeMechanics {
       applyObjectTransformToThree(view, door);
     }
 
-    const resolvedDoorId = getString(door.properties?.doorId, door.id);
     this.openedDoorIds.delete(resolvedDoorId);
     this.physicsSystem.updateColliderForObject(door, view, true);
-    this.hud.showMessage("Porta fechada");
-    this.audio.play("door");
-    this.feedback.spawn("door", door.position);
+
+    if (options.showFeedback !== false) {
+      this.hud.showMessage("Porta fechada");
+      this.audio.play("door");
+      this.feedback.spawn("door", door.position);
+    }
+
+    if (options.emitWorldEvent !== false) {
+      this.emitWorldEvent({ type: "doorClosed", doorId: resolvedDoorId, objectId: door.id });
+    }
+
     return true;
   }
 
@@ -507,6 +555,83 @@ export class RuntimeMechanics {
     const door = this.getDoorById(doorId);
     const resolvedDoorId = door ? getString(door.properties?.doorId, door.id) : doorId;
     return this.openedDoorIds.has(resolvedDoorId);
+  }
+
+  applySharedWorldState(state: SharedWorldState): void {
+    this.withSuppressedWorldEvents(() => {
+      for (const doorId of state.openedDoorIds) {
+        this.applyWorldEvent({ type: "doorOpened", doorId });
+      }
+
+      for (const objectId of state.activatedButtonIds) {
+        this.applyWorldEvent({ type: "buttonActivated", objectId });
+      }
+
+      for (const objectId of state.collectedCoinObjectIds) {
+        this.applyWorldEvent({ type: "coinCollected", objectId });
+      }
+
+      for (const objectId of state.collectedItemObjectIds) {
+        this.applyWorldEvent({ type: "itemCollected", objectId });
+      }
+    });
+  }
+
+  applyWorldEvent(event: WorldEvent): boolean {
+    return this.withSuppressedWorldEvents(() => {
+      if (event.type === "doorOpened") {
+        return this.openDoorById(event.doorId, {
+          showMessage: false,
+          ignoreKeyRequirement: true,
+          emitWorldEvent: false,
+          dispatchRuntimeEvents: false,
+        });
+      }
+
+      if (event.type === "doorClosed") {
+        return this.closeDoorById(event.doorId, {
+          showFeedback: false,
+          emitWorldEvent: false,
+        });
+      }
+
+      if (event.type === "buttonActivated") {
+        const button = this.getObjectById(event.objectId);
+        if (!button || button.type !== "button") {
+          return false;
+        }
+
+        return this.activateButton(button, {
+          playFeedback: false,
+          emitWorldEvent: false,
+          triggerLinkedDoor: false,
+          dispatchRuntimeEvents: false,
+        });
+      }
+
+      if (event.type === "coinCollected") {
+        const coin = this.map.objects.find(
+          (mapObject) => mapObject.id === event.objectId && mapObject.type === "coin"
+        );
+
+        return coin
+          ? this.collectCoinObject(coin, {
+              playFeedback: false,
+              emitWorldEvent: false,
+              dispatchRuntimeEvents: false,
+            })
+          : false;
+      }
+
+      if (event.type === "itemCollected") {
+        return this.markItemCollected(event.objectId, {
+          applyEffects: false,
+          emitWorldEvent: false,
+        });
+      }
+
+      return false;
+    });
   }
 
   teleportPlayerToObject(targetObjectId: string): boolean {
@@ -790,6 +915,17 @@ export class RuntimeMechanics {
       return;
     }
 
+    this.collectCoinObject(mapObject);
+  }
+
+  private collectCoinObject(
+    mapObject: MapObject,
+    options: CoinCollectionOptions = {}
+  ): boolean {
+    if (this.collectedCoinIds.has(mapObject.id)) {
+      return false;
+    }
+
     this.collectedCoinIds.add(mapObject.id);
     const value = getNumber(
       mapObject.properties?.value,
@@ -803,12 +939,24 @@ export class RuntimeMechanics {
     }
 
     this.hud.setCoins(this.coinCount, this.getTotalCoinObjects());
-    this.hud.showMessage("Moeda coletada");
-    this.audio.play("coin");
-    this.feedback.spawn("coinCollect", mapObject.position, `+${value}`);
-    this.objectiveRuntime.onCoinCollected(this.coinCount);
-    this.gameModeRuntime.onCoinCollected(this.coinCount, value);
-    this.logicRuntime.dispatch({ type: "onCoinCollected", objectId: mapObject.id });
+
+    if (options.playFeedback !== false) {
+      this.hud.showMessage("Moeda coletada");
+      this.audio.play("coin");
+      this.feedback.spawn("coinCollect", mapObject.position, `+${value}`);
+    }
+
+    if (options.dispatchRuntimeEvents !== false) {
+      this.objectiveRuntime.onCoinCollected(this.coinCount);
+      this.gameModeRuntime.onCoinCollected(this.coinCount, value);
+      this.logicRuntime.dispatch({ type: "onCoinCollected", objectId: mapObject.id });
+    }
+
+    if (options.emitWorldEvent !== false) {
+      this.emitWorldEvent({ type: "coinCollected", objectId: mapObject.id });
+    }
+
+    return true;
   }
 
   private updateKey(mapObject: MapObject, playerBounds: THREE.Box3): void {
@@ -989,7 +1137,7 @@ export class RuntimeMechanics {
     }
   }
 
-  private activateButton(mapObject: MapObject): boolean {
+  private activateButton(mapObject: MapObject, options: ButtonActivationOptions = {}): boolean {
     const oneTime = mapObject.properties?.oneTime !== false;
 
     if (oneTime && this.activatedButtonIds.has(mapObject.id)) {
@@ -1001,7 +1149,7 @@ export class RuntimeMechanics {
       getString(mapObject.properties?.buttonTargetId, "")
     );
 
-    if (targetDoorId) {
+    if (targetDoorId && options.triggerLinkedDoor !== false) {
       const door = this.map.objects.find(
         (candidate) =>
           candidate.type === "door" &&
@@ -1017,9 +1165,24 @@ export class RuntimeMechanics {
         return false;
       }
 
-      if (!this.openDoor(door)) {
+      if (!this.openDoor(door, { emitWorldEvent: options.emitWorldEvent })) {
         return false;
       }
+    }
+
+    return this.markButtonActivated(mapObject, targetDoorId || undefined, options);
+  }
+
+  private markButtonActivated(
+    mapObject: MapObject,
+    doorId?: string,
+    options: ButtonActivationOptions = {}
+  ): boolean {
+    const alreadyActivated = this.activatedButtonIds.has(mapObject.id);
+    const canRepeat = mapObject.properties?.oneTime === false && options.emitWorldEvent !== false;
+
+    if (alreadyActivated && !canRepeat) {
+      return false;
     }
 
     this.activatedButtonIds.add(mapObject.id);
@@ -1036,10 +1199,20 @@ export class RuntimeMechanics {
       });
     }
 
-    this.audio.play("button");
-    this.feedback.spawn("button", mapObject.position);
-    this.objectiveRuntime.onButtonActivated(mapObject.id);
-    this.logicRuntime.dispatch({ type: "onButtonActivated", objectId: mapObject.id });
+    if (options.playFeedback !== false) {
+      this.audio.play("button");
+      this.feedback.spawn("button", mapObject.position);
+    }
+
+    if (options.dispatchRuntimeEvents !== false) {
+      this.objectiveRuntime.onButtonActivated(mapObject.id);
+      this.logicRuntime.dispatch({ type: "onButtonActivated", objectId: mapObject.id });
+    }
+
+    if (options.emitWorldEvent !== false) {
+      this.emitWorldEvent({ type: "buttonActivated", objectId: mapObject.id, doorId });
+    }
+
     return true;
   }
 
@@ -1406,8 +1579,15 @@ export class RuntimeMechanics {
     }
 
     const item = getItemDefinition(itemId);
+    const pickupId = getSpawnerPickupId(state.spawner, state.activePickupIds.size);
+
+    if (this.isSharedWorldEnabled() && this.collectedItemObjectIds.has(pickupId)) {
+      state.cooldown = Number.POSITIVE_INFINITY;
+      return;
+    }
+
     const pickup: ItemPickupObject = {
-      id: createId("itemPickup"),
+      id: pickupId,
       type: "itemPickup",
       name: item?.name ?? itemId,
       position: getPickupPosition(state.spawner, state.activePickupIds.size),
@@ -1438,6 +1618,10 @@ export class RuntimeMechanics {
   }
 
   private collectItemPickup(pickup: ItemPickupObject): void {
+    if (!this.markItemCollected(pickup.id)) {
+      return;
+    }
+
     const itemId = pickup.properties.itemId;
     const amount = getNumber(
       pickup.properties.amount,
@@ -1445,19 +1629,6 @@ export class RuntimeMechanics {
     );
     let label = getItemLabel(itemId);
     let feedbackLabel = label;
-
-    this.removeRuntimePickup(pickup.id);
-    const sourceSpawnerId = pickup.properties.sourceSpawnerId;
-
-    if (sourceSpawnerId) {
-      const state = this.itemSpawnerStates.get(sourceSpawnerId);
-
-      if (state) {
-        state.activePickupIds.delete(pickup.id);
-        const respawnTime = getRespawnTime(state.spawner);
-        state.cooldown = respawnTime > 0 ? respawnTime : Number.POSITIVE_INFINITY;
-      }
-    }
 
     if (itemId === "health_pack" || itemId === "health") {
       this.dispatchItemCollected("health");
@@ -1505,6 +1676,53 @@ export class RuntimeMechanics {
     this.hud.showMessage(`${label} coletado`);
     this.audio.play("item");
     this.feedback.spawn("item", pickup.position, feedbackLabel);
+  }
+
+  private markItemCollected(
+    objectId: string,
+    options: ItemCollectionOptions = {}
+  ): boolean {
+    const pickup = this.runtimePickups.get(objectId) ?? this.getStaticItemPickup(objectId);
+    const trackSharedItem = this.isSharedWorldEnabled() || options.applyEffects === false;
+
+    if (!pickup || (trackSharedItem && this.collectedItemObjectIds.has(objectId))) {
+      return false;
+    }
+
+    if (trackSharedItem) {
+      this.collectedItemObjectIds.add(objectId);
+    }
+    this.removeRuntimePickup(objectId);
+
+    if (!this.runtimePickups.has(objectId)) {
+      const view = this.objectViews.get(objectId);
+
+      if (view) {
+        view.visible = false;
+      }
+    }
+
+    const sourceSpawnerId = pickup.properties.sourceSpawnerId;
+
+    if (sourceSpawnerId) {
+      const state = this.itemSpawnerStates.get(sourceSpawnerId);
+
+      if (state) {
+        state.activePickupIds.delete(objectId);
+        state.cooldown =
+          options.applyEffects === false
+            ? Number.POSITIVE_INFINITY
+            : getRespawnTime(state.spawner) > 0
+              ? getRespawnTime(state.spawner)
+              : Number.POSITIVE_INFINITY;
+      }
+    }
+
+    if (options.emitWorldEvent !== false) {
+      this.emitWorldEvent({ type: "itemCollected", objectId });
+    }
+
+    return true;
   }
 
   private dispatchItemCollected(itemType: string): void {
@@ -1625,8 +1843,10 @@ export class RuntimeMechanics {
     return getString(keyObject.properties?.label, keyId);
   }
 
-  private openDoor(door: MapObject, showMessage = true, ignoreKeyRequirement = false): boolean {
+  private openDoor(door: MapObject, options: DoorOpenOptions = {}): boolean {
     const doorId = getString(door.properties?.doorId, door.id);
+    const showMessage = options.showMessage !== false;
+    const ignoreKeyRequirement = options.ignoreKeyRequirement === true;
 
     if (this.openedDoorIds.has(doorId)) {
       return false;
@@ -1646,11 +1866,19 @@ export class RuntimeMechanics {
     view.position.add(new THREE.Vector3(offset.x, offset.y, offset.z));
     this.physicsSystem.removeCollider(door.id);
     this.openedDoorIds.add(doorId);
-    this.objectiveRuntime.onDoorOpened(doorId);
+
+    if (options.dispatchRuntimeEvents !== false) {
+      this.objectiveRuntime.onDoorOpened(doorId);
+    }
+
     if (showMessage) {
       this.hud.showMessage("Porta aberta");
       this.audio.play("door");
       this.feedback.spawn("door", door.position);
+    }
+
+    if (options.emitWorldEvent !== false) {
+      this.emitWorldEvent({ type: "doorOpened", doorId, objectId: door.id });
     }
 
     return true;
@@ -1673,7 +1901,12 @@ export class RuntimeMechanics {
   private applyInitialDoorState(): void {
     for (const door of this.map.objects.filter((mapObject) => mapObject.type === "door")) {
       if (door.properties?.startsOpen || door.properties?.doorState === "open") {
-        this.openDoor(door, false, true);
+        this.openDoor(door, {
+          showMessage: false,
+          ignoreKeyRequirement: true,
+          emitWorldEvent: false,
+          dispatchRuntimeEvents: false,
+        });
       }
     }
   }
@@ -1714,6 +1947,37 @@ export class RuntimeMechanics {
       this.map.objects.find((mapObject) => mapObject.id === objectId) ??
       null
     );
+  }
+
+  private getStaticItemPickup(objectId: string): ItemPickupObject | null {
+    const mapObject = this.map.objects.find(
+      (candidate) => candidate.id === objectId && candidate.type === "itemPickup"
+    );
+
+    return mapObject ? (mapObject as ItemPickupObject) : null;
+  }
+
+  private isSharedWorldEnabled(): boolean {
+    return typeof this.options.onWorldEvent === "function";
+  }
+
+  private emitWorldEvent(event: WorldEvent): void {
+    if (this.suppressWorldEvents) {
+      return;
+    }
+
+    this.options.onWorldEvent?.(event);
+  }
+
+  private withSuppressedWorldEvents<T>(callback: () => T): T {
+    const previous = this.suppressWorldEvents;
+    this.suppressWorldEvents = true;
+
+    try {
+      return callback();
+    } finally {
+      this.suppressWorldEvents = previous;
+    }
   }
 }
 
@@ -1817,12 +2081,8 @@ function getPickupPosition(spawner: MapObject, index: number): Vector3 {
   };
 }
 
-function createId(prefix: string): string {
-  if (globalThis.crypto?.randomUUID) {
-    return `${prefix}-${globalThis.crypto.randomUUID()}`;
-  }
-
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+function getSpawnerPickupId(spawner: MapObject, index: number): string {
+  return `itemPickup-${spawner.id}-${index}`;
 }
 
 function getVector(value: unknown, fallback: Vector3): Vector3 {

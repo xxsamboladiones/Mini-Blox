@@ -20,11 +20,26 @@ export type RoomPlayer = {
   lastUpdateAt: string;
 };
 
+export type SharedWorldState = {
+  openedDoorIds: string[];
+  activatedButtonIds: string[];
+  collectedCoinObjectIds: string[];
+  collectedItemObjectIds: string[];
+};
+
+export type WorldEvent =
+  | { type: "doorOpened"; doorId: string; objectId?: string }
+  | { type: "doorClosed"; doorId: string; objectId?: string }
+  | { type: "buttonActivated"; objectId: string; doorId?: string }
+  | { type: "coinCollected"; objectId: string; doorId?: string }
+  | { type: "itemCollected"; objectId: string; doorId?: string };
+
 export type Room = {
   roomId: string;
   mapId: string;
   onlineMapId: string;
   players: Map<string, RoomPlayer>;
+  sharedState: SharedWorldState;
   createdAt: string;
   lastActivityAt: string;
 };
@@ -61,11 +76,14 @@ export type MultiplayerClientMessage =
       equippedWeaponId: string | null;
       score: number;
     }
-  | { type: "ping" };
+  | { type: "ping" }
+  | { type: "worldEvent"; event: WorldEvent };
 
 export type MultiplayerServerMessage =
   | { type: "welcome"; roomId: string; playerId: string }
   | { type: "roomState"; players: Record<string, RoomPlayer> }
+  | { type: "worldState"; state: SharedWorldState }
+  | { type: "worldEvent"; event: WorldEvent }
   | { type: "playerJoined"; player: RoomPlayer }
   | { type: "playerLeft"; playerId: string }
   | { type: "playerUpdated"; playerId: string; player: RoomPlayer }

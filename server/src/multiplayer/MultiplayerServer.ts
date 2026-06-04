@@ -3,7 +3,12 @@ import type { IncomingMessage } from "http";
 import type { Server } from "http";
 import type { GameRoom } from "./Room.js";
 import type { RoomManager } from "./RoomManager.js";
-import type { MultiplayerClientMessage, MultiplayerServerMessage, RoomPlayer } from "./types.js";
+import type {
+  MultiplayerClientMessage,
+  MultiplayerServerMessage,
+  RoomPlayer,
+  WorldEvent,
+} from "./types.js";
 
 type ClientConnection = {
   ws: WebSocket;
@@ -116,6 +121,9 @@ export class MultiplayerServer {
       case "playerState":
         this.handlePlayerState(connection, room, message);
         break;
+      case "worldEvent":
+        this.handleWorldEvent(connection, room, message.event);
+        break;
       case "ping":
         this.sendPong(connection.ws);
         break;
@@ -140,6 +148,7 @@ export class MultiplayerServer {
     this.sendWelcome(connection.ws, connection.roomId, player.id);
     this.broadcastPlayerJoined(room, player);
     this.sendRoomState(connection.ws, room);
+    this.sendWorldState(connection.ws, room);
   }
 
   private handleLeave(connection: ClientConnection, room: GameRoom): void {
@@ -173,6 +182,23 @@ export class MultiplayerServer {
       this.broadcastPlayerUpdated(room, connection.playerId, updatedPlayer);
       this.roomManager.updateRoomActivity(connection.roomId);
     }
+  }
+
+  private handleWorldEvent(
+    connection: ClientConnection,
+    room: GameRoom,
+    event: WorldEvent
+  ): void {
+    if (!connection.playerId) return;
+
+    const normalizedEvent = room.applyWorldEvent(event);
+
+    if (!normalizedEvent) {
+      return;
+    }
+
+    this.broadcastWorldEvent(room, normalizedEvent);
+    this.roomManager.updateRoomActivity(connection.roomId);
   }
 
   private handleDisconnection(ws: WebSocket): void {
@@ -215,6 +241,14 @@ export class MultiplayerServer {
     this.send(ws, message);
   }
 
+  private sendWorldState(ws: WebSocket, room: GameRoom): void {
+    const message: MultiplayerServerMessage = {
+      type: "worldState",
+      state: room.getSharedState(),
+    };
+    this.send(ws, message);
+  }
+
   private broadcastPlayerJoined(room: GameRoom, player: RoomPlayer): void {
     const message: MultiplayerServerMessage = {
       type: "playerJoined",
@@ -240,8 +274,16 @@ export class MultiplayerServer {
     this.broadcastToRoom(room, message, playerId);
   }
 
+  private broadcastWorldEvent(room: GameRoom, event: WorldEvent): void {
+    const message: MultiplayerServerMessage = {
+      type: "worldEvent",
+      event,
+    };
+    this.broadcastToRoom(room, message);
+  }
+
   private broadcastToRoom(
-    room: any,
+    room: GameRoom,
     message: MultiplayerServerMessage,
     excludePlayerId?: string
   ): void {

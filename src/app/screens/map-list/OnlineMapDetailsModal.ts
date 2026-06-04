@@ -83,6 +83,7 @@ export class OnlineMapDetailsModal {
     this.modal = document.createElement("div");
     this.modal.className = "modal-content";
     this.modal.innerHTML = this.renderModalContent(summary);
+    this.modal.addEventListener("click", (event) => event.stopPropagation());
 
     this.backdrop.appendChild(this.modal);
     this.root.appendChild(this.backdrop);
@@ -103,7 +104,7 @@ export class OnlineMapDetailsModal {
       <div class="online-map-details">
         <header class="detail-header">
           <h2>${this.escapeHtml(summary.name)}</h2>
-          <button class="icon-button" type="button" data-action="close" title="Fechar">
+          <button class="icon-button" type="button" data-action="close" title="Fechar" aria-label="Fechar detalhes">
             <i data-lucide="x"></i>
           </button>
         </header>

@@ -21,6 +21,7 @@ export class MultiplayerLobbyModal {
   show(onlineMapId: string): void {
     this.currentOnlineMapId = onlineMapId;
     this.modal.classList.add("visible");
+    this.setMapLabel(onlineMapId);
     this.setStatus("");
     void this.loadRooms(onlineMapId);
   }
@@ -57,8 +58,11 @@ export class MultiplayerLobbyModal {
     modal.innerHTML = `
       <div class="modal-content multiplayer-lobby">
         <div class="modal-header">
-          <h2>Multiplayer</h2>
-          <button class="modal-close" type="button" data-action="back" title="Fechar">
+          <div>
+            <h2>Multiplayer</h2>
+            <span data-section="map-label">Mapa online</span>
+          </div>
+          <button class="modal-close" type="button" data-action="back" title="Fechar" aria-label="Fechar lobby">
             <i data-lucide="x"></i>
           </button>
         </div>
@@ -164,6 +168,14 @@ export class MultiplayerLobbyModal {
           }
         });
       });
+      roomsList.querySelectorAll<HTMLButtonElement>('[data-action="copy-room"]').forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const roomId = btn.dataset.roomId;
+          if (roomId) {
+            void this.handleCopyRoom(roomId);
+          }
+        });
+      });
     } catch (error) {
       roomsList.innerHTML = `<p class="error">${escapeHtml(getErrorMessage(error, "Erro ao carregar salas."))}</p>`;
     }
@@ -177,11 +189,31 @@ export class MultiplayerLobbyModal {
           <span class="room-code">${escapeHtml(room.roomId)}</span>
           <span class="room-players">${room.playerCount}/${room.maxPlayers} jogadores</span>
         </div>
+        <button class="btn btn-sm" type="button" data-action="copy-room" data-room-id="${escapeAttribute(room.roomId)}">
+          Copiar
+        </button>
         <button class="btn btn-sm btn-primary" type="button" data-action="join-room" data-room-id="${escapeAttribute(room.roomId)}" ${isFull ? "disabled" : ""}>
           ${isFull ? "Sala cheia" : "Entrar"}
         </button>
       </div>
     `;
+  }
+
+  private async handleCopyRoom(roomId: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(roomId);
+      this.setStatus("Codigo da sala copiado.");
+    } catch {
+      this.setStatus(`Codigo da sala: ${roomId}`);
+    }
+  }
+
+  private setMapLabel(onlineMapId: string): void {
+    const label = this.modal.querySelector<HTMLElement>('[data-section="map-label"]');
+    if (label) {
+      label.textContent = `Mapa online: ${shortId(onlineMapId)}`;
+      label.title = onlineMapId;
+    }
   }
 
   private setStatus(message: string): void {
@@ -217,4 +249,8 @@ function escapeHtml(value: string): string {
 
 function escapeAttribute(value: string): string {
   return escapeHtml(value);
+}
+
+function shortId(value: string): string {
+  return value.length > 16 ? `${value.slice(0, 10)}...${value.slice(-4)}` : value;
 }

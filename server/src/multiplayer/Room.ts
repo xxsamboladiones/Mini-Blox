@@ -1,10 +1,17 @@
-import type { RoomPlayer, Vector3 } from "./types.js";
+import type { RoomPlayer, SharedWorldState, Vector3, WorldEvent } from "./types.js";
 import { createId } from "../utils/createId.js";
 
 const MAX_HEALTH = 100;
+const MAX_WORLD_EVENT_ID_LENGTH = 160;
 
 export class GameRoom {
   private players = new Map<string, RoomPlayer>();
+  private readonly sharedState: SharedWorldState = {
+    openedDoorIds: [],
+    activatedButtonIds: [],
+    collectedCoinObjectIds: [],
+    collectedItemObjectIds: [],
+  };
   private readonly maxPlayers: number;
   public readonly createdAt: string;
   public lastActivityAt: string;
@@ -106,6 +113,38 @@ export class GameRoom {
     return this.players.size;
   }
 
+  getSharedState(): SharedWorldState {
+    return {
+      openedDoorIds: [...this.sharedState.openedDoorIds],
+      activatedButtonIds: [...this.sharedState.activatedButtonIds],
+      collectedCoinObjectIds: [...this.sharedState.collectedCoinObjectIds],
+      collectedItemObjectIds: [...this.sharedState.collectedItemObjectIds],
+    };
+  }
+
+  applyWorldEvent(event: WorldEvent): WorldEvent | null {
+    const normalized = this.normalizeWorldEvent(event);
+
+    if (!normalized) {
+      return null;
+    }
+
+    if (normalized.type === "doorOpened") {
+      addUnique(this.sharedState.openedDoorIds, normalized.doorId);
+    } else if (normalized.type === "doorClosed") {
+      removeValue(this.sharedState.openedDoorIds, normalized.doorId);
+    } else if (normalized.type === "buttonActivated") {
+      addUnique(this.sharedState.activatedButtonIds, normalized.objectId);
+    } else if (normalized.type === "coinCollected") {
+      addUnique(this.sharedState.collectedCoinObjectIds, normalized.objectId);
+    } else if (normalized.type === "itemCollected") {
+      addUnique(this.sharedState.collectedItemObjectIds, normalized.objectId);
+    }
+
+    this.updateActivity();
+    return normalized;
+  }
+
   updateActivity(): void {
     this.lastActivityAt = new Date().toISOString();
   }
@@ -123,5 +162,63 @@ export class GameRoom {
 
   private isValidHealth(health: number): boolean {
     return typeof health === "number" && Number.isFinite(health);
+  }
+
+  private normalizeWorldEvent(event: WorldEvent): WorldEvent | null {
+    if (!event || typeof event.type !== "string") {
+      return null;
+    }
+
+    const objectId = normalizeWorldEventId(event.objectId);
+    const doorId = normalizeWorldEventId(event.doorId);
+
+    if (event.type === "doorOpened" || event.type === "doorClosed") {
+      if (!doorId) {
+        return null;
+      }
+
+      return objectId ? { type: event.type, doorId, objectId } : { type: event.type, doorId };
+    }
+
+    if (
+      event.type === "buttonActivated" ||
+      event.type === "coinCollected" ||
+      event.type === "itemCollected"
+    ) {
+      if (!objectId) {
+        return null;
+      }
+
+      return doorId ? { type: event.type, objectId, doorId } : { type: event.type, objectId };
+    }
+
+    return null;
+  }
+}
+
+function normalizeWorldEventId(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const id = value.trim();
+  if (id.length === 0 || id.length > MAX_WORLD_EVENT_ID_LENGTH) {
+    return null;
+  }
+
+  return id;
+}
+
+function addUnique(values: string[], value: string): void {
+  if (!values.includes(value)) {
+    values.push(value);
+  }
+}
+
+function removeValue(values: string[], value: string): void {
+  const index = values.indexOf(value);
+
+  if (index >= 0) {
+    values.splice(index, 1);
   }
 }

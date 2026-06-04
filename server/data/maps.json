@@ -1,6 +1,7421 @@
 {
   "maps": [
     {
+      "id": "online-1780539189409-xhyxw228sve",
+      "ownerClientId": "client-1780519881047-991nh38g94d",
+      "map": {
+        "version": 1,
+        "id": "map-b54488e0-ec11-4157-95f2-b7490d1d97d4",
+        "name": "Obby basico",
+        "authorId": "local-builder",
+        "description": "Obby linear planejado com tutorial, dificuldade progressiva, checkpoints e final claro.",
+        "creatorName": "Criador",
+        "spawnPoint": {
+          "x": 0,
+          "y": 0.7,
+          "z": 4
+        },
+        "objects": [
+          {
+            "id": "obby_spawn",
+            "type": "spawn",
+            "name": "Spawn principal",
+            "position": {
+              "x": 0,
+              "y": 0.7,
+              "z": 4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#19c37d",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_platform_00001",
+            "type": "platform",
+            "name": "Area inicial do obby",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": 2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 12,
+              "y": 0.4,
+              "z": 10
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00002",
+            "type": "cube",
+            "name": "Area inicial do obby guia esquerda 1",
+            "position": {
+              "x": -5.65,
+              "y": 0.75,
+              "z": -3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00003",
+            "type": "cube",
+            "name": "Area inicial do obby guia direita 1",
+            "position": {
+              "x": 5.65,
+              "y": 0.75,
+              "z": -3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00004",
+            "type": "cube",
+            "name": "Area inicial do obby guia esquerda 2",
+            "position": {
+              "x": -5.65,
+              "y": 0.75,
+              "z": -0.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00005",
+            "type": "cube",
+            "name": "Area inicial do obby guia direita 2",
+            "position": {
+              "x": 5.65,
+              "y": 0.75,
+              "z": -0.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00006",
+            "type": "cube",
+            "name": "Area inicial do obby guia esquerda 3",
+            "position": {
+              "x": -5.65,
+              "y": 0.75,
+              "z": 2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00007",
+            "type": "cube",
+            "name": "Area inicial do obby guia direita 3",
+            "position": {
+              "x": 5.65,
+              "y": 0.75,
+              "z": 2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00008",
+            "type": "cube",
+            "name": "Area inicial do obby guia esquerda 4",
+            "position": {
+              "x": -5.65,
+              "y": 0.75,
+              "z": 4.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00009",
+            "type": "cube",
+            "name": "Area inicial do obby guia direita 4",
+            "position": {
+              "x": 5.65,
+              "y": 0.75,
+              "z": 4.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00010",
+            "type": "cube",
+            "name": "Area inicial do obby guia esquerda 5",
+            "position": {
+              "x": -5.65,
+              "y": 0.75,
+              "z": 7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00011",
+            "type": "cube",
+            "name": "Area inicial do obby guia direita 5",
+            "position": {
+              "x": 5.65,
+              "y": 0.75,
+              "z": 7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00012",
+            "type": "cube",
+            "name": "Area inicial do obby suporte 1",
+            "position": {
+              "x": -4.32,
+              "y": -0.55,
+              "z": -1.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00013",
+            "type": "cube",
+            "name": "Area inicial do obby suporte 2",
+            "position": {
+              "x": 4.32,
+              "y": -0.55,
+              "z": -1.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00014",
+            "type": "cube",
+            "name": "Area inicial do obby suporte 3",
+            "position": {
+              "x": -4.32,
+              "y": -0.55,
+              "z": 5.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00015",
+            "type": "cube",
+            "name": "Area inicial do obby suporte 4",
+            "position": {
+              "x": 4.32,
+              "y": -0.55,
+              "z": 5.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_sign_00016",
+            "type": "sign",
+            "name": "Placa - Obby Basico: siga as",
+            "position": {
+              "x": -4.8,
+              "y": 0.2,
+              "z": 5.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Obby Basico: siga as moedas.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_messagezone_00017",
+            "type": "messageZone",
+            "name": "Tutorial inicial do obby",
+            "position": {
+              "x": 0,
+              "y": 1.05,
+              "z": 2.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4,
+              "y": 1.4,
+              "z": 2
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "message": "Siga as moedas. Cada placa apresenta uma nova mecanica.",
+              "oneTime": true,
+              "opacity": 0.35
+            }
+          },
+          {
+            "id": "obby_platform_00018",
+            "type": "platform",
+            "name": "Tutorial de movimento",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 9,
+              "y": 0.4,
+              "z": 10
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00019",
+            "type": "cube",
+            "name": "Tutorial de movimento guia esquerda 1",
+            "position": {
+              "x": -4.15,
+              "y": 0.75,
+              "z": -13
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00020",
+            "type": "cube",
+            "name": "Tutorial de movimento guia direita 1",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -13
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00021",
+            "type": "cube",
+            "name": "Tutorial de movimento guia esquerda 2",
+            "position": {
+              "x": -4.15,
+              "y": 0.75,
+              "z": -10.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00022",
+            "type": "cube",
+            "name": "Tutorial de movimento guia direita 2",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -10.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00023",
+            "type": "cube",
+            "name": "Tutorial de movimento guia esquerda 3",
+            "position": {
+              "x": -4.15,
+              "y": 0.75,
+              "z": -8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00024",
+            "type": "cube",
+            "name": "Tutorial de movimento guia direita 3",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00025",
+            "type": "cube",
+            "name": "Tutorial de movimento guia esquerda 4",
+            "position": {
+              "x": -4.15,
+              "y": 0.75,
+              "z": -5.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00026",
+            "type": "cube",
+            "name": "Tutorial de movimento guia direita 4",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -5.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00027",
+            "type": "cube",
+            "name": "Tutorial de movimento guia esquerda 5",
+            "position": {
+              "x": -4.15,
+              "y": 0.75,
+              "z": -3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00028",
+            "type": "cube",
+            "name": "Tutorial de movimento guia direita 5",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00029",
+            "type": "cube",
+            "name": "Tutorial de movimento suporte 1",
+            "position": {
+              "x": -3.24,
+              "y": -0.55,
+              "z": -11.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00030",
+            "type": "cube",
+            "name": "Tutorial de movimento suporte 2",
+            "position": {
+              "x": 3.24,
+              "y": -0.55,
+              "z": -11.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00031",
+            "type": "cube",
+            "name": "Tutorial de movimento suporte 3",
+            "position": {
+              "x": -3.24,
+              "y": -0.55,
+              "z": -4.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00032",
+            "type": "cube",
+            "name": "Tutorial de movimento suporte 4",
+            "position": {
+              "x": 3.24,
+              "y": -0.55,
+              "z": -4.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_sign_00033",
+            "type": "sign",
+            "name": "Placa - Tutorial: avance e p",
+            "position": {
+              "x": -3.8,
+              "y": 0.2,
+              "z": -4.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Tutorial: avance e pule com calma.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_checkpoint_00034",
+            "type": "checkpoint",
+            "name": "Checkpoint tutorial",
+            "position": {
+              "x": 3.6,
+              "y": 0.65,
+              "z": -6.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_tutorial",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "obby_coin_00035",
+            "type": "coin",
+            "name": "Moeda guia tutorial 1",
+            "position": {
+              "x": 0,
+              "y": 1.15,
+              "z": -1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00036",
+            "type": "coin",
+            "name": "Moeda guia tutorial 2",
+            "position": {
+              "x": 0,
+              "y": 1.15,
+              "z": -3.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00037",
+            "type": "coin",
+            "name": "Moeda guia tutorial 3",
+            "position": {
+              "x": 0,
+              "y": 1.15,
+              "z": -5.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00038",
+            "type": "coin",
+            "name": "Moeda guia tutorial 4",
+            "position": {
+              "x": 0,
+              "y": 1.15,
+              "z": -7.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00039",
+            "type": "coin",
+            "name": "Moeda guia tutorial 5",
+            "position": {
+              "x": 0,
+              "y": 1.15,
+              "z": -9.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00040",
+            "type": "coin",
+            "name": "Moeda guia tutorial 6",
+            "position": {
+              "x": 0,
+              "y": 1.15,
+              "z": -12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00041",
+            "type": "platform",
+            "name": "Salto facil 1",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 5.2,
+              "y": 0.4,
+              "z": 4.6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00042",
+            "type": "cube",
+            "name": "Salto facil 1 guia esquerda 1",
+            "position": {
+              "x": -2.25,
+              "y": 0.75,
+              "z": -20.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00043",
+            "type": "cube",
+            "name": "Salto facil 1 guia direita 1",
+            "position": {
+              "x": 2.25,
+              "y": 0.75,
+              "z": -20.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00044",
+            "type": "cube",
+            "name": "Salto facil 1 guia esquerda 2",
+            "position": {
+              "x": -2.25,
+              "y": 0.75,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00045",
+            "type": "cube",
+            "name": "Salto facil 1 guia direita 2",
+            "position": {
+              "x": 2.25,
+              "y": 0.75,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00046",
+            "type": "cube",
+            "name": "Salto facil 1 guia esquerda 3",
+            "position": {
+              "x": -2.25,
+              "y": 0.75,
+              "z": -15.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00047",
+            "type": "cube",
+            "name": "Salto facil 1 guia direita 3",
+            "position": {
+              "x": 2.25,
+              "y": 0.75,
+              "z": -15.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00048",
+            "type": "cube",
+            "name": "Salto facil 1 suporte 1",
+            "position": {
+              "x": -1.872,
+              "y": -0.55,
+              "z": -19.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00049",
+            "type": "cube",
+            "name": "Salto facil 1 suporte 2",
+            "position": {
+              "x": 1.872,
+              "y": -0.55,
+              "z": -19.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00050",
+            "type": "coin",
+            "name": "Moeda salto facil 1",
+            "position": {
+              "x": 0,
+              "y": 1.35,
+              "z": -18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00051",
+            "type": "platform",
+            "name": "Salto facil 2",
+            "position": {
+              "x": 2.2,
+              "y": 0.2,
+              "z": -25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.6,
+              "y": 0.4,
+              "z": 4.6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00052",
+            "type": "cube",
+            "name": "Salto facil 2 guia esquerda 1",
+            "position": {
+              "x": 0.25,
+              "y": 0.75,
+              "z": -27.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00053",
+            "type": "cube",
+            "name": "Salto facil 2 guia direita 1",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -27.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00054",
+            "type": "cube",
+            "name": "Salto facil 2 guia esquerda 2",
+            "position": {
+              "x": 0.25,
+              "y": 0.75,
+              "z": -25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00055",
+            "type": "cube",
+            "name": "Salto facil 2 guia direita 2",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00056",
+            "type": "cube",
+            "name": "Salto facil 2 guia esquerda 3",
+            "position": {
+              "x": 0.25,
+              "y": 0.75,
+              "z": -22.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00057",
+            "type": "cube",
+            "name": "Salto facil 2 guia direita 3",
+            "position": {
+              "x": 4.15,
+              "y": 0.75,
+              "z": -22.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00058",
+            "type": "cube",
+            "name": "Salto facil 2 suporte 1",
+            "position": {
+              "x": 0.544,
+              "y": -0.55,
+              "z": -26.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00059",
+            "type": "cube",
+            "name": "Salto facil 2 suporte 2",
+            "position": {
+              "x": 3.856,
+              "y": -0.55,
+              "z": -26.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00060",
+            "type": "coin",
+            "name": "Moeda salto facil 2",
+            "position": {
+              "x": 2.2,
+              "y": 1.35,
+              "z": -25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00061",
+            "type": "platform",
+            "name": "Salto facil 3",
+            "position": {
+              "x": -2.2,
+              "y": 0.2,
+              "z": -32
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 4.6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00062",
+            "type": "cube",
+            "name": "Salto facil 3 guia esquerda 1",
+            "position": {
+              "x": -3.95,
+              "y": 0.75,
+              "z": -34.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00063",
+            "type": "cube",
+            "name": "Salto facil 3 guia direita 1",
+            "position": {
+              "x": -0.45,
+              "y": 0.75,
+              "z": -34.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00064",
+            "type": "cube",
+            "name": "Salto facil 3 guia esquerda 2",
+            "position": {
+              "x": -3.95,
+              "y": 0.75,
+              "z": -32
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00065",
+            "type": "cube",
+            "name": "Salto facil 3 guia direita 2",
+            "position": {
+              "x": -0.45,
+              "y": 0.75,
+              "z": -32
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00066",
+            "type": "cube",
+            "name": "Salto facil 3 guia esquerda 3",
+            "position": {
+              "x": -3.95,
+              "y": 0.75,
+              "z": -29.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00067",
+            "type": "cube",
+            "name": "Salto facil 3 guia direita 3",
+            "position": {
+              "x": -0.45,
+              "y": 0.75,
+              "z": -29.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00068",
+            "type": "cube",
+            "name": "Salto facil 3 suporte 1",
+            "position": {
+              "x": -3.712,
+              "y": -0.55,
+              "z": -33.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00069",
+            "type": "cube",
+            "name": "Salto facil 3 suporte 2",
+            "position": {
+              "x": -0.688,
+              "y": -0.55,
+              "z": -33.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00070",
+            "type": "coin",
+            "name": "Moeda salto facil 3",
+            "position": {
+              "x": -2.2,
+              "y": 1.35,
+              "z": -32
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00071",
+            "type": "platform",
+            "name": "Salto facil 4",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -39
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 4.6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00072",
+            "type": "cube",
+            "name": "Salto facil 4 guia esquerda 1",
+            "position": {
+              "x": -1.75,
+              "y": 0.75,
+              "z": -41.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00073",
+            "type": "cube",
+            "name": "Salto facil 4 guia direita 1",
+            "position": {
+              "x": 1.75,
+              "y": 0.75,
+              "z": -41.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00074",
+            "type": "cube",
+            "name": "Salto facil 4 guia esquerda 2",
+            "position": {
+              "x": -1.75,
+              "y": 0.75,
+              "z": -39
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00075",
+            "type": "cube",
+            "name": "Salto facil 4 guia direita 2",
+            "position": {
+              "x": 1.75,
+              "y": 0.75,
+              "z": -39
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00076",
+            "type": "cube",
+            "name": "Salto facil 4 guia esquerda 3",
+            "position": {
+              "x": -1.75,
+              "y": 0.75,
+              "z": -36.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00077",
+            "type": "cube",
+            "name": "Salto facil 4 guia direita 3",
+            "position": {
+              "x": 1.75,
+              "y": 0.75,
+              "z": -36.7
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#34d399",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00078",
+            "type": "cube",
+            "name": "Salto facil 4 suporte 1",
+            "position": {
+              "x": -1.512,
+              "y": -0.55,
+              "z": -40.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00079",
+            "type": "cube",
+            "name": "Salto facil 4 suporte 2",
+            "position": {
+              "x": 1.512,
+              "y": -0.55,
+              "z": -40.656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00080",
+            "type": "coin",
+            "name": "Moeda salto facil 4",
+            "position": {
+              "x": 0,
+              "y": 1.35,
+              "z": -39
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_sign_00081",
+            "type": "sign",
+            "name": "Placa - Saltos faceis: as mo",
+            "position": {
+              "x": -4.2,
+              "y": 0.2,
+              "z": -16.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Saltos faceis: as moedas marcam a aterrissagem.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_platform_00082",
+            "type": "platform",
+            "name": "Entrada da primeira zona de morte",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -48
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 8,
+              "y": 0.4,
+              "z": 6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00083",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia esquerda 1",
+            "position": {
+              "x": -3.65,
+              "y": 0.75,
+              "z": -51
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00084",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia direita 1",
+            "position": {
+              "x": 3.65,
+              "y": 0.75,
+              "z": -51
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00085",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia esquerda 2",
+            "position": {
+              "x": -3.65,
+              "y": 0.75,
+              "z": -49
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00086",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia direita 2",
+            "position": {
+              "x": 3.65,
+              "y": 0.75,
+              "z": -49
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00087",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia esquerda 3",
+            "position": {
+              "x": -3.65,
+              "y": 0.75,
+              "z": -47
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00088",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia direita 3",
+            "position": {
+              "x": 3.65,
+              "y": 0.75,
+              "z": -47
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00089",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia esquerda 4",
+            "position": {
+              "x": -3.65,
+              "y": 0.75,
+              "z": -45
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00090",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte guia direita 4",
+            "position": {
+              "x": 3.65,
+              "y": 0.75,
+              "z": -45
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00091",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte suporte 1",
+            "position": {
+              "x": -2.88,
+              "y": -0.55,
+              "z": -50.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00092",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte suporte 2",
+            "position": {
+              "x": 2.88,
+              "y": -0.55,
+              "z": -50.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00093",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte suporte 3",
+            "position": {
+              "x": -2.88,
+              "y": -0.55,
+              "z": -45.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00094",
+            "type": "cube",
+            "name": "Entrada da primeira zona de morte suporte 4",
+            "position": {
+              "x": 2.88,
+              "y": -0.55,
+              "z": -45.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_checkpoint_00095",
+            "type": "checkpoint",
+            "name": "Checkpoint antes do perigo",
+            "position": {
+              "x": -3.1,
+              "y": 0.65,
+              "z": -46.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_antes_do_perigo",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "obby_sign_00096",
+            "type": "sign",
+            "name": "Placa - Perigo: caia so se q",
+            "position": {
+              "x": 3.2,
+              "y": 0.2,
+              "z": -45.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Perigo: caia so se quiser reiniciar.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_damage_00097",
+            "type": "damage",
+            "name": "Zona de morte dos saltos medios",
+            "position": {
+              "x": 0,
+              "y": 0.12,
+              "z": -57
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 16,
+              "y": 0.25,
+              "z": 18
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "mode": "kill",
+              "damage": 25,
+              "damagePerSecond": 25,
+              "opacity": 0.46
+            }
+          },
+          {
+            "id": "obby_platform_00098",
+            "type": "platform",
+            "name": "Salto medio 1",
+            "position": {
+              "x": -3.2,
+              "y": 1.1,
+              "z": -55
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 4.2
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00099",
+            "type": "cube",
+            "name": "Salto medio 1 guia esquerda 1",
+            "position": {
+              "x": -4.95,
+              "y": 1.65,
+              "z": -57.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00100",
+            "type": "cube",
+            "name": "Salto medio 1 guia direita 1",
+            "position": {
+              "x": -1.45,
+              "y": 1.65,
+              "z": -57.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00101",
+            "type": "cube",
+            "name": "Salto medio 1 guia esquerda 2",
+            "position": {
+              "x": -4.95,
+              "y": 1.65,
+              "z": -52.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00102",
+            "type": "cube",
+            "name": "Salto medio 1 guia direita 2",
+            "position": {
+              "x": -1.45,
+              "y": 1.65,
+              "z": -52.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00103",
+            "type": "cube",
+            "name": "Salto medio 1 suporte 1",
+            "position": {
+              "x": -4.712,
+              "y": 0.35,
+              "z": -56.512
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00104",
+            "type": "cube",
+            "name": "Salto medio 1 suporte 2",
+            "position": {
+              "x": -1.688,
+              "y": 0.35,
+              "z": -56.512
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00105",
+            "type": "coin",
+            "name": "Moeda salto medio 1",
+            "position": {
+              "x": -3.2,
+              "y": 2.15,
+              "z": -55
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00106",
+            "type": "platform",
+            "name": "Salto medio 2",
+            "position": {
+              "x": 3.2,
+              "y": 1.1,
+              "z": -61
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 4.2
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00107",
+            "type": "cube",
+            "name": "Salto medio 2 guia esquerda 1",
+            "position": {
+              "x": 1.45,
+              "y": 1.65,
+              "z": -63.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00108",
+            "type": "cube",
+            "name": "Salto medio 2 guia direita 1",
+            "position": {
+              "x": 4.95,
+              "y": 1.65,
+              "z": -63.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00109",
+            "type": "cube",
+            "name": "Salto medio 2 guia esquerda 2",
+            "position": {
+              "x": 1.45,
+              "y": 1.65,
+              "z": -58.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00110",
+            "type": "cube",
+            "name": "Salto medio 2 guia direita 2",
+            "position": {
+              "x": 4.95,
+              "y": 1.65,
+              "z": -58.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00111",
+            "type": "cube",
+            "name": "Salto medio 2 suporte 1",
+            "position": {
+              "x": 1.688,
+              "y": 0.35,
+              "z": -62.512
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00112",
+            "type": "cube",
+            "name": "Salto medio 2 suporte 2",
+            "position": {
+              "x": 4.712,
+              "y": 0.35,
+              "z": -62.512
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00113",
+            "type": "coin",
+            "name": "Moeda salto medio 2",
+            "position": {
+              "x": 3.2,
+              "y": 2.15,
+              "z": -61
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00114",
+            "type": "platform",
+            "name": "Salto medio 3",
+            "position": {
+              "x": 0,
+              "y": 1.1,
+              "z": -67
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 4.2
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00115",
+            "type": "cube",
+            "name": "Salto medio 3 guia esquerda 1",
+            "position": {
+              "x": -1.75,
+              "y": 1.65,
+              "z": -69.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00116",
+            "type": "cube",
+            "name": "Salto medio 3 guia direita 1",
+            "position": {
+              "x": 1.75,
+              "y": 1.65,
+              "z": -69.1
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00117",
+            "type": "cube",
+            "name": "Salto medio 3 guia esquerda 2",
+            "position": {
+              "x": -1.75,
+              "y": 1.65,
+              "z": -64.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00118",
+            "type": "cube",
+            "name": "Salto medio 3 guia direita 2",
+            "position": {
+              "x": 1.75,
+              "y": 1.65,
+              "z": -64.9
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00119",
+            "type": "cube",
+            "name": "Salto medio 3 suporte 1",
+            "position": {
+              "x": -1.512,
+              "y": 0.35,
+              "z": -68.512
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00120",
+            "type": "cube",
+            "name": "Salto medio 3 suporte 2",
+            "position": {
+              "x": 1.512,
+              "y": 0.35,
+              "z": -68.512
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00121",
+            "type": "coin",
+            "name": "Moeda salto medio 3",
+            "position": {
+              "x": 0,
+              "y": 2.15,
+              "z": -67
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00122",
+            "type": "coin",
+            "name": "Moeda opcional de risco 1",
+            "position": {
+              "x": 6.6,
+              "y": 3.2,
+              "z": -60
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00123",
+            "type": "coin",
+            "name": "Moeda opcional de risco 2",
+            "position": {
+              "x": 5.864,
+              "y": 3.2,
+              "z": -57.955
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00124",
+            "type": "coin",
+            "name": "Moeda opcional de risco 3",
+            "position": {
+              "x": 4.067,
+              "y": 3.2,
+              "z": -59.177
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00125",
+            "type": "coin",
+            "name": "Moeda opcional de risco 4",
+            "position": {
+              "x": 3.461,
+              "y": 3.2,
+              "z": -61.264
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00126",
+            "type": "coin",
+            "name": "Moeda opcional de risco 5",
+            "position": {
+              "x": 5.633,
+              "y": 3.2,
+              "z": -61.331
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00127",
+            "type": "platform",
+            "name": "Base do jump pad",
+            "position": {
+              "x": 0,
+              "y": 1.1,
+              "z": -76
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 8,
+              "y": 0.4,
+              "z": 6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00128",
+            "type": "cube",
+            "name": "Base do jump pad guia esquerda 1",
+            "position": {
+              "x": -3.65,
+              "y": 1.65,
+              "z": -79
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00129",
+            "type": "cube",
+            "name": "Base do jump pad guia direita 1",
+            "position": {
+              "x": 3.65,
+              "y": 1.65,
+              "z": -79
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00130",
+            "type": "cube",
+            "name": "Base do jump pad guia esquerda 2",
+            "position": {
+              "x": -3.65,
+              "y": 1.65,
+              "z": -77
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00131",
+            "type": "cube",
+            "name": "Base do jump pad guia direita 2",
+            "position": {
+              "x": 3.65,
+              "y": 1.65,
+              "z": -77
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00132",
+            "type": "cube",
+            "name": "Base do jump pad guia esquerda 3",
+            "position": {
+              "x": -3.65,
+              "y": 1.65,
+              "z": -75
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00133",
+            "type": "cube",
+            "name": "Base do jump pad guia direita 3",
+            "position": {
+              "x": 3.65,
+              "y": 1.65,
+              "z": -75
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00134",
+            "type": "cube",
+            "name": "Base do jump pad guia esquerda 4",
+            "position": {
+              "x": -3.65,
+              "y": 1.65,
+              "z": -73
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00135",
+            "type": "cube",
+            "name": "Base do jump pad guia direita 4",
+            "position": {
+              "x": 3.65,
+              "y": 1.65,
+              "z": -73
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00136",
+            "type": "cube",
+            "name": "Base do jump pad suporte 1",
+            "position": {
+              "x": -2.88,
+              "y": 0.35,
+              "z": -78.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00137",
+            "type": "cube",
+            "name": "Base do jump pad suporte 2",
+            "position": {
+              "x": 2.88,
+              "y": 0.35,
+              "z": -78.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00138",
+            "type": "cube",
+            "name": "Base do jump pad suporte 3",
+            "position": {
+              "x": -2.88,
+              "y": 0.35,
+              "z": -73.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00139",
+            "type": "cube",
+            "name": "Base do jump pad suporte 4",
+            "position": {
+              "x": 2.88,
+              "y": 0.35,
+              "z": -73.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_checkpoint_00140",
+            "type": "checkpoint",
+            "name": "Checkpoint antes do jump pad",
+            "position": {
+              "x": -3.2,
+              "y": 1.55,
+              "z": -74.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_antes_do_jump_pad",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "obby_sign_00141",
+            "type": "sign",
+            "name": "Placa - Jump pad: mire na pl",
+            "position": {
+              "x": 3.2,
+              "y": 1.1,
+              "z": -73.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Jump pad: mire na plataforma azul.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_jumppad_00142",
+            "type": "jumpPad",
+            "name": "Jump pad principal",
+            "position": {
+              "x": 0,
+              "y": 1.45,
+              "z": -77.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 0.28,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#38bdf8",
+              "collision": false,
+              "force": 16,
+              "cooldown": 0.4
+            }
+          },
+          {
+            "id": "obby_jumppad_00143",
+            "type": "jumpPad",
+            "name": "Jump pad lateral de moedas",
+            "position": {
+              "x": -2.7,
+              "y": 1.45,
+              "z": -78.3
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 0.28,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#fbbf24",
+              "collision": false,
+              "force": 13,
+              "cooldown": 0.4
+            }
+          },
+          {
+            "id": "obby_platform_00144",
+            "type": "platform",
+            "name": "Aterrissagem alta",
+            "position": {
+              "x": 0,
+              "y": 3.2,
+              "z": -89.6856
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 8,
+              "y": 0.4,
+              "z": 7
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00145",
+            "type": "cube",
+            "name": "Aterrissagem alta guia esquerda 1",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -91.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00146",
+            "type": "cube",
+            "name": "Aterrissagem alta guia direita 1",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -91.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00147",
+            "type": "cube",
+            "name": "Aterrissagem alta guia esquerda 2",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -89.167
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00148",
+            "type": "cube",
+            "name": "Aterrissagem alta guia direita 2",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -89.167
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00149",
+            "type": "cube",
+            "name": "Aterrissagem alta guia esquerda 3",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -86.833
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00150",
+            "type": "cube",
+            "name": "Aterrissagem alta guia direita 3",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -86.833
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00151",
+            "type": "cube",
+            "name": "Aterrissagem alta guia esquerda 4",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -84.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00152",
+            "type": "cube",
+            "name": "Aterrissagem alta guia direita 4",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -84.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#fb7185",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00153",
+            "type": "cube",
+            "name": "Aterrissagem alta suporte 1",
+            "position": {
+              "x": -2.88,
+              "y": 2.45,
+              "z": -90.52
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00154",
+            "type": "cube",
+            "name": "Aterrissagem alta suporte 2",
+            "position": {
+              "x": 2.88,
+              "y": 2.45,
+              "z": -90.52
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00155",
+            "type": "cube",
+            "name": "Aterrissagem alta suporte 3",
+            "position": {
+              "x": -2.88,
+              "y": 2.45,
+              "z": -85.48
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00156",
+            "type": "cube",
+            "name": "Aterrissagem alta suporte 4",
+            "position": {
+              "x": 2.88,
+              "y": 2.45,
+              "z": -85.48
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_coin_00157",
+            "type": "coin",
+            "name": "Moeda arco jump pad 1",
+            "position": {
+              "x": 0,
+              "y": 4.2,
+              "z": -80.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00158",
+            "type": "coin",
+            "name": "Moeda arco jump pad 2",
+            "position": {
+              "x": 0,
+              "y": 4.2,
+              "z": -82.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00159",
+            "type": "coin",
+            "name": "Moeda arco jump pad 3",
+            "position": {
+              "x": 0,
+              "y": 4.2,
+              "z": -84.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00160",
+            "type": "coin",
+            "name": "Moeda arco jump pad 4",
+            "position": {
+              "x": 0,
+              "y": 4.2,
+              "z": -86.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00161",
+            "type": "coin",
+            "name": "Moeda arco jump pad 5",
+            "position": {
+              "x": 0,
+              "y": 4.2,
+              "z": -88.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_sign_00162",
+            "type": "sign",
+            "name": "Placa - Blocos que somem: pu",
+            "position": {
+              "x": -4.2,
+              "y": 3.2,
+              "z": -93.6
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Blocos que somem: pule sem parar.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_checkpoint_00163",
+            "type": "checkpoint",
+            "name": "Checkpoint blocos que somem",
+            "position": {
+              "x": 3.4,
+              "y": 3.65,
+              "z": -93.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_blocos_que_somem",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "obby_damage_00164",
+            "type": "damage",
+            "name": "Zona de morte dos blocos que somem",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -104
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 14,
+              "y": 0.25,
+              "z": 20
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "mode": "kill",
+              "damage": 25,
+              "damagePerSecond": 25,
+              "opacity": 0.46
+            }
+          },
+          {
+            "id": "obby_disappearingblock_00165",
+            "type": "disappearingBlock",
+            "name": "Bloco que some planejado 1",
+            "position": {
+              "x": -2.4,
+              "y": 3.25,
+              "z": -100
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 3.8,
+              "y": 0.42,
+              "z": 3.8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": true,
+              "delayBeforeDisappear": 0.85,
+              "respawnDelay": 2.2
+            }
+          },
+          {
+            "id": "obby_coin_00166",
+            "type": "coin",
+            "name": "Moeda bloco que some 1",
+            "position": {
+              "x": -2.4,
+              "y": 4.25,
+              "z": -100
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_disappearingblock_00167",
+            "type": "disappearingBlock",
+            "name": "Bloco que some planejado 2",
+            "position": {
+              "x": 0,
+              "y": 3.25,
+              "z": -107
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 3.8,
+              "y": 0.42,
+              "z": 3.8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": true,
+              "delayBeforeDisappear": 0.85,
+              "respawnDelay": 2.2
+            }
+          },
+          {
+            "id": "obby_coin_00168",
+            "type": "coin",
+            "name": "Moeda bloco que some 2",
+            "position": {
+              "x": 0,
+              "y": 4.25,
+              "z": -107
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_disappearingblock_00169",
+            "type": "disappearingBlock",
+            "name": "Bloco que some planejado 3",
+            "position": {
+              "x": 2.4,
+              "y": 3.25,
+              "z": -114
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 3.8,
+              "y": 0.42,
+              "z": 3.8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": true,
+              "delayBeforeDisappear": 0.85,
+              "respawnDelay": 2.2
+            }
+          },
+          {
+            "id": "obby_coin_00170",
+            "type": "coin",
+            "name": "Moeda bloco que some 3",
+            "position": {
+              "x": 2.4,
+              "y": 4.25,
+              "z": -114
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00171",
+            "type": "platform",
+            "name": "Entrada da plataforma movel",
+            "position": {
+              "x": 0,
+              "y": 3.2,
+              "z": -123
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 8,
+              "y": 0.4,
+              "z": 6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00172",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia esquerda 1",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -126
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00173",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia direita 1",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -126
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00174",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia esquerda 2",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -124
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00175",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia direita 2",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -124
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00176",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia esquerda 3",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -122
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00177",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia direita 3",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -122
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00178",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia esquerda 4",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -120
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00179",
+            "type": "cube",
+            "name": "Entrada da plataforma movel guia direita 4",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -120
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#a78bfa",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00180",
+            "type": "cube",
+            "name": "Entrada da plataforma movel suporte 1",
+            "position": {
+              "x": -2.88,
+              "y": 2.45,
+              "z": -125.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00181",
+            "type": "cube",
+            "name": "Entrada da plataforma movel suporte 2",
+            "position": {
+              "x": 2.88,
+              "y": 2.45,
+              "z": -125.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00182",
+            "type": "cube",
+            "name": "Entrada da plataforma movel suporte 3",
+            "position": {
+              "x": -2.88,
+              "y": 2.45,
+              "z": -120.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00183",
+            "type": "cube",
+            "name": "Entrada da plataforma movel suporte 4",
+            "position": {
+              "x": 2.88,
+              "y": 2.45,
+              "z": -120.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_sign_00184",
+            "type": "sign",
+            "name": "Placa - Plataforma movel: es",
+            "position": {
+              "x": -4,
+              "y": 3.2,
+              "z": -121
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Plataforma movel: espere, entre, saia.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_movingplatform_00185",
+            "type": "movingPlatform",
+            "name": "Plataforma movel principal",
+            "position": {
+              "x": 0,
+              "y": 3.35,
+              "z": -132
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.6,
+              "y": 0.38,
+              "z": 4.6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": true,
+              "startOffset": {
+                "x": -4,
+                "y": 0,
+                "z": 0
+              },
+              "endOffset": {
+                "x": 4,
+                "y": 0,
+                "z": -6
+              },
+              "speed": 1.1,
+              "loop": true
+            }
+          },
+          {
+            "id": "obby_movingplatform_00186",
+            "type": "movingPlatform",
+            "name": "Plataforma movel opcional de moedas",
+            "position": {
+              "x": -5.4,
+              "y": 3.35,
+              "z": -138
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 3.8,
+              "y": 0.34,
+              "z": 3.8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#f59e0b",
+              "collision": true,
+              "startOffset": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "endOffset": {
+                "x": 6,
+                "y": 0,
+                "z": 0
+              },
+              "speed": 1,
+              "loop": true
+            }
+          },
+          {
+            "id": "obby_coin_00187",
+            "type": "coin",
+            "name": "Moeda plataforma movel opcional 1",
+            "position": {
+              "x": -4,
+              "y": 5.3,
+              "z": -138
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00188",
+            "type": "coin",
+            "name": "Moeda plataforma movel opcional 2",
+            "position": {
+              "x": -4.325,
+              "y": 5.3,
+              "z": -136.138
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00189",
+            "type": "coin",
+            "name": "Moeda plataforma movel opcional 3",
+            "position": {
+              "x": -6.1,
+              "y": 5.3,
+              "z": -136.788
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00190",
+            "type": "coin",
+            "name": "Moeda plataforma movel opcional 4",
+            "position": {
+              "x": -7.55,
+              "y": 5.3,
+              "z": -138
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00191",
+            "type": "coin",
+            "name": "Moeda plataforma movel opcional 5",
+            "position": {
+              "x": -6.1,
+              "y": 5.3,
+              "z": -139.212
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00192",
+            "type": "coin",
+            "name": "Moeda plataforma movel opcional 6",
+            "position": {
+              "x": -4.325,
+              "y": 5.3,
+              "z": -139.862
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00193",
+            "type": "platform",
+            "name": "Entrada do desafio final",
+            "position": {
+              "x": 0,
+              "y": 3.2,
+              "z": -146
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 8,
+              "y": 0.4,
+              "z": 6
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00194",
+            "type": "cube",
+            "name": "Entrada do desafio final guia esquerda 1",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -149
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00195",
+            "type": "cube",
+            "name": "Entrada do desafio final guia direita 1",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -149
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00196",
+            "type": "cube",
+            "name": "Entrada do desafio final guia esquerda 2",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -147
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00197",
+            "type": "cube",
+            "name": "Entrada do desafio final guia direita 2",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -147
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00198",
+            "type": "cube",
+            "name": "Entrada do desafio final guia esquerda 3",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -145
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00199",
+            "type": "cube",
+            "name": "Entrada do desafio final guia direita 3",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -145
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00200",
+            "type": "cube",
+            "name": "Entrada do desafio final guia esquerda 4",
+            "position": {
+              "x": -3.65,
+              "y": 3.75,
+              "z": -143
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00201",
+            "type": "cube",
+            "name": "Entrada do desafio final guia direita 4",
+            "position": {
+              "x": 3.65,
+              "y": 3.75,
+              "z": -143
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00202",
+            "type": "cube",
+            "name": "Entrada do desafio final suporte 1",
+            "position": {
+              "x": -2.88,
+              "y": 2.45,
+              "z": -148.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00203",
+            "type": "cube",
+            "name": "Entrada do desafio final suporte 2",
+            "position": {
+              "x": 2.88,
+              "y": 2.45,
+              "z": -148.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00204",
+            "type": "cube",
+            "name": "Entrada do desafio final suporte 3",
+            "position": {
+              "x": -2.88,
+              "y": 2.45,
+              "z": -143.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00205",
+            "type": "cube",
+            "name": "Entrada do desafio final suporte 4",
+            "position": {
+              "x": 2.88,
+              "y": 2.45,
+              "z": -143.84
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_checkpoint_00206",
+            "type": "checkpoint",
+            "name": "Checkpoint desafio final",
+            "position": {
+              "x": 3.2,
+              "y": 3.65,
+              "z": -144.2
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#ffcc4d",
+              "collision": false,
+              "checkpointId": "checkpoint_desafio_final",
+              "activatedColor": "#22c55e"
+            }
+          },
+          {
+            "id": "obby_damage_00207",
+            "type": "damage",
+            "name": "Zona de morte final",
+            "position": {
+              "x": 0,
+              "y": 0.2,
+              "z": -157
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 15,
+              "y": 0.25,
+              "z": 20
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#ef4444",
+              "collision": false,
+              "mode": "kill",
+              "damage": 25,
+              "damagePerSecond": 25,
+              "opacity": 0.46
+            }
+          },
+          {
+            "id": "obby_coin_00208",
+            "type": "coin",
+            "name": "Moeda guia final 1",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -146
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00209",
+            "type": "coin",
+            "name": "Moeda guia final 2",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -148.286
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00210",
+            "type": "coin",
+            "name": "Moeda guia final 3",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -150.571
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00211",
+            "type": "coin",
+            "name": "Moeda guia final 4",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -152.857
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00212",
+            "type": "coin",
+            "name": "Moeda guia final 5",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -155.143
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00213",
+            "type": "coin",
+            "name": "Moeda guia final 6",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -157.429
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00214",
+            "type": "coin",
+            "name": "Moeda guia final 7",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -159.714
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_coin_00215",
+            "type": "coin",
+            "name": "Moeda guia final 8",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -162
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 0.6
+            },
+            "properties": {
+              "color": "#ffd166",
+              "collision": false,
+              "value": 1,
+              "coinValue": 1
+            }
+          },
+          {
+            "id": "obby_platform_00216",
+            "type": "platform",
+            "name": "Plataforma final estreita 1",
+            "position": {
+              "x": -2,
+              "y": 3.2,
+              "z": -153
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00217",
+            "type": "cube",
+            "name": "Plataforma final estreita 1 guia esquerda 1",
+            "position": {
+              "x": -3.75,
+              "y": 3.75,
+              "z": -155.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00218",
+            "type": "cube",
+            "name": "Plataforma final estreita 1 guia direita 1",
+            "position": {
+              "x": -0.25,
+              "y": 3.75,
+              "z": -155.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00219",
+            "type": "cube",
+            "name": "Plataforma final estreita 1 guia esquerda 2",
+            "position": {
+              "x": -3.75,
+              "y": 3.75,
+              "z": -150.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00220",
+            "type": "cube",
+            "name": "Plataforma final estreita 1 guia direita 2",
+            "position": {
+              "x": -0.25,
+              "y": 3.75,
+              "z": -150.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00221",
+            "type": "cube",
+            "name": "Plataforma final estreita 1 suporte 1",
+            "position": {
+              "x": -3.512,
+              "y": 2.45,
+              "z": -154.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00222",
+            "type": "cube",
+            "name": "Plataforma final estreita 1 suporte 2",
+            "position": {
+              "x": -0.488,
+              "y": 2.45,
+              "z": -154.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_platform_00223",
+            "type": "platform",
+            "name": "Plataforma final estreita 2",
+            "position": {
+              "x": 2,
+              "y": 3.2,
+              "z": -160
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00224",
+            "type": "cube",
+            "name": "Plataforma final estreita 2 guia esquerda 1",
+            "position": {
+              "x": 0.25,
+              "y": 3.75,
+              "z": -162.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00225",
+            "type": "cube",
+            "name": "Plataforma final estreita 2 guia direita 1",
+            "position": {
+              "x": 3.75,
+              "y": 3.75,
+              "z": -162.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00226",
+            "type": "cube",
+            "name": "Plataforma final estreita 2 guia esquerda 2",
+            "position": {
+              "x": 0.25,
+              "y": 3.75,
+              "z": -157.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00227",
+            "type": "cube",
+            "name": "Plataforma final estreita 2 guia direita 2",
+            "position": {
+              "x": 3.75,
+              "y": 3.75,
+              "z": -157.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00228",
+            "type": "cube",
+            "name": "Plataforma final estreita 2 suporte 1",
+            "position": {
+              "x": 0.488,
+              "y": 2.45,
+              "z": -161.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00229",
+            "type": "cube",
+            "name": "Plataforma final estreita 2 suporte 2",
+            "position": {
+              "x": 3.512,
+              "y": 2.45,
+              "z": -161.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_platform_00230",
+            "type": "platform",
+            "name": "Plataforma final estreita 3",
+            "position": {
+              "x": 0,
+              "y": 3.2,
+              "z": -167
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4.2,
+              "y": 0.4,
+              "z": 5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00231",
+            "type": "cube",
+            "name": "Plataforma final estreita 3 guia esquerda 1",
+            "position": {
+              "x": -1.75,
+              "y": 3.75,
+              "z": -169.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00232",
+            "type": "cube",
+            "name": "Plataforma final estreita 3 guia direita 1",
+            "position": {
+              "x": 1.75,
+              "y": 3.75,
+              "z": -169.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00233",
+            "type": "cube",
+            "name": "Plataforma final estreita 3 guia esquerda 2",
+            "position": {
+              "x": -1.75,
+              "y": 3.75,
+              "z": -164.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00234",
+            "type": "cube",
+            "name": "Plataforma final estreita 3 guia direita 2",
+            "position": {
+              "x": 1.75,
+              "y": 3.75,
+              "z": -164.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22d3ee",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00235",
+            "type": "cube",
+            "name": "Plataforma final estreita 3 suporte 1",
+            "position": {
+              "x": -1.512,
+              "y": 2.45,
+              "z": -168.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00236",
+            "type": "cube",
+            "name": "Plataforma final estreita 3 suporte 2",
+            "position": {
+              "x": 1.512,
+              "y": 2.45,
+              "z": -168.8
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_platform_00237",
+            "type": "platform",
+            "name": "Plataforma de vitoria do obby",
+            "position": {
+              "x": 0,
+              "y": 3.2,
+              "z": -176
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 10,
+              "y": 0.4,
+              "z": 8
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": true,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00238",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia esquerda 1",
+            "position": {
+              "x": -4.65,
+              "y": 3.75,
+              "z": -180
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00239",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia direita 1",
+            "position": {
+              "x": 4.65,
+              "y": 3.75,
+              "z": -180
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00240",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia esquerda 2",
+            "position": {
+              "x": -4.65,
+              "y": 3.75,
+              "z": -178
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00241",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia direita 2",
+            "position": {
+              "x": 4.65,
+              "y": 3.75,
+              "z": -178
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00242",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia esquerda 3",
+            "position": {
+              "x": -4.65,
+              "y": 3.75,
+              "z": -176
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00243",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia direita 3",
+            "position": {
+              "x": 4.65,
+              "y": 3.75,
+              "z": -176
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00244",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia esquerda 4",
+            "position": {
+              "x": -4.65,
+              "y": 3.75,
+              "z": -174
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00245",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia direita 4",
+            "position": {
+              "x": 4.65,
+              "y": 3.75,
+              "z": -174
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00246",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia esquerda 5",
+            "position": {
+              "x": -4.65,
+              "y": 3.75,
+              "z": -172
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00247",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby guia direita 5",
+            "position": {
+              "x": 4.65,
+              "y": 3.75,
+              "z": -172
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.34,
+              "y": 0.7,
+              "z": 0.34
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#22c55e",
+              "collision": false,
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_cube_00248",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby suporte 1",
+            "position": {
+              "x": -3.6,
+              "y": 2.45,
+              "z": -178.88
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00249",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby suporte 2",
+            "position": {
+              "x": 3.6,
+              "y": 2.45,
+              "z": -178.88
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00250",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby suporte 3",
+            "position": {
+              "x": -3.6,
+              "y": 2.45,
+              "z": -173.12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_cube_00251",
+            "type": "cube",
+            "name": "Plataforma de vitoria do obby suporte 4",
+            "position": {
+              "x": 3.6,
+              "y": 2.45,
+              "z": -173.12
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 1.5,
+              "z": 0.5
+            },
+            "collider": {
+              "shape": "box"
+            },
+            "properties": {
+              "color": "#64748b",
+              "collision": false
+            }
+          },
+          {
+            "id": "obby_sign_00252",
+            "type": "sign",
+            "name": "Placa - Final: voce dominou ",
+            "position": {
+              "x": -4,
+              "y": 3.2,
+              "z": -174
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1
+            },
+            "collider": {
+              "shape": "none"
+            },
+            "properties": {
+              "color": "#d6a15d",
+              "collision": false,
+              "text": "Final: voce dominou o obby.",
+              "material": "default"
+            }
+          },
+          {
+            "id": "obby_messagezone_00253",
+            "type": "messageZone",
+            "name": "Mensagem final do obby",
+            "position": {
+              "x": 0,
+              "y": 4.05,
+              "z": -175.4
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 4,
+              "y": 1.4,
+              "z": 2
+            },
+            "collider": {
+              "shape": "box",
+              "isTrigger": true
+            },
+            "properties": {
+              "color": "#60a5fa",
+              "collision": false,
+              "message": "Fim do Obby Basico. O caminho inteiro foi feito para treino progressivo.",
+              "oneTime": true,
+              "opacity": 0.35
+            }
+          },
+          {
+            "id": "obby_finish_00254",
+            "type": "finish",
+            "name": "Final do Obby Basico",
+            "position": {
+              "x": 0,
+              "y": 4.15,
+              "z": -179
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.4,
+              "y": 1.4,
+              "z": 1.4
+            },
+            "collider": {
+              "shape": "sphere",
+              "isTrigger": true,
+              "radius": 1
+            },
+            "properties": {
+              "color": "#22c55e",
+              "message": "Obby Basico concluido!",
+              "requiresAllCoins": false,
+              "collision": false
+            }
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obby_collect_guides",
+            "title": "Colete moedas guia",
+            "description": "Moedas mostram a linha segura do obby.",
+            "type": "collectCoins",
+            "targetAmount": 18,
+            "required": false,
+            "visible": true,
+            "completedMessage": "Boa coleta pelo caminho."
+          },
+          {
+            "id": "obby_finish",
+            "title": "Complete o Obby Basico",
+            "type": "reachObject",
+            "targetObjectId": "obby_finish_00254",
+            "required": true,
+            "visible": true,
+            "completedMessage": "Final encontrado."
+          }
+        ],
+        "logic": [
+          {
+            "id": "obby_logic_001",
+            "name": "Mensagem inicial do obby",
+            "enabled": true,
+            "trigger": {
+              "type": "onMapStart"
+            },
+            "conditions": [],
+            "actions": [
+              {
+                "type": "showMessage",
+                "message": "Obby Basico: siga a rota azul ate o final."
+              }
+            ]
+          },
+          {
+            "id": "obby_logic_002",
+            "name": "Finaliza Obby Basico",
+            "enabled": true,
+            "trigger": {
+              "type": "onPlayerEnterObject",
+              "objectId": "obby_finish_00254"
+            },
+            "conditions": [
+              {
+                "type": "once"
+              }
+            ],
+            "actions": [
+              {
+                "type": "finishMap"
+              }
+            ]
+          }
+        ],
+        "logicDebug": false,
+        "visualSettings": {
+          "theme": "classic",
+          "skyColor": "#d8ecff",
+          "groundColor": "#eef5f8",
+          "fogEnabled": false,
+          "fogColor": "#d8ecff",
+          "fogNear": 18,
+          "fogFar": 90,
+          "ambientLightIntensity": 1.65,
+          "sunLightIntensity": 2.35
+        },
+        "audioSettings": {
+          "masterVolume": 0.8,
+          "sfxVolume": 0.9,
+          "musicVolume": 0.36,
+          "muted": false,
+          "ambientMusic": "adventure"
+        },
+        "gameplaySettings": {
+          "voidDeathEnabled": true,
+          "requireObjectivesToFinish": true
+        },
+        "gameModeSettings": {
+          "mode": "obby",
+          "roundEnabled": false,
+          "respawnDelay": 1,
+          "teamsEnabled": false,
+          "winCondition": {
+            "type": "finish"
+          },
+          "scoring": {
+            "coinScore": 10,
+            "enemyDefeatScore": 100,
+            "objectiveScore": 250,
+            "deathPenalty": 25
+          },
+          "requireObjectivesToFinish": false
+        },
+        "teams": [],
+        "tags": [
+          "obby",
+          "iniciante",
+          "linear"
+        ],
+        "isPublished": true,
+        "createdAt": "2026-06-04T02:10:55.004Z",
+        "updatedAt": "2026-06-04T02:10:55.004Z",
+        "publishedAt": "2026-06-04T02:13:09.409Z",
+        "onlineMetadata": {
+          "onlineId": "online-1780539189409-xhyxw228sve",
+          "publishedAt": "2026-06-04T02:13:09.409Z",
+          "updatedAt": "2026-06-04T02:13:09.409Z"
+        }
+      },
+      "createdAt": "2026-06-04T02:13:09.409Z",
+      "updatedAt": "2026-06-04T02:13:11.679Z",
+      "publishedAt": "2026-06-04T02:13:09.409Z",
+      "playCount": 0,
+      "likedBy": []
+    },
+    {
       "id": "online-1780519916993-r0eanjeq6n",
       "ownerClientId": "client-1780519881047-991nh38g94d",
       "map": {

@@ -6,6 +6,8 @@ import type {
   MultiplayerClientMessage,
   MultiplayerServerMessage,
   PlayerNetState,
+  SharedWorldState,
+  WorldEvent,
 } from "../shared/types/MultiplayerSchema.js";
 import { LocalProfileStorage } from "../storage/LocalProfileStorage.js";
 
@@ -17,6 +19,8 @@ type MultiplayerCallbacks = {
   onPlayerJoined: ((player: PlayerNetState) => void) | null;
   onPlayerLeft: ((playerId: string) => void) | null;
   onPlayerUpdated: ((playerId: string, player: PlayerNetState) => void) | null;
+  onWorldState: ((state: SharedWorldState) => void) | null;
+  onWorldEvent: ((event: WorldEvent) => void) | null;
   onError: ((message: string) => void) | null;
 };
 
@@ -173,6 +177,13 @@ export class MultiplayerService {
     this.send({ type: "ping" });
   }
 
+  sendWorldEvent(event: WorldEvent): void {
+    this.send({
+      type: "worldEvent",
+      event,
+    });
+  }
+
   onRoomState(callback: (players: Record<string, PlayerNetState>) => void): void {
     this.callbacks.onRoomState = callback;
   }
@@ -187,6 +198,14 @@ export class MultiplayerService {
 
   onPlayerUpdated(callback: (playerId: string, player: PlayerNetState) => void): void {
     this.callbacks.onPlayerUpdated = callback;
+  }
+
+  onWorldState(callback: (state: SharedWorldState) => void): void {
+    this.callbacks.onWorldState = callback;
+  }
+
+  onWorldEvent(callback: (event: WorldEvent) => void): void {
+    this.callbacks.onWorldEvent = callback;
   }
 
   onError(callback: (message: string) => void): void {
@@ -242,6 +261,14 @@ export class MultiplayerService {
         this.callbacks.onRoomState?.(message.players);
         break;
 
+      case "worldState":
+        this.callbacks.onWorldState?.(message.state);
+        break;
+
+      case "worldEvent":
+        this.callbacks.onWorldEvent?.(message.event);
+        break;
+
       case "playerJoined":
         this.callbacks.onPlayerJoined?.(message.player);
         break;
@@ -274,6 +301,8 @@ function createEmptyCallbacks(): MultiplayerCallbacks {
     onPlayerJoined: null,
     onPlayerLeft: null,
     onPlayerUpdated: null,
+    onWorldState: null,
+    onWorldEvent: null,
     onError: null,
   };
 }

@@ -55,6 +55,39 @@ async function main() {
     );
     console.log("Player state broadcast reached the other client");
 
+    const collectedCoinObjectId = "coin-smoke-1";
+    clientA.send({
+      type: "worldEvent",
+      event: {
+        type: "coinCollected",
+        objectId: collectedCoinObjectId,
+      },
+    });
+
+    await clientB.waitFor(
+      (message) =>
+        message.type === "worldEvent" &&
+        message.event?.type === "coinCollected" &&
+        message.event.objectId === collectedCoinObjectId,
+      "B worldEvent coinCollected from A"
+    );
+    console.log("World event broadcast reached the other client");
+
+    const clientC = await connectClient(wsBaseUrl, roomId, "smoke-client-c", "Smoke C");
+    clients.push(clientC);
+    const welcomeC = await clientC.waitFor((message) => message.type === "welcome", "C welcome");
+    await clientC.waitFor(
+      (message) => message.type === "roomState" && Object.keys(message.players).length === 3,
+      "C roomState with three players"
+    );
+    await clientC.waitFor(
+      (message) =>
+        message.type === "worldState" &&
+        message.state?.collectedCoinObjectIds?.includes(collectedCoinObjectId),
+      "C worldState with collected coin"
+    );
+    console.log(`Client C joined as ${welcomeC.playerId} and received shared world state`);
+
     await clientA.close();
     await clientB.waitFor(
       (message) => message.type === "playerLeft" && message.playerId === welcomeA.playerId,
@@ -63,6 +96,7 @@ async function main() {
     console.log("Disconnect broadcast reached the remaining client");
 
     await clientB.close();
+    await clientC.close();
     clients.length = 0;
 
     console.log("\n=== Multiplayer smoke passed ===");

@@ -15,7 +15,9 @@ import type { GameSessionAdapter } from "./session/GameSessionAdapter";
 import type {
   GameNetworkEvent,
   PlayerNetState,
+  SharedWorldState,
   SessionState,
+  WorldEvent,
 } from "../shared/types/MultiplayerSchema";
 import type { Vector3 } from "../shared/types/ObjectSchema";
 
@@ -34,6 +36,12 @@ type PlayerStateSessionAdapter = GameSessionAdapter & {
     equippedWeaponId: string | null,
     score: number
   ) => void;
+};
+
+type WorldStateSessionAdapter = GameSessionAdapter & {
+  sendWorldEvent: (event: WorldEvent) => void;
+  onWorldEvent: (callback: (event: WorldEvent) => void) => void;
+  onWorldState: (callback: (state: SharedWorldState) => void) => void;
 };
 
 export class GameRuntime {
@@ -60,6 +68,7 @@ export class GameRuntime {
   private paused = false;
   private readonly sessionAdapter: GameSessionAdapter | undefined;
   private networkSyncAccumulator = 0;
+  private latestSharedWorldState: SharedWorldState | null = null;
 
   constructor(
     private readonly container: HTMLElement,
@@ -108,6 +117,7 @@ export class GameRuntime {
 
   async loadMap(map: GameMap): Promise<void> {
     this.activeMap = structuredClone(map);
+    this.latestSharedWorldState = null;
     this.paused = false;
     this.clearWorld();
     this.clearRemotePlayers();
@@ -180,6 +190,9 @@ export class GameRuntime {
         onRestart: () => this.restart(),
         onEdit: () => this.editActiveMap(),
         onMenu: () => this.options.onBackToMenu?.(),
+        onWorldEvent: canSyncWorldState(this.sessionAdapter)
+          ? (event) => this.sendWorldEvent(event)
+          : undefined,
         onComplete: (coinsCollected) => {
           if (this.activeMap) {
             this.options.onMapCompleted?.({
@@ -206,6 +219,16 @@ export class GameRuntime {
     this.sessionAdapter.onNetworkEvent((event) => {
       this.handleNetworkEvent(event);
     });
+
+    if (canSyncWorldState(this.sessionAdapter)) {
+      this.sessionAdapter.onWorldState((state) => {
+        this.handleWorldState(state);
+      });
+
+      this.sessionAdapter.onWorldEvent((event) => {
+        this.handleWorldEvent(event);
+      });
+    }
 
     void this.sessionAdapter.start().catch((error) => {
       // eslint-disable-next-line no-console
@@ -251,6 +274,16 @@ export class GameRuntime {
         this.hud.showMessage(event.reason, 2600);
         break;
     }
+  }
+
+  private handleWorldState(state: SharedWorldState): void {
+    this.latestSharedWorldState = cloneSharedWorldState(state);
+    this.mechanics?.applySharedWorldState(state);
+  }
+
+  private handleWorldEvent(event: WorldEvent): void {
+    this.latestSharedWorldState = mergeWorldEvent(this.latestSharedWorldState, event);
+    this.mechanics?.applyWorldEvent(event);
   }
 
   private addRemotePlayer(player: PlayerNetState): void {
@@ -436,11 +469,22 @@ export class GameRuntime {
     }
   }
 
+  private sendWorldEvent(event: WorldEvent): void {
+    if (!this.sessionAdapter || !canSyncWorldState(this.sessionAdapter)) {
+      return;
+    }
+
+    this.sessionAdapter.sendWorldEvent(event);
+  }
+
   private restart(): void {
     this.paused = false;
     this.hud.hidePause();
     this.feedbackSystem.clear();
     this.mechanics?.restart();
+    if (this.latestSharedWorldState) {
+      this.mechanics?.applySharedWorldState(this.latestSharedWorldState);
+    }
     this.cameraController.reset();
   }
 
@@ -492,4 +536,63 @@ function canSendPlayerState(
   sessionAdapter: GameSessionAdapter
 ): sessionAdapter is PlayerStateSessionAdapter {
   return "sendPlayerState" in sessionAdapter;
+}
+
+function canSyncWorldState(
+  sessionAdapter: GameSessionAdapter | undefined
+): sessionAdapter is WorldStateSessionAdapter {
+  return (
+    sessionAdapter !== undefined &&
+    "sendWorldEvent" in sessionAdapter &&
+    "onWorldEvent" in sessionAdapter &&
+    "onWorldState" in sessionAdapter
+  );
+}
+
+function cloneSharedWorldState(state: SharedWorldState): SharedWorldState {
+  return {
+    openedDoorIds: [...state.openedDoorIds],
+    activatedButtonIds: [...state.activatedButtonIds],
+    collectedCoinObjectIds: [...state.collectedCoinObjectIds],
+    collectedItemObjectIds: [...state.collectedItemObjectIds],
+  };
+}
+
+function mergeWorldEvent(state: SharedWorldState | null, event: WorldEvent): SharedWorldState {
+  const next =
+    state ??
+    ({
+      openedDoorIds: [],
+      activatedButtonIds: [],
+      collectedCoinObjectIds: [],
+      collectedItemObjectIds: [],
+    } satisfies SharedWorldState);
+
+  if (event.type === "doorOpened") {
+    addUnique(next.openedDoorIds, event.doorId);
+  } else if (event.type === "doorClosed") {
+    removeValue(next.openedDoorIds, event.doorId);
+  } else if (event.type === "buttonActivated") {
+    addUnique(next.activatedButtonIds, event.objectId);
+  } else if (event.type === "coinCollected") {
+    addUnique(next.collectedCoinObjectIds, event.objectId);
+  } else if (event.type === "itemCollected") {
+    addUnique(next.collectedItemObjectIds, event.objectId);
+  }
+
+  return cloneSharedWorldState(next);
+}
+
+function addUnique(values: string[], value: string): void {
+  if (!values.includes(value)) {
+    values.push(value);
+  }
+}
+
+function removeValue(values: string[], value: string): void {
+  const index = values.indexOf(value);
+
+  if (index >= 0) {
+    values.splice(index, 1);
+  }
 }

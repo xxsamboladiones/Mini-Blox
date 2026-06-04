@@ -66,6 +66,9 @@ export type GameModeSummary = {
 
 export class RuntimeHud {
   private readonly root = document.createElement("div");
+  private readonly topLeftCluster = document.createElement("div");
+  private readonly bottomLeftCluster = document.createElement("div");
+  private readonly bottomRightCluster = document.createElement("div");
   private readonly mapLabel = document.createElement("div");
   private readonly healthPanel = document.createElement("div");
   private readonly weaponPanel = document.createElement("div");
@@ -82,9 +85,13 @@ export class RuntimeHud {
   private readonly multiplayerPanel = document.createElement("div");
   private messageTimeout = 0;
   private actions: RuntimeHudActions | null = null;
+  private objectivesExpanded = false;
 
   constructor(container: HTMLElement) {
     this.root.className = "runtime-hud";
+    this.topLeftCluster.className = "runtime-top-left";
+    this.bottomLeftCluster.className = "runtime-bottom-left";
+    this.bottomRightCluster.className = "runtime-bottom-right";
     this.mapLabel.className = "runtime-map-label";
     this.healthPanel.className = "runtime-health-panel";
     this.weaponPanel.className = "runtime-weapon-panel";
@@ -100,23 +107,28 @@ export class RuntimeHud {
     this.pausePanel.className = "runtime-pause hidden";
     this.multiplayerPanel.className = "runtime-multiplayer-panel hidden";
 
-    this.root.append(
-      this.mapLabel,
+    this.topLeftCluster.append(this.mapLabel, this.gameModePanel, this.multiplayerPanel);
+    this.bottomLeftCluster.append(
       this.healthPanel,
       this.weaponPanel,
-      this.gameModePanel,
-      this.coinCounter,
       this.keyInventory,
-      this.inventory,
+      this.inventory
+    );
+    this.bottomRightCluster.append(this.coinCounter);
+
+    this.root.append(
+      this.topLeftCluster,
+      this.bottomLeftCluster,
+      this.bottomRightCluster,
       this.objectivesPanel,
-      this.dialoguePanel,
       this.actionBar,
       this.message,
+      this.dialoguePanel,
       this.victoryPanel,
-      this.pausePanel,
-      this.multiplayerPanel
+      this.pausePanel
     );
     container.append(this.root);
+
     this.setMapName("Mini Blox");
     this.setHealth(100, 100);
     this.setWeapon(null);
@@ -130,15 +142,15 @@ export class RuntimeHud {
   setActions(actions: RuntimeHudActions): void {
     this.actions = actions;
     this.actionBar.innerHTML = `
-      <button class="top-action" type="button" data-runtime-action="menu">
+      <button class="top-action" type="button" data-runtime-action="menu" title="Menu" aria-label="Menu">
         <i data-lucide="house"></i>
         <span>Menu</span>
       </button>
-      <button class="top-action" type="button" data-runtime-action="restart">
+      <button class="top-action" type="button" data-runtime-action="restart" title="Reiniciar" aria-label="Reiniciar">
         <i data-lucide="rotate-ccw"></i>
         <span>Reiniciar</span>
       </button>
-      <button class="top-action primary" type="button" data-runtime-action="edit">
+      <button class="top-action primary" type="button" data-runtime-action="edit" title="Editar" aria-label="Editar">
         <i data-lucide="pencil"></i>
         <span>Editar</span>
       </button>
@@ -278,31 +290,45 @@ export class RuntimeHud {
     this.objectivesPanel.classList.toggle("hidden", visibleObjectives.length === 0);
 
     if (visibleObjectives.length === 0) {
+      this.objectivesExpanded = false;
       this.objectivesPanel.replaceChildren();
       return;
     }
 
+    const hiddenCount = Math.max(0, visibleObjectives.length - 3);
+    const shownObjectives =
+      this.objectivesExpanded || hiddenCount === 0
+        ? visibleObjectives
+        : visibleObjectives.slice(0, 3);
+
     this.objectivesPanel.innerHTML = `
-      <div class="runtime-objectives-title">Objetivos</div>
+      <div class="runtime-objectives-heading">
+        <div>
+          <span class="runtime-objectives-kicker">Objetivos</span>
+          <strong>${visibleObjectives.filter((objective) => objective.completed).length}/${visibleObjectives.length}</strong>
+        </div>
+        ${
+          hiddenCount > 0
+            ? `
+          <button class="runtime-objectives-toggle" type="button" data-objectives-toggle>
+            ${this.objectivesExpanded ? "Ver menos" : `Ver mais ${hiddenCount}`}
+          </button>
+        `
+            : ""
+        }
+      </div>
       <div class="runtime-objectives-list">
-        ${visibleObjectives
+        ${shownObjectives
           .map(
             (objective) => `
           <div class="runtime-objective-row ${objective.completed ? "completed" : ""}">
-            <span>${objective.completed ? "OK" : "-"}</span>
+            <span class="runtime-objective-state">${objective.completed ? "OK" : ""}</span>
             <div>
               <strong>${escapeHtml(objective.title)}</strong>
-              ${
-                objective.progress !== undefined && objective.target !== undefined
-                  ? `
-                <small>${Math.min(objective.progress, objective.target)}/${objective.target}</small>
-              `
-                  : objective.description
-                    ? `
-                <small>${escapeHtml(objective.description)}</small>
-              `
-                    : ""
-              }
+              <small>
+                ${escapeHtml(getObjectiveDetail(objective))}
+                <b>${objective.required ? "Obrig." : "Opc."}</b>
+              </small>
             </div>
           </div>
         `
@@ -310,6 +336,13 @@ export class RuntimeHud {
           .join("")}
       </div>
     `;
+
+    this.objectivesPanel
+      .querySelector<HTMLButtonElement>("[data-objectives-toggle]")
+      ?.addEventListener("click", () => {
+        this.objectivesExpanded = !this.objectivesExpanded;
+        this.setObjectives(objectives);
+      });
   }
 
   showDialogue(speaker: string, line: string, hasNext: boolean): void {
@@ -348,7 +381,10 @@ export class RuntimeHud {
     this.pausePanel.classList.remove("hidden");
     this.pausePanel.innerHTML = `
       <div class="runtime-pause-content">
-        <strong>Pausado</strong>
+        <div class="runtime-overlay-heading">
+          <strong>Pausado</strong>
+          <span>${this.multiplayerPanel.classList.contains("hidden") ? "Solo" : "Multiplayer"}</span>
+        </div>
         <div class="runtime-pause-actions">
           <button class="top-action primary" type="button" data-pause-action="continue">
             <i data-lucide="play"></i>
@@ -403,8 +439,10 @@ export class RuntimeHud {
     this.victoryPanel.classList.remove("hidden");
     this.victoryPanel.innerHTML = `
       <div class="runtime-victory-content">
-        <strong>${escapeHtml(message)}</strong>
-        <span>Moedas coletadas: ${coinCount}</span>
+        <div class="runtime-overlay-heading">
+          <strong>${escapeHtml(message)}</strong>
+          <span>Moedas coletadas: ${coinCount}</span>
+        </div>
         ${
           summary
             ? `
@@ -464,8 +502,10 @@ export class RuntimeHud {
     this.multiplayerPanel.classList.remove("hidden");
     this.multiplayerPanel.innerHTML = `
       <div class="multiplayer-info">
-        <span class="room-id">Sala: ${escapeHtml(roomId)}</span>
+        <span class="multiplayer-state">Multiplayer ativo</span>
+        <span class="room-id" title="${escapeAttribute(roomId)}">Sala: ${escapeHtml(shortRoomId(roomId))}</span>
         <span class="player-count">${playerCount} jogadores</span>
+        <span class="runtime-sync-state">Estado sincronizado</span>
       </div>
       <button class="top-action danger" type="button" data-multiplayer-action="leave">
         <i data-lucide="log-out"></i>
@@ -481,6 +521,7 @@ export class RuntimeHud {
 
   hideMultiplayerInfo(): void {
     this.multiplayerPanel.classList.add("hidden");
+    this.multiplayerPanel.replaceChildren();
   }
 
   updatePlayerCount(count: number): void {
@@ -489,6 +530,18 @@ export class RuntimeHud {
       playerCountEl.textContent = `${count} jogadores`;
     }
   }
+}
+
+function getObjectiveDetail(objective: HudObjectiveState): string {
+  if (objective.progress !== undefined && objective.target !== undefined) {
+    return `${Math.min(objective.progress, objective.target)}/${objective.target}`;
+  }
+
+  return objective.description ?? (objective.completed ? "Concluido" : "Pendente");
+}
+
+function shortRoomId(roomId: string): string {
+  return roomId.length > 12 ? `${roomId.slice(0, 8)}...${roomId.slice(-4)}` : roomId;
 }
 
 function escapeHtml(value: string): string {

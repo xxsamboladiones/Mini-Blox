@@ -163,13 +163,13 @@ export class OnlineMapsTab {
         <div class="map-card-thumbnail">
           ${thumbnailHtml}
           <div class="map-card-overlay">
-            <button class="icon-button" type="button" data-action="details" title="Detalhes">
+            <button class="icon-button" type="button" data-action="details" title="Detalhes" aria-label="Ver detalhes">
               <i data-lucide="info"></i>
             </button>
             ${
               isOwner
                 ? `
-              <button class="icon-button danger" type="button" data-action="delete" title="Excluir online">
+              <button class="icon-button danger" type="button" data-action="delete" title="Excluir online" aria-label="Excluir mapa online">
                 <i data-lucide="trash-2"></i>
               </button>
             `
@@ -217,10 +217,10 @@ export class OnlineMapsTab {
               <i data-lucide="users"></i>
               <span>Multiplayer</span>
             </button>
-            <button class="icon-button" type="button" data-action="like" title="Curtir">
+            <button class="icon-button" type="button" data-action="like" title="Curtir" aria-label="Curtir mapa">
               <i data-lucide="heart"></i>
             </button>
-            <button class="icon-button" type="button" data-action="download" title="Salvar cópia local">
+            <button class="icon-button" type="button" data-action="download" title="Salvar cópia local" aria-label="Salvar copia local">
               <i data-lucide="download"></i>
             </button>
           </div>
