@@ -7,17 +7,22 @@ import { PlayerController } from "./PlayerController";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { RuntimeHud } from "./RuntimeHud";
 import { RuntimeMechanics } from "./RuntimeMechanics";
+import {
+  canSyncWorldState,
+  canUseMultiplayerMechanics,
+  RuntimeNetworkController,
+} from "./RuntimeNetworkController";
 import { ThirdPersonCameraController } from "./ThirdPersonCameraController";
 import { RemotePlayerView } from "./RemotePlayerView";
+import { normalizeGameMapForRuntime } from "./normalizeGameMapForRuntime";
 import { resolveVisualSettings } from "../shared/VisualSettings";
 import type { GameMap } from "../shared/types/MapSchema";
 import type { GameSessionAdapter } from "./session/GameSessionAdapter";
 import type {
   ChatMessage,
   EnemyNetState,
-  EnemyPositionUpdate,
   GameNetworkEvent,
-  PlayerAttackPayload,
+  PlayerAttackVisualPayload,
   PlayerCombatState,
   PlayerNetState,
   SharedWorldState,
@@ -31,38 +36,6 @@ type GameRuntimeOptions = {
   onBackToMenu?: () => void;
   onMapCompleted?: (summary: { map: GameMap; coinsCollected: number }) => void;
   sessionAdapter?: GameSessionAdapter;
-};
-
-type PlayerStateSessionAdapter = GameSessionAdapter & {
-  sendPlayerState: (
-    position: Vector3,
-    rotationY: number,
-    health: number,
-    equippedWeaponId: string | null,
-    score: number
-  ) => void;
-};
-
-type WorldStateSessionAdapter = GameSessionAdapter & {
-  sendWorldEvent: (event: WorldEvent) => void;
-  onWorldEvent: (callback: (event: WorldEvent) => void) => void;
-  onWorldState: (callback: (state: SharedWorldState) => void) => void;
-};
-
-type MultiplayerMechanicsSessionAdapter = WorldStateSessionAdapter & {
-  sendEnemyHit: (enemyObjectId: string, damage: number, weaponId?: string) => void;
-  sendEnemyStateRequest: () => void;
-  sendEnemyPositionUpdate: (enemies: EnemyPositionUpdate[]) => void;
-  sendPlayerAttack: (payload: PlayerAttackPayload) => void;
-  sendPlayerDamageReport: (
-    damage: number,
-    source: "enemy" | "hazard" | "logic",
-    targetPlayerId?: string
-  ) => void;
-  sendChatMessage: (text: string) => void;
-  getLocalPlayerId: () => string | null;
-  getHostPlayerId: () => string | null;
-  isHost: () => boolean;
 };
 
 export class GameRuntime {
@@ -89,6 +62,7 @@ export class GameRuntime {
   private activeMap: GameMap | null = null;
   private paused = false;
   private readonly sessionAdapter: GameSessionAdapter | undefined;
+  private readonly network: RuntimeNetworkController;
   private networkSyncAccumulator = 0;
   private latestSharedWorldState: SharedWorldState | null = null;
   private chatMessages: ChatMessage[] = [];
@@ -98,6 +72,7 @@ export class GameRuntime {
     private readonly options: GameRuntimeOptions = {}
   ) {
     this.sessionAdapter = options.sessionAdapter;
+    this.network = new RuntimeNetworkController(this.sessionAdapter);
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
@@ -139,14 +114,15 @@ export class GameRuntime {
   }
 
   async loadMap(map: GameMap): Promise<void> {
-    this.activeMap = structuredClone(map);
+    this.activeMap = normalizeGameMapForRuntime(map);
     this.latestSharedWorldState = null;
     this.paused = false;
+    this.mechanics?.dispose();
+    this.mechanics = null;
     this.clearWorld();
     this.clearRemotePlayers();
     this.remotePlayerStates.clear();
     this.objectViews.clear();
-    this.mechanics = null;
     this.feedbackSystem.clear();
     this.audioSystem.applySettings(this.activeMap.audioSettings);
     this.applyVisualSettings();
@@ -157,6 +133,10 @@ export class GameRuntime {
       onContinue: () => {
         this.audioSystem.play("uiClick");
         this.resume();
+      },
+      onPause: () => {
+        this.audioSystem.play("uiClick");
+        this.pause();
       },
       onRestart: () => {
         this.audioSystem.play("uiClick");
@@ -215,37 +195,21 @@ export class GameRuntime {
         onEdit: () => this.editActiveMap(),
         onMenu: () => this.options.onBackToMenu?.(),
         onWorldEvent: canSyncWorldState(this.sessionAdapter)
-          ? (event) => this.sendWorldEvent(event)
+          ? (event) => this.network.sendWorldEvent(event)
           : undefined,
         multiplayer: canUseMultiplayerMechanics(this.sessionAdapter)
           ? {
-              isHost: () =>
-                canUseMultiplayerMechanics(this.sessionAdapter) && this.sessionAdapter.isHost(),
-              getLocalPlayerId: () =>
-                canUseMultiplayerMechanics(this.sessionAdapter)
-                  ? this.sessionAdapter.getLocalPlayerId()
-                  : null,
+              isHost: () => this.network.isHost(),
+              getLocalPlayerId: () => this.network.getLocalPlayerId(),
               getRemotePlayers: () => [...this.remotePlayerStates.values()],
-              onEnemyHit: (enemyObjectId, damage, weaponId) => {
-                if (canUseMultiplayerMechanics(this.sessionAdapter)) {
-                  this.sessionAdapter.sendEnemyHit(enemyObjectId, damage, weaponId);
-                }
-              },
-              onEnemyPositionUpdate: (enemies) => {
-                if (canUseMultiplayerMechanics(this.sessionAdapter)) {
-                  this.sessionAdapter.sendEnemyPositionUpdate(enemies);
-                }
-              },
-              onPlayerAttack: (payload) => {
-                if (canUseMultiplayerMechanics(this.sessionAdapter)) {
-                  this.sessionAdapter.sendPlayerAttack(payload);
-                }
-              },
-              onPlayerDamageReport: (damage, source) => {
-                if (canUseMultiplayerMechanics(this.sessionAdapter)) {
-                  this.sessionAdapter.sendPlayerDamageReport(damage, source);
-                }
-              },
+              onEnemyHit: (enemyObjectId, damage, weaponId) =>
+                this.network.sendEnemyHit(enemyObjectId, damage, weaponId),
+              onEnemyPositionUpdate: (enemies) => this.network.sendEnemyPositionUpdate(enemies),
+              onPlayerAttack: (payload) => this.network.sendPlayerAttack(payload),
+              onPlayerAttackVisual: (payload) => this.network.sendPlayerAttackVisual(payload),
+              onPlayerDamageReport: (damage, source) =>
+                this.network.sendPlayerDamageReport(damage, source),
+              onPlayerHealRequest: (payload) => this.network.sendPlayerHealRequest(payload),
             }
           : undefined,
         onComplete: (coinsCollected) => {
@@ -287,18 +251,14 @@ export class GameRuntime {
 
     if (canUseMultiplayerMechanics(this.sessionAdapter)) {
       this.hud.setChatEnabled(true, (text) => {
-        if (canUseMultiplayerMechanics(this.sessionAdapter)) {
-          this.sessionAdapter.sendChatMessage(text);
-        }
+        this.network.sendChatMessage(text);
       });
     }
 
     void this.sessionAdapter
       .start()
       .then(() => {
-        if (canUseMultiplayerMechanics(this.sessionAdapter)) {
-          this.sessionAdapter.sendEnemyStateRequest();
-        }
+        this.network.sendEnemyStateRequest();
       })
       .catch((error) => {
         // eslint-disable-next-line no-console
@@ -338,13 +298,28 @@ export class GameRuntime {
         this.updateMultiplayerHud();
         break;
       case "playerMoved":
-        this.updateRemotePlayerPose(event.playerId, event.position, event.rotationY);
+        if (event.player) {
+          this.updateRemotePlayerState(event.player);
+        } else {
+          this.updateRemotePlayerPose(event.playerId, event.position, event.rotationY);
+        }
+        break;
+      case "playerAttackVisual":
+        this.handleRemotePlayerAttackVisual(event);
         break;
       case "playerDamaged":
-        this.handlePlayerDamaged(event.targetPlayerId, event.damage, event.health);
+        this.handlePlayerDamaged(
+          event.targetPlayerId,
+          event.damage,
+          event.health,
+          event.attackerPlayerId
+        );
+        break;
+      case "playerHealed":
+        this.handlePlayerHealed(event.playerId, event.amount, event.health);
         break;
       case "playerDefeated":
-        this.handlePlayerDefeated(event.playerId);
+        this.handlePlayerDefeated(event.playerId, event.defeatedByPlayerId);
         break;
       case "playerRespawned":
         this.handlePlayerRespawned(event.playerId, event.health, event.position);
@@ -357,6 +332,13 @@ export class GameRuntime {
         break;
       case "enemyDefeated":
         this.mechanics?.applyEnemyDefeated(event.enemyObjectId);
+        if (
+          event.defeatedByPlayerId &&
+          canUseMultiplayerMechanics(this.sessionAdapter) &&
+          event.defeatedByPlayerId === this.sessionAdapter.getLocalPlayerId()
+        ) {
+          this.hud.showMessage("Voce derrotou um inimigo.", 1400);
+        }
         break;
       case "combatState":
         this.applyCombatState(event.players);
@@ -396,6 +378,29 @@ export class GameRuntime {
   private handleWorldEvent(event: WorldEvent): void {
     this.latestSharedWorldState = mergeWorldEvent(this.latestSharedWorldState, event);
     this.mechanics?.applyWorldEvent(event);
+  }
+
+  private handlePlayerHealed(playerId: string, amount: number, health: number): void {
+    const localPlayerId = canUseMultiplayerMechanics(this.sessionAdapter)
+      ? this.sessionAdapter.getLocalPlayerId()
+      : null;
+
+    if (canUseMultiplayerMechanics(this.sessionAdapter) && playerId === localPlayerId) {
+      this.mechanics?.applyLocalPlayerHealed(health, amount);
+      return;
+    }
+
+    const previous = this.remotePlayerStates.get(playerId);
+    if (!previous) {
+      return;
+    }
+
+    this.updateRemotePlayerState({
+      ...previous,
+      health,
+      isAlive: health > 0,
+    });
+    this.feedbackSystem.spawn("item", previous.position, `+${Math.round(amount)}`);
   }
 
   private addRemotePlayer(player: PlayerNetState): void {
@@ -449,12 +454,42 @@ export class GameRuntime {
     this.updateRemotePlayerState(next);
   }
 
-  private handlePlayerDamaged(playerId: string, damage: number, health: number): void {
-    if (
-      canUseMultiplayerMechanics(this.sessionAdapter) &&
-      playerId === this.sessionAdapter.getLocalPlayerId()
-    ) {
-      this.mechanics?.applyLocalPlayerHealth(health, `Dano recebido (-${Math.round(damage)})`);
+  private handleRemotePlayerAttackVisual(
+    event: GameNetworkEvent & { type: "playerAttackVisual" }
+  ): void {
+    const remotePlayer = this.remotePlayers.get(event.playerId);
+    if (!remotePlayer) {
+      return;
+    }
+
+    remotePlayer.setEquippedWeapon(event.weaponId);
+    remotePlayer.playAttackFeedback(event.attackType);
+    this.mechanics?.applyRemoteAttackVisual({
+      weaponId: event.weaponId,
+      attackType: event.attackType,
+      origin: event.origin,
+      direction: event.direction,
+    });
+  }
+
+  private handlePlayerDamaged(
+    playerId: string,
+    damage: number,
+    health: number,
+    attackerPlayerId?: string
+  ): void {
+    const localPlayerId = canUseMultiplayerMechanics(this.sessionAdapter)
+      ? this.sessionAdapter.getLocalPlayerId()
+      : null;
+    const roundedDamage = Math.round(damage);
+
+    if (canUseMultiplayerMechanics(this.sessionAdapter) && playerId === localPlayerId) {
+      const attackerName = this.getPlayerDisplayName(attackerPlayerId);
+      const message =
+        attackerName && attackerName !== "Voce"
+          ? `${attackerName} acertou voce (-${roundedDamage})`
+          : `Dano recebido (-${roundedDamage})`;
+      this.mechanics?.applyLocalPlayerHealth(health, message, damage);
       return;
     }
 
@@ -469,20 +504,39 @@ export class GameRuntime {
       isAlive: health > 0,
     });
     this.remotePlayers.get(playerId)?.playDamageFeedback();
+
+    if (attackerPlayerId && attackerPlayerId === localPlayerId) {
+      this.audioSystem.play("hit");
+      this.feedbackSystem.spawn("damage", previous.position, `-${roundedDamage}`);
+      this.hud.showMessage(`Acerto em ${previous.name || "jogador"} (-${roundedDamage})`, 1200);
+    }
   }
 
-  private handlePlayerDefeated(playerId: string): void {
-    if (
-      canUseMultiplayerMechanics(this.sessionAdapter) &&
-      playerId === this.sessionAdapter.getLocalPlayerId()
-    ) {
-      this.mechanics?.applyLocalPlayerDefeated();
+  private handlePlayerDefeated(playerId: string, defeatedByPlayerId?: string): void {
+    const localPlayerId = canUseMultiplayerMechanics(this.sessionAdapter)
+      ? this.sessionAdapter.getLocalPlayerId()
+      : null;
+
+    if (canUseMultiplayerMechanics(this.sessionAdapter) && playerId === localPlayerId) {
+      const attackerName = this.getPlayerDisplayName(defeatedByPlayerId);
+      this.mechanics?.applyLocalPlayerDefeated(
+        attackerName && attackerName !== "Voce"
+          ? `${attackerName} derrotou voce. Respawn em instantes.`
+          : undefined
+      );
       return;
     }
 
     const previous = this.remotePlayerStates.get(playerId);
     if (previous) {
       this.updateRemotePlayerState({ ...previous, health: 0, isAlive: false });
+      this.remotePlayers.get(playerId)?.playDamageFeedback();
+
+      if (defeatedByPlayerId && defeatedByPlayerId === localPlayerId) {
+        this.audioSystem.play("hit");
+        this.feedbackSystem.spawn("objective", previous.position, "Derrotado");
+        this.hud.showMessage(`Voce derrotou ${previous.name || "jogador"}.`, 1600);
+      }
     }
   }
 
@@ -505,6 +559,21 @@ export class GameRuntime {
       });
       this.remotePlayers.get(playerId)?.playRespawnFeedback();
     }
+  }
+
+  private getPlayerDisplayName(playerId?: string): string | null {
+    if (!playerId) {
+      return null;
+    }
+
+    if (
+      canUseMultiplayerMechanics(this.sessionAdapter) &&
+      playerId === this.sessionAdapter.getLocalPlayerId()
+    ) {
+      return "Voce";
+    }
+
+    return this.remotePlayerStates.get(playerId)?.name ?? null;
   }
 
   private applyCombatState(players: Record<string, PlayerCombatState>): void {
@@ -542,12 +611,40 @@ export class GameRuntime {
       return;
     }
 
-    this.hud.setMultiplayerInfo(roomId, this.remotePlayers.size + 1, () => {
-      void this.sessionAdapter?.stop();
-      this.clearRemotePlayers();
-      this.hud.hideMultiplayerInfo();
-      this.options.onBackToMenu?.();
-    });
+    const localPlayerId = this.network.getLocalPlayerId();
+    const hostPlayerId = this.network.getHostPlayerId();
+    const players = [
+      {
+        id: localPlayerId ?? "local-player",
+        name: "Voce",
+        isLocal: true,
+        isHost: Boolean(localPlayerId && localPlayerId === hostPlayerId),
+      },
+      ...[...this.remotePlayerStates.values()]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((player) => ({
+          id: player.id,
+          name: player.name || "Player",
+          isLocal: false,
+          isHost: player.id === hostPlayerId,
+        })),
+    ];
+
+    this.hud.setMultiplayerInfo(
+      {
+        roomId,
+        playerCount: players.length,
+        hostPlayerId,
+        localPlayerId,
+        players,
+      },
+      () => {
+        void this.sessionAdapter?.stop();
+        this.clearRemotePlayers();
+        this.hud.hideMultiplayerInfo();
+        this.options.onBackToMenu?.();
+      }
+    );
   }
 
   getMap(): GameMap | null {
@@ -560,6 +657,8 @@ export class GameRuntime {
     this.cameraController.releasePointerLock();
     this.cameraController.dispose();
     this.playerController.dispose();
+    this.mechanics?.dispose();
+    this.mechanics = null;
     this.audioSystem.dispose();
     this.feedbackSystem.dispose();
     this.hud.dispose();
@@ -674,17 +773,7 @@ export class GameRuntime {
     const equippedWeaponId = this.mechanics?.getEquippedWeaponId() ?? null;
     const score = this.mechanics?.getScore() ?? 0;
 
-    if (canSendPlayerState(this.sessionAdapter)) {
-      this.sessionAdapter.sendPlayerState(position, rotationY, health, equippedWeaponId, score);
-    }
-  }
-
-  private sendWorldEvent(event: WorldEvent): void {
-    if (!this.sessionAdapter || !canSyncWorldState(this.sessionAdapter)) {
-      return;
-    }
-
-    this.sessionAdapter.sendWorldEvent(event);
+    this.network.sendPlayerState(position, rotationY, health, equippedWeaponId, score);
   }
 
   private restart(): void {
@@ -757,40 +846,6 @@ export class GameRuntime {
 
     this.togglePause();
   };
-}
-
-function canSendPlayerState(
-  sessionAdapter: GameSessionAdapter
-): sessionAdapter is PlayerStateSessionAdapter {
-  return "sendPlayerState" in sessionAdapter;
-}
-
-function canSyncWorldState(
-  sessionAdapter: GameSessionAdapter | undefined
-): sessionAdapter is WorldStateSessionAdapter {
-  return (
-    sessionAdapter !== undefined &&
-    "sendWorldEvent" in sessionAdapter &&
-    "onWorldEvent" in sessionAdapter &&
-    "onWorldState" in sessionAdapter
-  );
-}
-
-function canUseMultiplayerMechanics(
-  sessionAdapter: GameSessionAdapter | undefined
-): sessionAdapter is MultiplayerMechanicsSessionAdapter {
-  return (
-    canSyncWorldState(sessionAdapter) &&
-    "sendEnemyHit" in sessionAdapter &&
-    "sendEnemyPositionUpdate" in sessionAdapter &&
-    "sendEnemyStateRequest" in sessionAdapter &&
-    "sendPlayerAttack" in sessionAdapter &&
-    "sendPlayerDamageReport" in sessionAdapter &&
-    "sendChatMessage" in sessionAdapter &&
-    "getLocalPlayerId" in sessionAdapter &&
-    "getHostPlayerId" in sessionAdapter &&
-    "isHost" in sessionAdapter
-  );
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

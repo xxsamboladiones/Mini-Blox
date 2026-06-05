@@ -9,6 +9,7 @@ export type VictoryActions = {
 
 export type RuntimeHudActions = VictoryActions & {
   onContinue: () => void;
+  onPause?: () => void;
   onToggleMute?: () => void;
 };
 
@@ -48,6 +49,12 @@ export type GameModeHudStatus = {
   }>;
 };
 
+export type RuntimeWeaponHudInfo = {
+  label: string;
+  typeLabel: string;
+  cooldownProgress: number;
+};
+
 export type GameModeSummary = {
   mode: string;
   teamName?: string;
@@ -63,6 +70,21 @@ export type GameModeSummary = {
   deaths: number;
   objectivesCompleted: number;
   capturePointsOwned: number;
+};
+
+export type MultiplayerHudPlayer = {
+  id: string;
+  name: string;
+  isLocal: boolean;
+  isHost: boolean;
+};
+
+export type MultiplayerHudInfo = {
+  roomId: string;
+  playerCount: number;
+  hostPlayerId: string | null;
+  localPlayerId: string | null;
+  players: MultiplayerHudPlayer[];
 };
 
 export class RuntimeHud {
@@ -88,9 +110,14 @@ export class RuntimeHud {
   private messageTimeout = 0;
   private actions: RuntimeHudActions | null = null;
   private objectivesExpanded = false;
+  private objectivesCollapsed = false;
   private chatMessages: ChatMessage[] = [];
   private chatSendCallback: ((text: string) => void) | null = null;
   private chatCollapsed = true;
+  private audioMuted = false;
+  private coinState: { count: number; total?: number } = { count: 0 };
+  private gameModeStatus: GameModeHudStatus | null = null;
+  private multiplayerInfo: (MultiplayerHudInfo & { onLeaveRoom: () => void }) | null = null;
 
   constructor(container: HTMLElement) {
     this.root.className = "runtime-hud";
@@ -148,40 +175,49 @@ export class RuntimeHud {
 
   setActions(actions: RuntimeHudActions): void {
     this.actions = actions;
+    this.renderActionBar();
+  }
+
+  private renderActionBar(): void {
+    if (!this.actions) {
+      this.actionBar.replaceChildren();
+      return;
+    }
+
+    const leaveButton = this.multiplayerInfo
+      ? `
+      <button class="top-action danger" type="button" data-runtime-action="leave-room" title="Sair da sala" aria-label="Sair da sala">
+        <i data-lucide="log-out"></i>
+        <span>Sair</span>
+      </button>
+    `
+      : "";
+
     this.actionBar.innerHTML = `
-      <button class="top-action" type="button" data-runtime-action="menu" title="Menu" aria-label="Menu">
-        <i data-lucide="house"></i>
-        <span>Menu</span>
-      </button>
-      <button class="top-action" type="button" data-runtime-action="restart" title="Reiniciar" aria-label="Reiniciar">
-        <i data-lucide="rotate-ccw"></i>
-        <span>Reiniciar</span>
-      </button>
-      <button class="top-action primary" type="button" data-runtime-action="edit" title="Editar" aria-label="Editar">
-        <i data-lucide="pencil"></i>
-        <span>Editar</span>
+      <button class="top-action" type="button" data-runtime-action="pause" title="Pausar" aria-label="Pausar">
+        <i data-lucide="pause"></i>
+        <span>Pausar</span>
       </button>
       <button class="top-action icon-runtime-action" type="button" data-runtime-action="mute" title="Mutar audio" aria-label="Mutar audio">
-        <i data-lucide="volume-2"></i>
-        <span data-audio-muted-label>Som</span>
+        <i data-lucide="${this.audioMuted ? "volume-x" : "volume-2"}"></i>
+        <span data-audio-muted-label>${this.audioMuted ? "Mudo" : "Som"}</span>
       </button>
+      ${leaveButton}
     `;
     this.actionBar
-      .querySelector<HTMLButtonElement>('[data-runtime-action="menu"]')
-      ?.addEventListener("click", actions.onMenu);
-    this.actionBar
-      .querySelector<HTMLButtonElement>('[data-runtime-action="restart"]')
-      ?.addEventListener("click", actions.onRestart);
-    this.actionBar
-      .querySelector<HTMLButtonElement>('[data-runtime-action="edit"]')
-      ?.addEventListener("click", actions.onEdit);
+      .querySelector<HTMLButtonElement>('[data-runtime-action="pause"]')
+      ?.addEventListener("click", () => this.actions?.onPause?.());
     this.actionBar
       .querySelector<HTMLButtonElement>('[data-runtime-action="mute"]')
-      ?.addEventListener("click", () => actions.onToggleMute?.());
+      ?.addEventListener("click", () => this.actions?.onToggleMute?.());
+    this.actionBar
+      .querySelector<HTMLButtonElement>('[data-runtime-action="leave-room"]')
+      ?.addEventListener("click", () => this.multiplayerInfo?.onLeaveRoom());
     createIcons({ icons });
   }
 
   setAudioMuted(muted: boolean): void {
+    this.audioMuted = muted;
     const button = this.actionBar.querySelector<HTMLButtonElement>('[data-runtime-action="mute"]');
     const label = this.actionBar.querySelector<HTMLElement>("[data-audio-muted-label]");
     const icon = button?.querySelector<HTMLElement>("[data-lucide]");
@@ -203,12 +239,15 @@ export class RuntimeHud {
   }
 
   setMapName(name: string): void {
-    this.mapLabel.textContent = name;
+    this.mapLabel.innerHTML = `
+      <span class="runtime-card-label">Mapa</span>
+      <strong>${escapeHtml(name)}</strong>
+    `;
   }
 
   setCoins(count: number, total?: number): void {
-    this.coinCounter.textContent =
-      typeof total === "number" ? `Moedas: ${count}/${total}` : `Moedas: ${count}`;
+    this.coinState = typeof total === "number" ? { count, total } : { count };
+    this.renderStatsPanel();
   }
 
   setHealth(current: number, max: number): void {
@@ -216,42 +255,64 @@ export class RuntimeHud {
     const safeCurrent = Math.max(0, Math.min(safeMax, Math.floor(current)));
     const percent = Math.round((safeCurrent / safeMax) * 100);
     this.healthPanel.innerHTML = `
-      <span>Vida: ${safeCurrent}/${safeMax}</span>
+      <div class="runtime-health-readout">
+        <span class="runtime-card-label">Vida</span>
+        <strong>${safeCurrent}/${safeMax}</strong>
+      </div>
       <div class="runtime-health-bar" aria-hidden="true">
         <span style="width: ${percent}%"></span>
       </div>
     `;
   }
 
-  setWeapon(label: string | null): void {
-    this.weaponPanel.textContent = `Arma: ${label ?? "nenhuma"}`;
+  setWeapon(weapon: RuntimeWeaponHudInfo | string | null): void {
+    if (!weapon) {
+      this.weaponPanel.innerHTML = `
+        <span class="runtime-card-label">Arma</span>
+        <strong>Nenhuma</strong>
+      `;
+      return;
+    }
+
+    const info =
+      typeof weapon === "string"
+        ? { label: weapon, typeLabel: "", cooldownProgress: 1 }
+        : {
+            label: weapon.label,
+            typeLabel: weapon.typeLabel,
+            cooldownProgress: Math.max(0, Math.min(1, weapon.cooldownProgress)),
+          };
+
+    this.weaponPanel.innerHTML = `
+      <span class="runtime-card-label">Arma</span>
+      <strong>${escapeHtml(info.label)}</strong>
+      ${info.typeLabel ? `<span class="runtime-weapon-meta">${escapeHtml(info.typeLabel)}</span>` : ""}
+      <div class="runtime-weapon-cooldown" aria-hidden="true">
+        <span style="width: ${Math.round(info.cooldownProgress * 100)}%"></span>
+      </div>
+    `;
+  }
+
+  setWeaponCooldown(progress: number): void {
+    const bar = this.weaponPanel.querySelector<HTMLElement>(".runtime-weapon-cooldown span");
+    if (!bar) {
+      return;
+    }
+
+    const safeProgress = Math.max(0, Math.min(1, progress));
+    bar.style.width = `${Math.round(safeProgress * 100)}%`;
   }
 
   setGameModeStatus(status: GameModeHudStatus | null): void {
+    this.gameModeStatus = status;
+    this.renderStatsPanel();
+
     if (!status) {
       this.gameModePanel.classList.add("hidden");
       this.gameModePanel.replaceChildren();
       return;
     }
 
-    const scoreText =
-      typeof status.targetScore === "number"
-        ? `${status.score}/${status.targetScore}`
-        : String(status.score);
-    const teamRows =
-      status.teamScores.length > 0
-        ? `
-        <div class="runtime-mode-teams">
-          ${status.teamScores
-            .map(
-              (team) => `
-            <span><b style="background:${escapeAttribute(team.color)}"></b>${escapeHtml(team.name)} ${team.score}</span>
-          `
-            )
-            .join("")}
-        </div>
-      `
-        : "";
     const captureRows =
       status.capturePoints.length > 0
         ? `
@@ -270,24 +331,23 @@ export class RuntimeHud {
     this.gameModePanel.classList.remove("hidden");
     this.gameModePanel.innerHTML = `
       <div class="runtime-mode-main">
-        <strong>Modo: ${escapeHtml(status.modeLabel)}</strong>
+        <span class="runtime-card-label">Modo</span>
+        <strong>${escapeHtml(status.modeLabel)}</strong>
         <span>${escapeHtml(status.progressLabel)}</span>
       </div>
-      <div class="runtime-mode-meta">
-        ${status.teamLabel ? `<span>Time: ${escapeHtml(status.teamLabel)}</span>` : ""}
-        <span>Pontos: ${scoreText}</span>
-        ${typeof status.roundTime === "number" ? `<span>Tempo: ${formatTime(status.roundTime)}</span>` : ""}
-      </div>
-      ${teamRows}
       ${captureRows}
     `;
   }
 
   setInventory(items: HudInventoryItem[]): void {
-    this.inventory.textContent =
+    this.inventory.classList.toggle("hidden", items.length === 0);
+    this.inventory.innerHTML =
       items.length === 0
-        ? "Itens: vazio"
-        : `Itens: ${items.map((item) => `${item.label} x${item.quantity}`).join(" - ")}`;
+        ? ""
+        : `
+        <span class="runtime-card-label">Itens</span>
+        <strong>${items.map((item) => `${escapeHtml(item.label)} x${item.quantity}`).join(" - ")}</strong>
+      `;
   }
 
   setObjectives(objectives: HudObjectiveState[]): void {
@@ -303,8 +363,9 @@ export class RuntimeHud {
     }
 
     const hiddenCount = Math.max(0, visibleObjectives.length - 3);
-    const shownObjectives =
-      this.objectivesExpanded || hiddenCount === 0
+    const shownObjectives = this.objectivesCollapsed
+      ? []
+      : this.objectivesExpanded || hiddenCount === 0
         ? visibleObjectives
         : visibleObjectives.slice(0, 3);
 
@@ -314,17 +375,11 @@ export class RuntimeHud {
           <span class="runtime-objectives-kicker">Objetivos</span>
           <strong>${visibleObjectives.filter((objective) => objective.completed).length}/${visibleObjectives.length}</strong>
         </div>
-        ${
-          hiddenCount > 0
-            ? `
-          <button class="runtime-objectives-toggle" type="button" data-objectives-toggle>
-            ${this.objectivesExpanded ? "Ver menos" : `Ver mais ${hiddenCount}`}
-          </button>
-        `
-            : ""
-        }
+        <button class="runtime-objectives-icon-toggle" type="button" data-objectives-collapse title="${this.objectivesCollapsed ? "Abrir objetivos" : "Recolher objetivos"}" aria-label="${this.objectivesCollapsed ? "Abrir objetivos" : "Recolher objetivos"}">
+          <i data-lucide="${this.objectivesCollapsed ? "panel-right-open" : "panel-right-close"}"></i>
+        </button>
       </div>
-      <div class="runtime-objectives-list">
+      <div class="runtime-objectives-list ${this.objectivesCollapsed ? "hidden" : ""}">
         ${shownObjectives
           .map(
             (objective) => `
@@ -342,14 +397,30 @@ export class RuntimeHud {
           )
           .join("")}
       </div>
+      ${
+        !this.objectivesCollapsed && hiddenCount > 0
+          ? `
+        <button class="runtime-objectives-toggle" type="button" data-objectives-toggle>
+          ${this.objectivesExpanded ? "Ver menos" : `Ver mais ${hiddenCount}`}
+        </button>
+      `
+          : ""
+      }
     `;
 
+    this.objectivesPanel
+      .querySelector<HTMLButtonElement>("[data-objectives-collapse]")
+      ?.addEventListener("click", () => {
+        this.objectivesCollapsed = !this.objectivesCollapsed;
+        this.setObjectives(objectives);
+      });
     this.objectivesPanel
       .querySelector<HTMLButtonElement>("[data-objectives-toggle]")
       ?.addEventListener("click", () => {
         this.objectivesExpanded = !this.objectivesExpanded;
         this.setObjectives(objectives);
       });
+    createIcons({ icons });
   }
 
   showDialogue(speaker: string, line: string, hasNext: boolean): void {
@@ -367,8 +438,14 @@ export class RuntimeHud {
   }
 
   setKeys(labels: string[]): void {
-    this.keyInventory.textContent =
-      labels.length === 0 ? "Chaves: nenhuma" : `Chaves: ${labels.join(", ")}`;
+    this.keyInventory.classList.toggle("hidden", labels.length === 0);
+    this.keyInventory.innerHTML =
+      labels.length === 0
+        ? ""
+        : `
+        <span class="runtime-card-label">Chaves</span>
+        <strong>${labels.map(escapeHtml).join(", ")}</strong>
+      `;
   }
 
   showMessage(text: string, durationMs = 1800): void {
@@ -444,27 +521,26 @@ export class RuntimeHud {
     this.hidePause();
     this.hideDialogue();
     this.victoryPanel.classList.remove("hidden");
+    const stats = buildVictoryStats(summary, coinCount, this.multiplayerInfo?.playerCount ?? null);
     this.victoryPanel.innerHTML = `
       <div class="runtime-victory-content">
         <div class="runtime-overlay-heading">
           <strong>${escapeHtml(message)}</strong>
-          <span>Moedas coletadas: ${coinCount}</span>
+          <span>${summary ? escapeHtml(getModeSummaryLabel(summary)) : "Mapa concluido"}</span>
         </div>
-        ${
-          summary
-            ? `
-          <div class="runtime-victory-summary">
-            <span>Modo: ${escapeHtml(summary.mode)}</span>
-            ${summary.teamName ? `<span>Time: ${escapeHtml(summary.teamName)}</span>` : ""}
-            <span>Pontos: ${summary.score}</span>
-            <span>Inimigos: ${summary.enemiesDefeated}</span>
-            <span>Objetivos: ${summary.objectivesCompleted}</span>
-            <span>Mortes: ${summary.deaths}</span>
-            ${summary.capturePointsOwned > 0 ? `<span>Pontos capturados: ${summary.capturePointsOwned}</span>` : ""}
-          </div>
-        `
-            : ""
-        }
+        <div class="runtime-victory-summary">
+          ${stats
+            .map(
+              (stat) => `
+            <span>
+              <small>${escapeHtml(stat.label)}</small>
+              <strong>${escapeHtml(stat.value)}</strong>
+            </span>
+          `
+            )
+            .join("")}
+        </div>
+        ${summary && summary.teamScores.length > 0 ? renderVictoryTeams(summary) : ""}
         <div class="runtime-victory-actions">
           <button class="top-action primary" type="button" data-victory-action="restart">
             <i data-lucide="rotate-ccw"></i>
@@ -505,36 +581,67 @@ export class RuntimeHud {
     this.root.remove();
   }
 
-  setMultiplayerInfo(roomId: string, playerCount: number, onLeaveRoom: () => void): void {
+  setMultiplayerInfo(info: MultiplayerHudInfo, onLeaveRoom: () => void): void {
+    this.multiplayerInfo = { ...info, onLeaveRoom };
     this.multiplayerPanel.classList.remove("hidden");
-    this.multiplayerPanel.innerHTML = `
-      <div class="multiplayer-info">
-        <span class="multiplayer-state">Multiplayer ativo</span>
-        <span class="room-id" title="${escapeAttribute(roomId)}">Sala: ${escapeHtml(shortRoomId(roomId))}</span>
-        <span class="player-count">${playerCount} jogadores</span>
-        <span class="runtime-sync-state">Estado sincronizado</span>
-      </div>
-      <button class="top-action danger" type="button" data-multiplayer-action="leave">
-        <i data-lucide="log-out"></i>
-        <span>Sair da Sala</span>
-      </button>
-    `;
+    this.renderMultiplayerPanel();
+    this.renderActionBar();
+  }
 
-    this.multiplayerPanel
-      .querySelector<HTMLButtonElement>('[data-multiplayer-action="leave"]')
-      ?.addEventListener("click", onLeaveRoom);
-    createIcons({ icons });
+  private renderMultiplayerPanel(): void {
+    if (!this.multiplayerInfo) {
+      this.multiplayerPanel.replaceChildren();
+      return;
+    }
+
+    const hostName =
+      this.multiplayerInfo.players.find(
+        (player) => player.id === this.multiplayerInfo?.hostPlayerId
+      )?.name ??
+      (this.multiplayerInfo.hostPlayerId
+        ? shortRoomId(this.multiplayerInfo.hostPlayerId)
+        : "aguardando");
+    const visiblePlayers = this.multiplayerInfo.players.slice(0, 5);
+    const hiddenCount = Math.max(0, this.multiplayerInfo.players.length - visiblePlayers.length);
+
+    this.multiplayerPanel.innerHTML = `
+      <div class="runtime-multiplayer-heading">
+        <span class="runtime-card-label">Sala</span>
+        <strong title="${escapeAttribute(this.multiplayerInfo.roomId)}">${escapeHtml(shortRoomId(this.multiplayerInfo.roomId))}</strong>
+      </div>
+      <div class="multiplayer-info">
+        <span class="multiplayer-state">Online</span>
+        <span class="player-count">${this.multiplayerInfo.playerCount} jogadores</span>
+        <span class="room-host">Host: ${escapeHtml(hostName)}</span>
+      </div>
+      <div class="runtime-player-roster">
+        ${visiblePlayers
+          .map(
+            (player) => `
+          <span class="${player.isLocal ? "local" : ""} ${player.isHost ? "host" : ""}">
+            ${escapeHtml(player.name)}
+            ${player.isLocal ? "<b>voce</b>" : ""}
+            ${player.isHost ? "<b>host</b>" : ""}
+          </span>
+        `
+          )
+          .join("")}
+        ${hiddenCount > 0 ? `<span>+${hiddenCount}</span>` : ""}
+      </div>
+    `;
   }
 
   hideMultiplayerInfo(): void {
+    this.multiplayerInfo = null;
     this.multiplayerPanel.classList.add("hidden");
     this.multiplayerPanel.replaceChildren();
+    this.renderActionBar();
   }
 
   updatePlayerCount(count: number): void {
-    const playerCountEl = this.multiplayerPanel.querySelector(".player-count");
-    if (playerCountEl) {
-      playerCountEl.textContent = `${count} jogadores`;
+    if (this.multiplayerInfo) {
+      this.multiplayerInfo.playerCount = count;
+      this.renderMultiplayerPanel();
     }
   }
 
@@ -552,6 +659,13 @@ export class RuntimeHud {
 
   setChatMessages(messages: ChatMessage[]): void {
     this.chatMessages = messages.slice(-50);
+    this.updateChatCount();
+
+    if (this.chatCollapsed) {
+      this.renderChat();
+      return;
+    }
+
     this.renderChatMessages();
   }
 
@@ -567,6 +681,10 @@ export class RuntimeHud {
 
   blurChat(): void {
     this.chatPanel.querySelector<HTMLInputElement>("[data-chat-input]")?.blur();
+    if (!this.chatCollapsed) {
+      this.chatCollapsed = true;
+      this.renderChat();
+    }
   }
 
   isChatFocused(): boolean {
@@ -585,6 +703,7 @@ export class RuntimeHud {
           <i data-lucide="${this.chatCollapsed ? "message-circle" : "chevron-down"}"></i>
         </button>
         <span>Chat</span>
+        <small data-chat-count>${this.chatMessages.length}</small>
       </div>
       <div class="runtime-chat-body">
         <div class="runtime-chat-messages" data-chat-messages></div>
@@ -602,6 +721,9 @@ export class RuntimeHud {
       ?.addEventListener("click", () => {
         this.chatCollapsed = !this.chatCollapsed;
         this.renderChat();
+        if (!this.chatCollapsed) {
+          this.chatPanel.querySelector<HTMLInputElement>("[data-chat-input]")?.focus();
+        }
       });
     this.chatPanel
       .querySelector<HTMLFormElement>("[data-chat-form]")
@@ -637,13 +759,90 @@ export class RuntimeHud {
             .map(
               (message) => `
           <div class="runtime-chat-message ${message.type}">
-            <strong>${escapeHtml(message.playerName)}</strong>
+            <div>
+              <strong>${escapeHtml(message.type === "system" ? "Sistema" : message.playerName)}</strong>
+              <time>${formatChatTime(message.createdAt)}</time>
+            </div>
             <span>${escapeHtml(message.text)}</span>
           </div>
         `
             )
             .join("");
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  private updateChatCount(): void {
+    const countEl = this.chatPanel.querySelector<HTMLElement>("[data-chat-count]");
+    if (countEl) {
+      countEl.textContent = String(this.chatMessages.length);
+    }
+  }
+
+  private renderStatsPanel(): void {
+    const status = this.gameModeStatus;
+    const scoreText = status
+      ? typeof status.targetScore === "number"
+        ? `${status.score}/${status.targetScore}`
+        : String(status.score)
+      : null;
+    const coinText =
+      typeof this.coinState.total === "number"
+        ? `${this.coinState.count}/${this.coinState.total}`
+        : String(this.coinState.count);
+
+    this.coinCounter.innerHTML = `
+      <div class="runtime-stats-grid">
+        <span>
+          <small>Moedas</small>
+          <strong>${escapeHtml(coinText)}</strong>
+        </span>
+        ${
+          scoreText
+            ? `
+          <span>
+            <small>Score</small>
+            <strong>${escapeHtml(scoreText)}</strong>
+          </span>
+        `
+            : ""
+        }
+        ${
+          status?.teamLabel
+            ? `
+          <span>
+            <small>Time</small>
+            <strong>${escapeHtml(status.teamLabel)}</strong>
+          </span>
+        `
+            : ""
+        }
+        ${
+          typeof status?.roundTime === "number"
+            ? `
+          <span>
+            <small>Tempo</small>
+            <strong>${formatTime(status.roundTime)}</strong>
+          </span>
+        `
+            : ""
+        }
+      </div>
+      ${
+        status && status.teamScores.length > 0
+          ? `
+        <div class="runtime-mode-teams">
+          ${status.teamScores
+            .map(
+              (team) => `
+            <span><b style="background:${escapeAttribute(team.color)}"></b>${escapeHtml(team.name)} ${team.score}</span>
+          `
+            )
+            .join("")}
+        </div>
+      `
+          : ""
+      }
+    `;
   }
 }
 
@@ -657,6 +856,60 @@ function getObjectiveDetail(objective: HudObjectiveState): string {
 
 function shortRoomId(roomId: string): string {
   return roomId.length > 12 ? `${roomId.slice(0, 8)}...${roomId.slice(-4)}` : roomId;
+}
+
+function buildVictoryStats(
+  summary: GameModeSummary | undefined,
+  coinCount: number,
+  playerCount: number | null
+): Array<{ label: string; value: string }> {
+  const stats = [
+    { label: "Score", value: String(summary?.score ?? 0) },
+    { label: "Moedas", value: String(summary?.coinsCollected ?? coinCount) },
+    { label: "Kills", value: String(summary?.enemiesDefeated ?? 0) },
+    { label: "Deaths", value: String(summary?.deaths ?? 0) },
+    { label: "Objetivos", value: String(summary?.objectivesCompleted ?? 0) },
+  ];
+
+  if (summary?.capturePointsOwned) {
+    stats.push({ label: "Capturas", value: String(summary.capturePointsOwned) });
+  }
+
+  if (playerCount !== null) {
+    stats.push({ label: "Players", value: String(playerCount) });
+  }
+
+  return stats;
+}
+
+function getModeSummaryLabel(summary: GameModeSummary): string {
+  return summary.teamName ? `${summary.mode} - ${summary.teamName}` : summary.mode;
+}
+
+function renderVictoryTeams(summary: GameModeSummary): string {
+  return `
+    <div class="runtime-victory-teams">
+      ${summary.teamScores
+        .map(
+          (team) => `
+        <span><b style="background:${escapeAttribute(team.color)}"></b>${escapeHtml(team.name)} ${team.score}</span>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function formatChatTime(value: number): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function escapeHtml(value: string): string {

@@ -27,8 +27,7 @@ import {
 } from "../shared/types/MapSchema";
 import type { BuiltInObjectType } from "../shared/types/ObjectSchema";
 import { MapStorage } from "../storage/MapStorage";
-import { OnlineMapService, OnlineServiceError } from "../services/OnlineMapService.js";
-import { LocalProfileStorage } from "../storage/LocalProfileStorage.js";
+import { EditorOnlinePublishController } from "./EditorOnlinePublishController";
 
 type EditorAppOptions = {
   initialMap?: GameMap;
@@ -46,6 +45,7 @@ export class EditorApp {
   private gameModePanel: GameModePanel | null = null;
   private objectOutliner: ObjectOutliner | null = null;
   private saveButtons: SaveMapButton | null = null;
+  private readonly onlinePublishController = new EditorOnlinePublishController();
   private testRuntime: GameRuntime | null = null;
   private currentMap: GameMap = createDefaultMap();
   private testing = false;
@@ -580,75 +580,24 @@ export class EditorApp {
 
   private async publishMap(): Promise<void> {
     const map = this.getCurrentSnapshot();
-    const creatorName = LocalProfileStorage.getDisplayName();
-
-    if (map.onlineMetadata?.onlineId) {
-      await this.updateOnlineMap(map, map.onlineMetadata.onlineId);
-    } else {
-      await this.publishNewOnlineMap(map, creatorName);
-    }
-  }
-
-  private async publishNewOnlineMap(map: GameMap, creatorName: string): Promise<void> {
-    this.showToast("Publicando mapa online...");
+    const isUpdate = Boolean(map.onlineMetadata?.onlineId);
+    this.showToast(isUpdate ? "Atualizando mapa online..." : "Publicando mapa online...");
 
     try {
-      const { onlineId, summary } = await OnlineMapService.publishOnlineMap(map, creatorName);
-
-      map.isPublished = true;
-      map.publishedAt = summary.publishedAt;
-      map.onlineMetadata = {
-        onlineId,
-        publishedAt: summary.publishedAt,
-        updatedAt: summary.updatedAt,
-      };
-
-      this.editorScene?.updateMapInfo({
-        isPublished: true,
-        publishedAt: summary.publishedAt,
-        onlineMetadata: map.onlineMetadata,
-      });
-
+      const result = await this.onlinePublishController.publish(map);
+      Object.assign(map, result.patch);
+      this.editorScene?.updateMapInfo(result.patch);
       MapStorage.saveMap(map);
       this.currentMap = map;
       this.updatePublishStatus(map);
-      this.showToast("Mapa publicado online com sucesso!");
+      this.showToast(result.successMessage);
     } catch (error) {
-      if (error instanceof OnlineServiceError && error.isOffline) {
-        this.showToast("Servidor online indisponível. O mapa continua salvo localmente.");
-      } else {
-        this.showToast(error instanceof Error ? error.message : "Erro ao publicar mapa online.");
-      }
-    }
-  }
-
-  private async updateOnlineMap(map: GameMap, onlineId: string): Promise<void> {
-    this.showToast("Atualizando mapa online...");
-
-    try {
-      const summary = await OnlineMapService.updateOnlineMap(onlineId, map);
-
-      if (summary) {
-        map.onlineMetadata = {
-          onlineId,
-          publishedAt: summary.publishedAt,
-          updatedAt: summary.updatedAt,
-        };
-
-        this.editorScene?.updateMapInfo({
-          onlineMetadata: map.onlineMetadata,
-        });
-
-        MapStorage.saveMap(map);
-        this.currentMap = map;
-        this.showToast("Mapa atualizado online com sucesso!");
-      }
-    } catch (error) {
-      if (error instanceof OnlineServiceError && error.isOffline) {
-        this.showToast("Servidor online indisponível. O mapa continua salvo localmente.");
-      } else {
-        this.showToast(error instanceof Error ? error.message : "Erro ao atualizar mapa online.");
-      }
+      this.showToast(
+        this.onlinePublishController.getErrorMessage(
+          error,
+          isUpdate ? "Erro ao atualizar mapa online." : "Erro ao publicar mapa online."
+        )
+      );
     }
   }
 

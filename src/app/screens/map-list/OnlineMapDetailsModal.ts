@@ -12,11 +12,7 @@ type OnlineMapDetailsModalActions = {
   onPlayMap: (map: GameMap) => void;
   onEditMap: (map: GameMap) => void;
   onClose: () => void;
-  onPlayMultiplayer?: (
-    map: GameMap,
-    roomId: string,
-    onlineMapId?: string
-  ) => void | Promise<void>;
+  onPlayMultiplayer?: (map: GameMap, roomId: string, onlineMapId?: string) => void | Promise<void>;
   onCreateMultiplayerRoom?: (map: GameMap, onlineMapId?: string) => void | Promise<void>;
 };
 
@@ -148,7 +144,7 @@ export class OnlineMapDetailsModal {
 
             <div class="detail-description">
               <h3>Descrição</h3>
-              <p>${this.escapeHtml(summary.description || "Sem descrição.")}</p>
+              <p>${this.escapeHtml(summary.description || "Sem descricao.")}</p>
             </div>
 
             ${
@@ -181,7 +177,7 @@ export class OnlineMapDetailsModal {
           </button>
           <button class="action-button" type="button" data-action="download">
             <i data-lucide="download"></i>
-            <span>Salvar cópia local</span>
+            <span>Salvar copia local</span>
           </button>
         </footer>
       </div>
@@ -218,7 +214,7 @@ export class OnlineMapDetailsModal {
       this.actions.onPlayMap(gameMap);
     } catch (error) {
       if (error instanceof OnlineServiceError && error.isOffline) {
-        alert("Servidor online indisponível. Não é possível jogar este mapa agora.");
+        alert("Servidor online indisponivel. Nao e possivel jogar este mapa agora.");
       } else {
         alert(error instanceof Error ? error.message : "Erro ao carregar mapa online.");
       }
@@ -240,7 +236,7 @@ export class OnlineMapDetailsModal {
       }
     } catch (error) {
       if (error instanceof OnlineServiceError && error.isOffline) {
-        alert("Servidor online indisponível. Não é possível curtir este mapa agora.");
+        alert("Servidor online indisponivel. Nao e possivel curtir este mapa agora.");
       } else {
         alert(error instanceof Error ? error.message : "Erro ao curtir mapa.");
       }
@@ -253,7 +249,7 @@ export class OnlineMapDetailsModal {
       MapStorage.saveMap(localCopy);
 
       const shouldOpen = confirm(
-        `Mapa "${summary.name}" salvo como cópia local!\n\nDeseja abrir no editor agora?`
+        `Mapa "${summary.name}" salvo como copia local!\n\nDeseja abrir no editor agora?`
       );
 
       if (shouldOpen) {
@@ -262,7 +258,7 @@ export class OnlineMapDetailsModal {
       }
     } catch (error) {
       if (error instanceof OnlineServiceError && error.isOffline) {
-        alert("Servidor online indisponível. Não é possível baixar este mapa agora.");
+        alert("Servidor online indisponivel. Nao e possivel baixar este mapa agora.");
       } else {
         alert(error instanceof Error ? error.message : "Erro ao baixar mapa.");
       }

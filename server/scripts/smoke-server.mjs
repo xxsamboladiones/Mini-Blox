@@ -52,6 +52,44 @@ async function testListMaps() {
   return Array.isArray(data);
 }
 
+async function testInvalidPublishMap(label, mutateMap) {
+  console.log(`\nTesting invalid POST /api/maps (${label})...`);
+  const map = {
+    id: `invalid-map-${label}`,
+    name: `Invalid Map ${label}`,
+    authorId: "test-author",
+    description: "Invalid smoke map",
+    creatorName: "Test Creator",
+    spawnPoint: { x: 0, y: 1, z: 0 },
+    objects: [
+      {
+        id: "obj-1",
+        type: "cube",
+        position: { x: 0, y: 0, z: 0 },
+        scale: { x: 1, y: 1, z: 1 },
+      },
+    ],
+    visualSettings: { theme: "classic" },
+    gameModeSettings: { mode: "freeplay" },
+  };
+
+  mutateMap(map);
+
+  const response = await fetch(`${BASE_URL}/api/maps`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      map,
+      creatorName: "Test Creator",
+      clientId: "test-client-123",
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  console.log(`âœ“ Invalid publish rejected (${label}):`, data);
+  return response.status === 400 && data.ok === false;
+}
+
 async function testGetMap(onlineId) {
   console.log("\nTesting GET /api/maps/:id...");
   const response = await fetch(`${BASE_URL}/api/maps/${onlineId}`);
@@ -144,6 +182,22 @@ async function main() {
     const onlineId = await testPublishMap();
     if (!onlineId) {
       console.error("❌ Publish map failed");
+      process.exit(1);
+    }
+
+    const invalidScaleRejected = await testInvalidPublishMap("scale", (map) => {
+      map.objects[0].scale = { x: 100000, y: 1, z: 1 };
+    });
+    const invalidDamageRejected = await testInvalidPublishMap("damage", (map) => {
+      map.objects[0].type = "enemy";
+      map.objects[0].properties = { health: 100, damage: 9999, speed: 1 };
+    });
+    const suspiciousFieldRejected = await testInvalidPublishMap("suspicious-field", (map) => {
+      map.objects[0].properties = { outerHTML: "<script>alert(1)</script>" };
+    });
+
+    if (!invalidScaleRejected || !invalidDamageRejected || !suspiciousFieldRejected) {
+      console.error("âŒ Invalid publish validation failed");
       process.exit(1);
     }
 

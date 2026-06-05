@@ -9,7 +9,10 @@ import type {
   MultiplayerClientMessage,
   MultiplayerServerMessage,
   PlayerAttackPayload,
+  PlayerAttackVisualPayload,
   PlayerCombatState,
+  PlayerHealRequestPayload,
+  PlayerHealSource,
   PlayerNetState,
   SharedWorldState,
   WorldEvent,
@@ -39,6 +42,16 @@ type MultiplayerCallbacks = {
   onPlayerDamaged:
     | ((targetPlayerId: string, damage: number, health: number, attackerPlayerId?: string) => void)
     | null;
+  onPlayerHealed:
+    | ((
+        playerId: string,
+        amount: number,
+        health: number,
+        source: PlayerHealSource,
+        sourceObjectId?: string
+      ) => void)
+    | null;
+  onPlayerAttackVisual: ((playerId: string, payload: PlayerAttackVisualPayload) => void) | null;
   onPlayerDefeated: ((playerId: string, defeatedByPlayerId?: string) => void) | null;
   onPlayerRespawned:
     | ((playerId: string, health: number, position: PlayerNetState["position"]) => void)
@@ -238,6 +251,20 @@ export class MultiplayerService {
     });
   }
 
+  sendPlayerAttackVisual(payload: PlayerAttackVisualPayload): void {
+    this.send({
+      type: "playerAttackVisual",
+      ...payload,
+    });
+  }
+
+  sendPlayerHealRequest(payload: PlayerHealRequestPayload): void {
+    this.send({
+      type: "playerHealRequest",
+      ...payload,
+    });
+  }
+
   sendPlayerDamageReport(
     damage: number,
     source: "enemy" | "hazard" | "logic",
@@ -313,6 +340,24 @@ export class MultiplayerService {
     ) => void
   ): void {
     this.callbacks.onPlayerDamaged = callback;
+  }
+
+  onPlayerHealed(
+    callback: (
+      playerId: string,
+      amount: number,
+      health: number,
+      source: PlayerHealSource,
+      sourceObjectId?: string
+    ) => void
+  ): void {
+    this.callbacks.onPlayerHealed = callback;
+  }
+
+  onPlayerAttackVisual(
+    callback: (playerId: string, payload: PlayerAttackVisualPayload) => void
+  ): void {
+    this.callbacks.onPlayerAttackVisual = callback;
   }
 
   onPlayerDefeated(callback: (playerId: string, defeatedByPlayerId?: string) => void): void {
@@ -435,6 +480,25 @@ export class MultiplayerService {
         );
         break;
 
+      case "playerHealed":
+        this.callbacks.onPlayerHealed?.(
+          message.playerId,
+          message.amount,
+          message.health,
+          message.source,
+          message.sourceObjectId
+        );
+        break;
+
+      case "playerAttackVisual":
+        this.callbacks.onPlayerAttackVisual?.(message.playerId, {
+          weaponId: message.weaponId,
+          attackType: message.attackType,
+          origin: message.origin,
+          direction: message.direction,
+        });
+        break;
+
       case "playerDefeated":
         this.callbacks.onPlayerDefeated?.(message.playerId, message.defeatedByPlayerId);
         break;
@@ -495,6 +559,8 @@ function createEmptyCallbacks(): MultiplayerCallbacks {
     onEnemyDefeated: null,
     onCombatState: null,
     onPlayerDamaged: null,
+    onPlayerHealed: null,
+    onPlayerAttackVisual: null,
     onPlayerDefeated: null,
     onPlayerRespawned: null,
     onChatHistory: null,

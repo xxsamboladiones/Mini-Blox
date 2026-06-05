@@ -67,6 +67,10 @@ export class FeedbackSystem {
       this.spawnFloatingText(label ?? "Objetivo", "objective");
     } else if (cue === "npc") {
       this.spawnFloatingText(label ?? "NPC", "item");
+    } else if (cue === "damage" && label) {
+      this.spawnFloatingText(label, "danger");
+    } else if (cue === "checkpoint" && label) {
+      this.spawnFloatingText(label, "objective");
     } else if (cue === "death") {
       this.spawnFloatingText("Respawn", "danger");
     } else if (cue === "victory") {

@@ -86,7 +86,14 @@ export type MapObjectProperties = Record<string, unknown> & {
   behavior?: "idle" | "patrol" | "chase";
   patrolOffset?: Vector3;
   itemPool?: string[];
-  spawnItemType?: "health" | "coin" | "weapon_basic";
+  spawnItemType?:
+    | "health"
+    | "coin"
+    | "weapon_basic"
+    | "weapon_basic_sword"
+    | "weapon_heavy_hammer"
+    | "weapon_dagger"
+    | "weapon_blaster";
   spawnMode?: "fixed" | "random";
   respawnTime?: number;
   spawnOnStart?: boolean;

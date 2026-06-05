@@ -16,6 +16,10 @@ const MIN_OBJECTS = {
   guideMission: 160,
   localTeamArena: 170,
   localCapturePoint: 160,
+  multiplayerPvpArena: 120,
+  multiplayerCoopEnemies: 130,
+  weaponArsenal: 125,
+  pvpArsenal: 135,
   competitiveCoin: 190,
   objectiveArena: 190,
   keyPuzzle: 350,
@@ -103,6 +107,39 @@ const REQUIRED_MINIMUMS = {
     teamSpawns: 2,
     capturePoints: 1,
     logic: 3,
+  },
+  multiplayerPvpArena: {
+    checkpoints: 2,
+    itemSpawners: 6,
+    messageZones: 1,
+    teamSpawns: 2,
+    logic: 2,
+  },
+  multiplayerCoopEnemies: {
+    coins: 12,
+    checkpoints: 2,
+    enemies: 4,
+    itemSpawners: 4,
+    messageZones: 1,
+    doors: 1,
+    buttons: 1,
+    logic: 2,
+  },
+  weaponArsenal: {
+    coins: 8,
+    checkpoints: 2,
+    enemies: 3,
+    itemSpawners: 6,
+    messageZones: 1,
+    logic: 2,
+  },
+  pvpArsenal: {
+    checkpoints: 2,
+    itemSpawners: 8,
+    messageZones: 1,
+    teamSpawns: 2,
+    jumpPads: 2,
+    logic: 2,
   },
   competitiveCoin: { coins: 28, checkpoints: 2, damage: 1, jumpPads: 1, messageZones: 1, logic: 2 },
   objectiveArena: {
@@ -1517,11 +1554,20 @@ function validateLogicRule(
 }
 
 function isValidItemType(value) {
-  return value === "health" || value === "coin" || value === "weapon_basic";
+  return (
+    value === "health" ||
+    value === "coin" ||
+    value === "weapon_basic" ||
+    value === "weapon_heavy_hammer" ||
+    value === "weapon_dagger" ||
+    value === "weapon_blaster"
+  );
 }
 
 function isValidWeaponId(value) {
-  return value === "basic_sword";
+  return (
+    value === "basic_sword" || value === "heavy_hammer" || value === "dagger" || value === "blaster"
+  );
 }
 
 function isValidRoundResult(value) {

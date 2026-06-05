@@ -71,14 +71,20 @@ export class MultiplayerLobbyModal {
         </div>
         <div class="modal-body">
           <div class="lobby-section">
-            <h3>Criar Sala</h3>
+            <div class="lobby-section-heading">
+              <h3>Criar sala</h3>
+              <span>Multiplayer online</span>
+            </div>
             <button class="btn btn-primary" type="button" data-action="create-room">
               <i data-lucide="plus"></i>
-              <span>Criar Sala</span>
+              <span>Criar sala</span>
             </button>
           </div>
           <div class="lobby-section">
-            <h3>Salas Disponiveis</h3>
+            <div class="lobby-section-heading">
+              <h3>Salas disponiveis</h3>
+              <span data-section="room-count"></span>
+            </div>
             <div class="rooms-list" data-section="rooms-list">
               <p class="loading">Carregando salas...</p>
             </div>
@@ -119,7 +125,7 @@ export class MultiplayerLobbyModal {
       await this.onCreateRoom();
       this.hide();
     } catch (error) {
-      this.setStatus(getErrorMessage(error, "Erro ao criar sala."));
+      this.setStatus(getFriendlyLobbyError(error, "Erro ao criar sala."));
       this.setButtonsDisabled(false);
       this.busy = false;
     }
@@ -138,7 +144,7 @@ export class MultiplayerLobbyModal {
       await this.onJoinRoom(roomId);
       this.hide();
     } catch (error) {
-      this.setStatus(getErrorMessage(error, "Erro ao entrar na sala."));
+      this.setStatus(getFriendlyLobbyError(error, "Erro ao entrar na sala."));
       this.setButtonsDisabled(false);
       this.busy = false;
     }
@@ -155,6 +161,7 @@ export class MultiplayerLobbyModal {
       const rooms = response.rooms.filter((room) => room.onlineMapId === onlineMapId);
 
       if (rooms.length === 0) {
+        this.setRoomCount("");
         roomsList.innerHTML = '<p class="empty">Nenhuma sala disponivel para este mapa.</p>';
         return;
       }
@@ -172,6 +179,7 @@ export class MultiplayerLobbyModal {
         })
       );
 
+      this.setRoomCount(`${detailedRooms.length} sala${detailedRooms.length === 1 ? "" : "s"}`);
       roomsList.innerHTML = detailedRooms.map((room) => this.renderRoom(room)).join("");
 
       roomsList.querySelectorAll<HTMLButtonElement>('[data-action="join-room"]').forEach((btn) => {
@@ -190,8 +198,10 @@ export class MultiplayerLobbyModal {
           }
         });
       });
+      createIcons({ icons });
     } catch (error) {
-      roomsList.innerHTML = `<p class="error">${escapeHtml(getErrorMessage(error, "Erro ao carregar salas."))}</p>`;
+      this.setRoomCount("");
+      roomsList.innerHTML = `<p class="error">${escapeHtml(getFriendlyLobbyError(error, "Erro ao carregar salas."))}</p>`;
     }
   }
 
@@ -201,24 +211,47 @@ export class MultiplayerLobbyModal {
     const hostName =
       players.find((player) => player.id === room.hostPlayerId)?.name ??
       (room.hostPlayerId ? shortId(room.hostPlayerId) : "aguardando");
+    const visiblePlayers = players.slice(0, 6);
+    const hiddenPlayerCount = Math.max(0, players.length - visiblePlayers.length);
     return `
-      <div class="room-card">
+      <div class="room-card ${isFull ? "full" : ""}">
         <div class="room-info">
-          <span class="room-code">${escapeHtml(room.roomId)}</span>
-          <span class="room-players">${room.playerCount}/${room.maxPlayers} jogadores</span>
-          <span class="room-host">Host: ${escapeHtml(hostName)}</span>
-          ${
-            players.length > 0
-              ? `<span class="room-roster">${players.map((player) => escapeHtml(player.name)).join(", ")}</span>`
-              : ""
-          }
+          <div class="room-card-top">
+            <span class="room-code" title="${escapeAttribute(room.roomId)}">${escapeHtml(shortRoomCode(room.roomId))}</span>
+            <span class="room-status ${isFull ? "full" : "open"}">${isFull ? "Cheia" : "Aberta"}</span>
+          </div>
+          <div class="room-meta-line">
+            <span class="room-players"><i data-lucide="users"></i>${room.playerCount}/${room.maxPlayers}</span>
+            <span class="room-host"><i data-lucide="crown"></i>${escapeHtml(hostName)}</span>
+          </div>
+          <div class="room-roster" aria-label="Jogadores na sala">
+            ${
+              visiblePlayers.length > 0
+                ? visiblePlayers
+                    .map(
+                      (player) => `
+                <span class="${player.id === room.hostPlayerId ? "host" : ""}">
+                  ${escapeHtml(player.name)}
+                  ${player.id === room.hostPlayerId ? "<b>host</b>" : ""}
+                </span>
+              `
+                    )
+                    .join("")
+                : `<span>Aguardando jogadores</span>`
+            }
+            ${hiddenPlayerCount > 0 ? `<span>+${hiddenPlayerCount}</span>` : ""}
+          </div>
         </div>
-        <button class="btn btn-sm" type="button" data-action="copy-room" data-room-id="${escapeAttribute(room.roomId)}">
-          Copiar
-        </button>
-        <button class="btn btn-sm btn-primary" type="button" data-action="join-room" data-room-id="${escapeAttribute(room.roomId)}" ${isFull ? "disabled" : ""}>
-          ${isFull ? "Sala cheia" : "Entrar"}
-        </button>
+        <div class="room-actions">
+          <button class="btn btn-sm" type="button" data-action="copy-room" data-room-id="${escapeAttribute(room.roomId)}" title="Copiar roomId" aria-label="Copiar roomId">
+            <i data-lucide="copy"></i>
+            <span>Copiar</span>
+          </button>
+          <button class="btn btn-sm btn-primary" type="button" data-action="join-room" data-room-id="${escapeAttribute(room.roomId)}" ${isFull ? "disabled" : ""}>
+            <i data-lucide="${isFull ? "lock" : "log-in"}"></i>
+            <span>${isFull ? "Sala cheia" : "Entrar"}</span>
+          </button>
+        </div>
       </div>
     `;
   }
@@ -226,9 +259,9 @@ export class MultiplayerLobbyModal {
   private async handleCopyRoom(roomId: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(roomId);
-      this.setStatus("Codigo da sala copiado.");
+      this.setStatus("roomId copiado.");
     } catch {
-      this.setStatus(`Codigo da sala: ${roomId}`);
+      this.setStatus(`roomId: ${roomId}`);
     }
   }
 
@@ -237,6 +270,13 @@ export class MultiplayerLobbyModal {
     if (label) {
       label.textContent = `Mapa online: ${shortId(onlineMapId)}`;
       label.title = onlineMapId;
+    }
+  }
+
+  private setRoomCount(message: string): void {
+    const label = this.modal.querySelector<HTMLElement>('[data-section="room-count"]');
+    if (label) {
+      label.textContent = message;
     }
   }
 
@@ -263,6 +303,22 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
+function getFriendlyLobbyError(error: unknown, fallback: string): string {
+  if (isLikelyOfflineError(error)) {
+    return "Backend offline. Inicie o servidor online e tente novamente.";
+  }
+
+  return getErrorMessage(error, fallback);
+}
+
+function isLikelyOfflineError(error: unknown): boolean {
+  return (
+    error instanceof TypeError ||
+    (error instanceof Error &&
+      /fetch|network|failed to fetch|load failed|connection/i.test(error.message))
+  );
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -277,4 +333,8 @@ function escapeAttribute(value: string): string {
 
 function shortId(value: string): string {
   return value.length > 16 ? `${value.slice(0, 10)}...${value.slice(-4)}` : value;
+}
+
+function shortRoomCode(value: string): string {
+  return value.length > 14 ? `${value.slice(0, 9)}...${value.slice(-4)}` : value;
 }

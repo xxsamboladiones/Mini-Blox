@@ -1756,10 +1756,18 @@ const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
 const ITEM_TYPE_OPTIONS = [
   { id: "health", label: "Cura" },
   { id: "coin", label: "Moeda" },
-  { id: "weapon_basic", label: "Arma basica" },
+  { id: "weapon_basic", label: "Espada Basica" },
+  { id: "weapon_heavy_hammer", label: "Martelo Pesado" },
+  { id: "weapon_dagger", label: "Adaga" },
+  { id: "weapon_blaster", label: "Blaster" },
 ] as const;
 
-const WEAPON_OPTIONS = [{ id: "basic_sword", label: "Basica" }] as const;
+const WEAPON_OPTIONS = [
+  { id: "basic_sword", label: "Espada Basica" },
+  { id: "heavy_hammer", label: "Martelo Pesado" },
+  { id: "dagger", label: "Adaga" },
+  { id: "blaster", label: "Blaster" },
+] as const;
 
 const PRESET_OPTIONS: Array<{ id: LogicPresetId; label: string }> = [
   { id: "messageOnEnter", label: "Mostrar mensagem ao entrar em zona" },

@@ -15,6 +15,7 @@ import type {
   MapObjectProperties,
   Vector3,
 } from "./types/ObjectSchema";
+import type { ItemSpawnerSpawnType } from "./types/ItemSchema";
 import type { LogicAction, LogicCondition, LogicRule, LogicTrigger } from "./types/ScriptSchema";
 
 type TemplateStyle =
@@ -430,6 +431,60 @@ const TEMPLATE_CONFIGS = [
     messageZones: 3,
     logicRules: 2,
     decorations: 56,
+  },
+  {
+    id: "weaponArsenal",
+    name: "Arsenal de Teste",
+    description:
+      "Laboratorio curto para testar espada, martelo, adaga e blaster contra inimigos locais.",
+    icon: "swords",
+    style: "challenge",
+    theme: "classic",
+    ambientMusic: "adventure",
+    tags: ["combate", "armas", "teste"],
+    minObjects: 125,
+    sections: 3,
+    areas: 3,
+    coins: 8,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 2,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 3,
+    logicRules: 2,
+    decorations: 54,
+  },
+  {
+    id: "pvpArsenal",
+    name: "Arena PvP Arsenal",
+    description:
+      "Arena online com bases, times e quatro armas para testar sincronizacao visual e dano server-side.",
+    icon: "swords",
+    style: "challenge",
+    theme: "neon",
+    ambientMusic: "neon",
+    tags: ["multiplayer", "pvp", "armas"],
+    minObjects: 135,
+    sections: 3,
+    areas: 3,
+    coins: 8,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 2,
+    damageZones: 0,
+    jumpPads: 2,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 3,
+    logicRules: 2,
+    decorations: 58,
   },
   {
     id: "competitiveCoin",
@@ -909,6 +964,14 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
     return createDesignedMultiplayerCoopEnemiesMap(config);
   }
 
+  if (config.id === "weaponArsenal") {
+    return createDesignedWeaponArsenalMap(config);
+  }
+
+  if (config.id === "pvpArsenal") {
+    return createDesignedPvpArsenalMap(config);
+  }
+
   if (config.id === "competitiveCoin") {
     return createDesignedCompetitiveCoinMap(config);
   }
@@ -1140,7 +1203,11 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
           : Math.min(config.id === "coin" ? 35 : 120, Math.max(1, coins)),
       requireAll: false,
     });
-  } else if (config.id === "combatArena" || config.id === "combatDungeon") {
+  } else if (
+    config.id === "combatArena" ||
+    config.id === "combatDungeon" ||
+    config.id === "weaponArsenal"
+  ) {
     settings = createGameModeSettings("combatArena", "defeatEnemies", {
       targetAmount: Math.max(1, enemies),
       requireAll: true,
@@ -1159,21 +1226,21 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
     settings.teamsEnabled = true;
     settings.roundEnabled = true;
     settings.roundTimeLimit = 240;
-  } else if (config.id === "multiplayerPvpArena") {
+  } else if (config.id === "multiplayerPvpArena" || config.id === "pvpArsenal") {
     settings = createGameModeSettings("teamBattle", "score", {
-      targetAmount: 8,
+      targetAmount: config.id === "pvpArsenal" ? 10 : 8,
       requireAll: false,
     });
     settings.teamsEnabled = true;
     settings.roundEnabled = true;
     settings.roundTimeLimit = 300;
-    settings.respawnDelay = 2;
+    settings.respawnDelay = 3;
   } else if (config.id === "multiplayerCoopEnemies") {
     settings = createGameModeSettings("combatArena", "defeatEnemies", {
       targetAmount: Math.max(1, enemies),
       requireAll: true,
     });
-    settings.respawnDelay = 2;
+    settings.respawnDelay = 2.5;
   } else if (config.id === "localCapturePoint") {
     settings = createGameModeSettings("capturePoint", "capturePoint", {
       targetAmount: 100,
@@ -1244,7 +1311,8 @@ function getDefaultTeamsForTemplate(templateId: string): TeamDefinition[] {
   if (
     templateId !== "localTeamArena" &&
     templateId !== "localCapturePoint" &&
-    templateId !== "multiplayerPvpArena"
+    templateId !== "multiplayerPvpArena" &&
+    templateId !== "pvpArsenal"
   ) {
     return [];
   }
@@ -2722,7 +2790,7 @@ function createDesignedCombatArenaMap(config: TemplateConfig): GameMap {
         spawnItemType: "health",
         itemPool: ["health_pack"],
         spawnMode: "fixed",
-        respawnTime: 12,
+        respawnTime: 10,
         amount: 35,
         color: "#ef4444",
         collision: false,
@@ -2752,12 +2820,12 @@ function createDesignedCombatArenaMap(config: TemplateConfig): GameMap {
       properties: {
         behavior: index < 2 ? "patrol" : "chase",
         patrolOffset: index === 0 ? { x: 3, y: 0, z: 0 } : { x: -3, y: 0, z: 0 },
-        health: index === 4 ? 75 : 50,
-        damage: index === 4 ? 14 : 10,
-        speed: index === 4 ? 2.2 : 1.8,
+        health: index === 4 ? 64 : 45,
+        damage: index === 4 ? 10 : 7,
+        speed: index === 4 ? 2 : 1.65,
         detectionRange: 10,
-        attackRange: 1.55,
-        attackCooldown: 1,
+        attackRange: 1.35,
+        attackCooldown: 1.2,
         color: index === 4 ? "#b91c1c" : "#ef4444",
         collision: false,
       },
@@ -3066,13 +3134,12 @@ function createDesignedCombatDungeonMap(config: TemplateConfig): GameMap {
           behavior: enemyIndex === 0 ? "patrol" : "chase",
           patrolOffset: enemyIndex === 0 ? { x: 4, y: 0, z: 0 } : { x: 0, y: 0, z: 0 },
           health:
-            roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? 120 : 50 + roomIndex * 10,
-          damage:
-            roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? 16 : 10 + roomIndex * 2,
-          speed: roomIndex === 2 ? 2.2 : 1.9,
+            roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? 100 : 45 + roomIndex * 8,
+          damage: roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? 12 : 7 + roomIndex,
+          speed: roomIndex === 2 ? 2 : 1.75,
           detectionRange: 10,
-          attackRange: 1.55,
-          attackCooldown: 1,
+          attackRange: 1.35,
+          attackCooldown: roomIndex === 2 ? 1.3 : 1.2,
           color: roomIndex === 2 && enemyIndex === room.enemies.length - 1 ? "#b91c1c" : "#ef4444",
           collision: false,
         },
@@ -4032,8 +4099,34 @@ function createDesignedMultiplayerPvpArenaMap(config: TemplateConfig): GameMap {
   createTrailBridge(builder, redBase.position, center.position, "Ponte PvP vermelha", "#ef4444");
   createTrailBridge(builder, blueBase.position, center.position, "Ponte PvP azul", "#3b82f6");
 
-  createItemSpawner(builder, { x: -12, y: 0.65, z: 4.6 }, { name: "Arma vermelha PvP" });
-  createItemSpawner(builder, { x: 12, y: 0.65, z: 4.6 }, { name: "Arma azul PvP" });
+  createWeaponSpawner(
+    builder,
+    { x: -12, y: 0.65, z: 4.6 },
+    "weapon_basic",
+    "Espada vermelha PvP",
+    "#38bdf8"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 12, y: 0.65, z: 4.6 },
+    "weapon_dagger",
+    "Adaga azul PvP",
+    "#22c55e"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: -4.8, y: 0.65, z: -2.8 },
+    "weapon_heavy_hammer",
+    "Martelo central PvP",
+    "#f59e0b"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 4.8, y: 0.65, z: -2.8 },
+    "weapon_blaster",
+    "Blaster central PvP",
+    "#06b6d4"
+  );
   createItemSpawner(
     builder,
     { x: -4, y: 0.65, z: -6 },
@@ -4042,7 +4135,7 @@ function createDesignedMultiplayerPvpArenaMap(config: TemplateConfig): GameMap {
       properties: {
         spawnItemType: "health",
         itemPool: ["health_pack"],
-        respawnTime: 12,
+        respawnTime: 10,
         amount: 30,
         color: "#ef4444",
         collision: false,
@@ -4057,7 +4150,7 @@ function createDesignedMultiplayerPvpArenaMap(config: TemplateConfig): GameMap {
       properties: {
         spawnItemType: "health",
         itemPool: ["health_pack"],
-        respawnTime: 12,
+        respawnTime: 10,
         amount: 30,
         color: "#ef4444",
         collision: false,
@@ -4079,7 +4172,11 @@ function createDesignedMultiplayerPvpArenaMap(config: TemplateConfig): GameMap {
       scale: { x: 12, y: 1.4, z: 2.4 },
     }
   );
-  createSign(builder, { x: -5.8, y: 0.2, z: -12.2 }, "PvP usa espada basica e respawn de 2s.");
+  createSign(
+    builder,
+    { x: -5.8, y: 0.2, z: -12.2 },
+    "PvP tem espada, adaga, martelo e blaster com dano validado no servidor."
+  );
   createSign(builder, { x: 4.9, y: 0.2, z: -12.2 }, "Friendly fire desligado.");
   const final = createFinish(
     builder,
@@ -4162,8 +4259,20 @@ function createDesignedMultiplayerCoopEnemiesMap(config: TemplateConfig): GameMa
   createTrailBridge(builder, entry.position, arena.position, "Ponte entrada coop", "#22c55e");
   createTrailBridge(builder, arena.position, exit.position, "Ponte saida coop", "#16a34a");
 
-  createItemSpawner(builder, { x: -4, y: 0.65, z: 7 }, { name: "Arma coop esquerda" });
-  createItemSpawner(builder, { x: 4, y: 0.65, z: 7 }, { name: "Arma coop direita" });
+  createWeaponSpawner(
+    builder,
+    { x: -4, y: 0.65, z: 7 },
+    "weapon_heavy_hammer",
+    "Martelo coop esquerdo",
+    "#f59e0b"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 4, y: 0.65, z: 7 },
+    "weapon_blaster",
+    "Blaster coop direito",
+    "#06b6d4"
+  );
   createItemSpawner(
     builder,
     { x: -8, y: 0.65, z: -5 },
@@ -4205,12 +4314,14 @@ function createDesignedMultiplayerCoopEnemiesMap(config: TemplateConfig): GameMa
     createEnemy(builder, position, {
       name: `Inimigo coop ${index + 1}`,
       properties: {
-        health: index >= 2 ? 70 : 50,
-        damage: 9,
-        speed: index % 2 === 0 ? 1.8 : 2.2,
+        health: index >= 2 ? 60 : 45,
+        damage: 7,
+        speed: index % 2 === 0 ? 1.65 : 2,
         detectionRange: 11,
         behavior: index % 2 === 0 ? "patrol" : "chase",
         patrolOffset: { x: index % 2 === 0 ? 5 : -5, y: 0, z: 0 },
+        attackRange: 1.35,
+        attackCooldown: 1.25,
         color: index >= 2 ? "#b91c1c" : "#ef4444",
         collision: false,
       },
@@ -4291,6 +4402,378 @@ function createDesignedMultiplayerCoopEnemiesMap(config: TemplateConfig): GameMa
   );
   builder.addLogic(
     "Final Coop Multiplayer",
+    { type: "onPlayerEnterObject", objectId: final.id },
+    [{ type: "once" }],
+    [{ type: "finishMap" }]
+  );
+
+  return builder.map;
+}
+
+function createDesignedWeaponArsenalMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const route: RoutePoint[] = [];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 8 });
+  const entry = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: 8 },
+    {
+      name: "Entrada do arsenal",
+      width: 16,
+      length: 9,
+      color: "#e0f2fe",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  const arsenal = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: -3 },
+    {
+      name: "Bancada de armas",
+      width: 28,
+      length: 18,
+      color: "#e5e7eb",
+      edgeCount: 8,
+      supports: 4,
+    }
+  );
+  const arena = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: -17 },
+    {
+      name: "Arena de alvos",
+      width: 26,
+      length: 18,
+      color: "#1f2937",
+      edgeCount: 8,
+      supports: 4,
+    }
+  );
+  route.push(
+    { ...entry.position, label: "Entrada do arsenal" },
+    { ...arsenal.position, label: "Bancada de armas" },
+    { ...arena.position, label: "Arena de alvos" }
+  );
+
+  createTrailBridge(builder, entry.position, arsenal.position, "Ponte entrada arsenal", "#38bdf8");
+  createTrailBridge(builder, arsenal.position, arena.position, "Ponte arena arsenal", "#64748b");
+  createCheckpoint(builder, { x: 0, y: 0.75, z: 8 }, "Checkpoint entrada arsenal");
+  createSign(builder, { x: -6.5, y: 0.2, z: 9.5 }, "Arsenal: teste cada arma antes da arena.");
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.05, z: 6.5 },
+    "Pegue uma arma: espada, martelo, adaga ou blaster.",
+    {
+      name: "Mensagem arsenal",
+      scale: { x: 11, y: 1.4, z: 2 },
+    }
+  );
+
+  createWeaponSpawner(
+    builder,
+    { x: -9, y: 0.65, z: -2 },
+    "weapon_basic",
+    "Espada de teste",
+    "#38bdf8"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: -3, y: 0.65, z: -2 },
+    "weapon_dagger",
+    "Adaga de teste",
+    "#22c55e"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 3, y: 0.65, z: -2 },
+    "weapon_heavy_hammer",
+    "Martelo de teste",
+    "#f59e0b"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 9, y: 0.65, z: -2 },
+    "weapon_blaster",
+    "Blaster de teste",
+    "#06b6d4"
+  );
+
+  createItemSpawner(
+    builder,
+    { x: -10, y: 0.65, z: -16 },
+    {
+      name: "Cura arsenal esquerda",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 8,
+        amount: 35,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+  createItemSpawner(
+    builder,
+    { x: 10, y: 0.65, z: -16 },
+    {
+      name: "Cura arsenal direita",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 8,
+        amount: 35,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+
+  [
+    { x: -7, y: 0.55, z: -14 },
+    { x: 0, y: 0.55, z: -18 },
+    { x: 7, y: 0.55, z: -14 },
+  ].forEach((position, index) => {
+    createEnemy(builder, position, {
+      name: `Alvo arsenal ${index + 1}`,
+      properties: {
+        health: index === 1 ? 70 : 50,
+        damage: 7,
+        speed: index === 1 ? 1.6 : 1.9,
+        detectionRange: 10,
+        attackRange: 1.35,
+        attackCooldown: 1.25,
+        behavior: index === 1 ? "chase" : "patrol",
+        patrolOffset: { x: index === 0 ? 4 : -4, y: 0, z: 0 },
+        collision: false,
+      },
+    });
+  });
+
+  createCoinLine(builder, { x: -5, y: 1.1, z: -7 }, { x: 5, y: 1.1, z: -7 }, 8, "Moeda arsenal");
+  createCheckpoint(builder, { x: 0, y: 0.75, z: -8 }, "Checkpoint arsenal");
+  createSign(builder, { x: -6, y: 0.2, z: -24 }, "Blaster tem alcance. Melee exige aproximar.");
+  const final = createFinish(
+    builder,
+    { x: 0, y: 1.25, z: -25 },
+    {
+      name: "Final Arsenal de Teste",
+      properties: { message: "Arsenal de Teste concluido!" },
+    }
+  );
+
+  addDesignedTemplateDecor(builder, config, route);
+  ensureObjectCount(builder, config.minObjects, config.style, route);
+  builder.addLogic(
+    "Inicio Arsenal de Teste",
+    { type: "onMapStart" },
+    [],
+    [{ type: "showMessage", message: "Arsenal de Teste: colete uma arma e derrote os alvos." }]
+  );
+  builder.addLogic(
+    "Final Arsenal de Teste",
+    { type: "onPlayerEnterObject", objectId: final.id },
+    [{ type: "once" }],
+    [{ type: "finishMap" }]
+  );
+
+  return builder.map;
+}
+
+function createDesignedPvpArsenalMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const route: RoutePoint[] = [];
+
+  builder.map.teams = getDefaultTeamsForTemplate(config.id);
+  builder.map.multiplayerSettings = {
+    pvpEnabled: true,
+    friendlyFire: false,
+  };
+  addSpawn(builder, { x: -12, y: 0.75, z: 8 });
+
+  const redBase = addDesignedPlatform(
+    builder,
+    { x: -12, y: 0.2, z: 8 },
+    {
+      name: "Base vermelha arsenal",
+      width: 12,
+      length: 9,
+      color: "#fee2e2",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  const blueBase = addDesignedPlatform(
+    builder,
+    { x: 12, y: 0.2, z: 8 },
+    {
+      name: "Base azul arsenal",
+      width: 12,
+      length: 9,
+      color: "#dbeafe",
+      edgeCount: 4,
+      supports: 2,
+    }
+  );
+  const center = addDesignedPlatform(
+    builder,
+    { x: 0, y: 0.2, z: -5 },
+    {
+      name: "Centro PvP Arsenal",
+      width: 30,
+      length: 24,
+      color: "#0f172a",
+      edgeCount: 8,
+      supports: 4,
+    }
+  );
+  route.push(
+    { ...redBase.position, label: "Base vermelha arsenal" },
+    { ...blueBase.position, label: "Base azul arsenal" },
+    { ...center.position, label: "Centro PvP Arsenal" }
+  );
+
+  createTeamSpawn(builder, { x: -12, y: 0.55, z: 8 }, "red", { name: "Spawn arsenal vermelho" });
+  createTeamSpawn(builder, { x: 12, y: 0.55, z: 8 }, "blue", { name: "Spawn arsenal azul" });
+  createTrailBridge(
+    builder,
+    redBase.position,
+    center.position,
+    "Ponte arsenal vermelha",
+    "#ef4444"
+  );
+  createTrailBridge(builder, blueBase.position, center.position, "Ponte arsenal azul", "#3b82f6");
+
+  createWeaponSpawner(
+    builder,
+    { x: -14, y: 0.65, z: 5.2 },
+    "weapon_basic",
+    "Espada vermelha",
+    "#38bdf8"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: -10, y: 0.65, z: 5.2 },
+    "weapon_dagger",
+    "Adaga vermelha",
+    "#22c55e"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 10, y: 0.65, z: 5.2 },
+    "weapon_basic",
+    "Espada azul",
+    "#38bdf8"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 14, y: 0.65, z: 5.2 },
+    "weapon_dagger",
+    "Adaga azul",
+    "#22c55e"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: -5, y: 0.65, z: -5 },
+    "weapon_heavy_hammer",
+    "Martelo central",
+    "#f59e0b"
+  );
+  createWeaponSpawner(
+    builder,
+    { x: 5, y: 0.65, z: -5 },
+    "weapon_blaster",
+    "Blaster central",
+    "#06b6d4"
+  );
+
+  createItemSpawner(
+    builder,
+    { x: -8, y: 0.65, z: -9 },
+    {
+      name: "Cura PvP Arsenal esquerda",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 10,
+        amount: 30,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+  createItemSpawner(
+    builder,
+    { x: 8, y: 0.65, z: -9 },
+    {
+      name: "Cura PvP Arsenal direita",
+      properties: {
+        spawnItemType: "health",
+        itemPool: ["health_pack"],
+        respawnTime: 10,
+        amount: 30,
+        color: "#ef4444",
+        collision: false,
+      },
+    }
+  );
+
+  createJumpPad(builder, { x: -8, y: 0.55, z: -1 }, { name: "Jump arsenal vermelho" });
+  createJumpPad(builder, { x: 8, y: 0.55, z: -1 }, { name: "Jump arsenal azul" });
+  createCoinLine(
+    builder,
+    { x: -6, y: 1.1, z: -11 },
+    { x: 6, y: 1.1, z: -11 },
+    8,
+    "Moeda PvP Arsenal"
+  );
+  createCheckpoint(builder, { x: -12, y: 0.75, z: 8 }, "Checkpoint arsenal vermelho");
+  createCheckpoint(builder, { x: 12, y: 0.75, z: 8 }, "Checkpoint arsenal azul");
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.05, z: 1 },
+    "PvP Arsenal: compare melee, martelo e blaster.",
+    {
+      name: "Mensagem PvP Arsenal",
+      scale: { x: 13, y: 1.4, z: 2.4 },
+    }
+  );
+  createSign(
+    builder,
+    { x: -6, y: 0.2, z: -13.2 },
+    "Cada arma tem dano, range e cooldown validados no servidor."
+  );
+  createSign(
+    builder,
+    { x: 4.7, y: 0.2, z: -13.2 },
+    "Ataques visuais sincronizam sem causar dano sozinhos."
+  );
+  const final = createFinish(
+    builder,
+    { x: 0, y: 1.25, z: -12.5 },
+    {
+      name: "Final PvP Arsenal",
+      properties: { message: "Arena PvP Arsenal concluida!" },
+    }
+  );
+
+  addDesignedTemplateDecor(builder, config, route);
+  ensureObjectCount(builder, config.minObjects, config.style, route);
+  builder.addLogic(
+    "Inicio PvP Arsenal",
+    { type: "onMapStart" },
+    [],
+    [
+      {
+        type: "showMessage",
+        message: "Arena PvP Arsenal: abra duas abas e teste armas diferentes.",
+      },
+    ]
+  );
+  builder.addLogic(
+    "Final PvP Arsenal",
     { type: "onPlayerEnterObject", objectId: final.id },
     [{ type: "once" }],
     [{ type: "finishMap" }]
@@ -8035,6 +8518,29 @@ function createItemSpawner(
       options
     )
   );
+}
+
+function createWeaponSpawner(
+  builder: TemplateBuilder,
+  position: Vector3,
+  itemId: ItemSpawnerSpawnType,
+  name: string,
+  color: string
+): MapObject {
+  return createItemSpawner(builder, position, {
+    name,
+    properties: {
+      color,
+      spawnItemType: itemId,
+      itemPool: [itemId],
+      spawnMode: "fixed",
+      respawnTime: 6,
+      spawnOnStart: true,
+      maxSpawnedItems: 1,
+      amount: 1,
+      collision: false,
+    },
+  });
 }
 
 function createTeamSpawn(

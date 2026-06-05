@@ -260,7 +260,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     collider: { shape: "none" },
     properties: {
       collision: false,
-      itemPool: ["weapon_basic"],
+      itemPool: ["weapon_basic", "weapon_dagger", "weapon_blaster", "weapon_heavy_hammer"],
       spawnItemType: "weapon_basic",
       spawnMode: "fixed",
       respawnTime: 10,

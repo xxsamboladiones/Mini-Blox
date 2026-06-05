@@ -1,5 +1,13 @@
 import * as THREE from "three";
-import { getItemDefinition, getItemLabel } from "../shared/ItemCatalog";
+import {
+  getItemDefinition,
+  getItemLabel,
+  getWeaponDefinition,
+  getWeaponItemId,
+  getWeaponLabel,
+  isWeaponItemId,
+  normalizeWeaponId,
+} from "../shared/ItemCatalog";
 import {
   applyObjectAppearanceToThree,
   applyObjectTransformToThree,
@@ -9,20 +17,77 @@ import {
 import { PhysicsSystem } from "./PhysicsSystem";
 import { PlayerController } from "./PlayerController";
 import { RuntimeHud, type GameModeSummary, type VictoryActions } from "./RuntimeHud";
+import { createWeaponProjectileVisual } from "./WeaponVisualFactory";
 import { LogicRuntime } from "./LogicRuntime";
 import { ObjectiveRuntime } from "./ObjectiveRuntime";
 import { GameModeRuntime } from "./GameModeRuntime";
+import {
+  clampEnemyHealth,
+  getEnemyRuntimeConfig,
+  isEnemyAlive,
+  shouldEnemyAttackPlayer,
+} from "./mechanics/EnemyMechanics";
+import {
+  chooseItemId,
+  getCoinAmount,
+  getMaxSpawnedItems,
+  getPickupAmount,
+  getPickupHealAmount,
+  getPickupPosition,
+  getRespawnTime,
+  getSpawnerAmount,
+  getSpawnerPickupId,
+  hideCollectedPickupObject,
+  isCoinObject,
+  isCoinPickupObject,
+  isHealthPickupObject,
+  isPickupObject,
+  shouldCollectPickup,
+  shouldTrackSharedPickup,
+} from "./mechanics/PickupMechanics";
+import {
+  applyButtonActivatedVisual,
+  applyDoorClosedVisual,
+  applyDoorOpenVisual,
+  findLinkedDoor,
+  getDoorId,
+  getLinkedDoorIds,
+  isButtonObject,
+  isDoorObject,
+} from "./mechanics/DoorButtonMechanics";
+import {
+  getDamageZoneAmount,
+  getDamageZoneCooldownSeconds,
+  getDamageZoneMode,
+  isDamageZoneObject,
+  shouldApplyDamageZone,
+} from "./mechanics/DamageZoneMechanics";
+import {
+  advanceProjectile,
+  createProjectile,
+  isProjectileExpired,
+  isProjectileNearPosition,
+  type ActiveProjectile,
+} from "./mechanics/ProjectileMechanics";
 import type { GameMap } from "../shared/types/MapSchema";
 import type {
   EnemyNetState,
   EnemyPositionUpdate,
   PlayerAttackPayload,
+  PlayerAttackVisualPayload,
+  PlayerHealRequestPayload,
   PlayerNetState,
   SharedWorldState,
   WorldEvent,
 } from "../shared/types/MultiplayerSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
-import type { InventoryItem, ItemPickupObject, ItemSpawnMode } from "../shared/types/ItemSchema";
+import type {
+  InventoryItem,
+  ItemPickupObject,
+  WeaponAttackType,
+  WeaponClass,
+  WeaponDefinition,
+} from "../shared/types/ItemSchema";
 import type { AudioSystem } from "./AudioSystem";
 import type { FeedbackSystem } from "./FeedbackSystem";
 
@@ -42,7 +107,9 @@ type MultiplayerRuntimeOptions = {
   onEnemyHit: (enemyObjectId: string, damage: number, weaponId?: string) => void;
   onEnemyPositionUpdate: (enemies: EnemyPositionUpdate[]) => void;
   onPlayerAttack: (payload: PlayerAttackPayload) => void;
+  onPlayerAttackVisual: (payload: PlayerAttackVisualPayload) => void;
   onPlayerDamageReport: (damage: number, source: "enemy" | "hazard" | "logic") => void;
+  onPlayerHealRequest: (payload: PlayerHealRequestPayload) => void;
 };
 
 type DoorOpenOptions = {
@@ -110,10 +177,15 @@ type EnemyRuntimeState = {
 
 type EquippedWeapon = {
   id: string;
+  itemId: string;
   label: string;
+  weaponClass: WeaponClass;
+  attackType: WeaponAttackType;
   damage: number;
   range: number;
   cooldown: number;
+  projectileSpeed: number;
+  coneDot: number;
 };
 
 type DialogueState = {
@@ -125,12 +197,18 @@ type DialogueState = {
 
 const DEFAULT_VOID_DEATH_OFFSET = 25;
 const RESPAWN_VERTICAL_OFFSET = 0.25;
+const UP = new THREE.Vector3(0, 1, 0);
 const DEFAULT_WEAPON: EquippedWeapon = {
   id: "basic_sword",
-  label: "Basica",
-  damage: 25,
-  range: 2,
-  cooldown: 0.5,
+  itemId: "weapon_basic",
+  label: "Espada Basica",
+  weaponClass: "melee",
+  attackType: "slash",
+  damage: 18,
+  range: 1.85,
+  cooldown: 0.65,
+  projectileSpeed: 0,
+  coneDot: 0.18,
 };
 
 export class RuntimeMechanics {
@@ -151,6 +229,8 @@ export class RuntimeMechanics {
   private readonly logicDisabledObjectIds = new Set<string>();
   private readonly defeatedEnemyIds = new Set<string>();
   private readonly inventory = new Map<string, InventoryItem>();
+  private readonly activeProjectiles = new Map<string, ActiveProjectile<EquippedWeapon>>();
+  private projectileSequence = 0;
   private readonly itemSpawnerStates = new Map<string, ItemSpawnerRuntimeState>();
   private readonly runtimePickups = new Map<string, ItemPickupObject>();
   private readonly movingPlatformStates = new Map<string, MovingPlatformRuntimeState>();
@@ -196,6 +276,7 @@ export class RuntimeMechanics {
     this.hud.setCoins(0, this.getTotalCoinObjects());
     this.hud.setHealth(this.player.getHealth(), this.player.getMaxHealth());
     this.hud.setWeapon(null);
+    this.player.setEquippedWeapon(null);
     this.updateInventoryHud();
     this.logicRuntime = new LogicRuntime(this.map, {
       hasKey: (keyId) => this.collectedKeyIds.has(keyId),
@@ -223,7 +304,7 @@ export class RuntimeMechanics {
       giveWeapon: (weaponId) => {
         this.equipWeapon(weaponId);
         this.updateInventoryHud();
-        this.hud.showMessage("Arma Basica equipada");
+        this.hud.showMessage(`${getWeaponLabel(weaponId)} equipada`);
       },
       completeObjective: (objectiveId) => this.objectiveRuntime.completeObjective(objectiveId),
       showDialogue: (objectId, message) => this.showDialogueLine(objectId, message),
@@ -251,6 +332,18 @@ export class RuntimeMechanics {
     this.logicRuntime.start();
   }
 
+  dispose(): void {
+    this.clearProjectiles();
+    this.clearRuntimePickups();
+    this.itemSpawnerStates.clear();
+    this.enemyStates.clear();
+    this.movingPlatformStates.clear();
+    this.disappearingBlockStates.clear();
+    this.jumpPadCooldowns.clear();
+    this.teleporterCooldowns.clear();
+    this.activeDialogue = null;
+  }
+
   update(deltaSeconds: number): void {
     if (this.isGameFinished) {
       return;
@@ -259,9 +352,11 @@ export class RuntimeMechanics {
     this.deathCooldown = Math.max(0, this.deathCooldown - deltaSeconds);
     this.messageCooldown = Math.max(0, this.messageCooldown - deltaSeconds);
     this.attackCooldown = Math.max(0, this.attackCooldown - deltaSeconds);
+    this.updateWeaponCooldownHud();
     this.updateCooldownMap(this.jumpPadCooldowns, deltaSeconds);
     this.updateCooldownMap(this.teleporterCooldowns, deltaSeconds);
     this.updateMovingPlatforms(deltaSeconds);
+    this.updateProjectiles(deltaSeconds);
 
     if (this.updateVoidDeath()) {
       return;
@@ -286,15 +381,15 @@ export class RuntimeMechanics {
 
       if (mapObject.type === "checkpoint") {
         this.updateCheckpoint(mapObject, playerBounds);
-      } else if (mapObject.type === "damage" || mapObject.type === "damageZone") {
+      } else if (isDamageZoneObject(mapObject)) {
         this.updateDamageZone(mapObject, playerBounds);
-      } else if (mapObject.type === "coin") {
+      } else if (isCoinObject(mapObject)) {
         this.updateCoin(mapObject, playerBounds);
       } else if (mapObject.type === "key") {
         this.updateKey(mapObject, playerBounds);
-      } else if (mapObject.type === "button") {
+      } else if (isButtonObject(mapObject)) {
         this.updateButton(mapObject, playerBounds);
-      } else if (mapObject.type === "door") {
+      } else if (isDoorObject(mapObject)) {
         this.updateDoorTouch(mapObject, playerBounds);
       } else if (mapObject.type === "disappearingBlock") {
         this.updateDisappearingBlock(mapObject, playerBounds, deltaSeconds);
@@ -317,13 +412,13 @@ export class RuntimeMechanics {
       return null;
     }
 
-    if (target.type === "button") {
+    if (isButtonObject(target)) {
       const oneTime = target.properties?.oneTime !== false;
       return oneTime && this.activatedButtonIds.has(target.id) ? null : "Botao";
     }
 
-    if (target.type === "door") {
-      const doorId = getString(target.properties?.doorId, target.id);
+    if (isDoorObject(target)) {
+      const doorId = getDoorId(target);
       return this.openedDoorIds.has(doorId) ? null : "Porta";
     }
 
@@ -340,7 +435,7 @@ export class RuntimeMechanics {
       return `Falar com ${name}`;
     }
 
-    if (target.type === "itemPickup") {
+    if (isPickupObject(target)) {
       const itemId = typeof target.properties?.itemId === "string" ? target.properties.itemId : "";
       return getItemLabel(itemId);
     }
@@ -355,11 +450,11 @@ export class RuntimeMechanics {
       return false;
     }
 
-    if (target.type === "button") {
+    if (isButtonObject(target)) {
       return this.activateButton(target);
     }
 
-    if (target.type === "door") {
+    if (isDoorObject(target)) {
       return this.openDoor(target);
     }
 
@@ -367,7 +462,7 @@ export class RuntimeMechanics {
       return this.interactWithNpc(target);
     }
 
-    if (target.type === "itemPickup") {
+    if (isPickupObject(target)) {
       this.collectItemPickup(target as ItemPickupObject);
       return true;
     }
@@ -449,12 +544,29 @@ export class RuntimeMechanics {
     }
 
     const weapon = this.equippedWeapon;
+    const direction = this.player.getForwardDirection();
+    const origin = this.getAttackOrigin(direction);
     this.attackCooldown = weapon.cooldown;
-    this.audio.play("attack");
-    this.player.playAttackFeedback();
+    this.updateWeaponCooldownHud();
+    this.audio.play(weapon.attackType === "shoot" ? "blaster" : "attack");
+    this.player.playAttackFeedback(weapon.attackType);
     this.feedback.spawn("attack", this.player.getPosition());
 
-    const hit = this.findEnemyInAttackRange(weapon.range);
+    if (this.isMultiplayerEnabled()) {
+      this.options.multiplayer?.onPlayerAttackVisual({
+        weaponId: weapon.id,
+        attackType: weapon.attackType,
+        origin,
+        direction: fromThreeVector(direction),
+      });
+    }
+
+    if (weapon.weaponClass === "ranged") {
+      this.spawnProjectile(origin, direction, weapon, true);
+      return true;
+    }
+
+    const hit = this.findEnemyInAttackRange(weapon.range, weapon.coneDot);
 
     if (hit) {
       if (this.isMultiplayerEnabled()) {
@@ -466,16 +578,16 @@ export class RuntimeMechanics {
     }
 
     if (this.isMultiplayerEnabled()) {
-      const remoteHit = this.findRemotePlayerInAttackRange(weapon.range);
+      const remoteHit = this.findRemotePlayerInAttackRange(weapon.range, weapon.coneDot);
       if (remoteHit) {
-        const direction = this.player.getForwardDirection();
         this.options.multiplayer?.onPlayerAttack({
           weaponId: weapon.id,
-          origin: this.player.getPosition(),
+          origin,
           direction: fromThreeVector(direction),
           range: weapon.range,
           damage: weapon.damage,
           targetPlayerId: remoteHit.id,
+          attackType: weapon.attackType,
         });
       }
     }
@@ -507,6 +619,8 @@ export class RuntimeMechanics {
     this.attackCooldown = 0;
     this.enemySyncAccumulator = 0;
     this.equippedWeapon = null;
+    this.player.setEquippedWeapon(null);
+    this.clearProjectiles();
     this.activeDialogue = null;
     this.allEnemiesDefeatedDispatched = false;
     this.isGameFinished = false;
@@ -563,7 +677,7 @@ export class RuntimeMechanics {
       return false;
     }
 
-    const resolvedDoorId = getString(door.properties?.doorId, door.id);
+    const resolvedDoorId = getDoorId(door);
 
     if (!this.openedDoorIds.has(resolvedDoorId)) {
       return false;
@@ -572,7 +686,7 @@ export class RuntimeMechanics {
     const initialPosition = this.initialDoorPositions.get(door.id);
 
     if (initialPosition) {
-      view.position.copy(initialPosition);
+      applyDoorClosedVisual(view, initialPosition);
     } else {
       applyObjectTransformToThree(view, door);
     }
@@ -595,7 +709,7 @@ export class RuntimeMechanics {
 
   isDoorOpenById(doorId: string): boolean {
     const door = this.getDoorById(doorId);
-    const resolvedDoorId = door ? getString(door.properties?.doorId, door.id) : doorId;
+    const resolvedDoorId = door ? getDoorId(door) : doorId;
     return this.openedDoorIds.has(resolvedDoorId);
   }
 
@@ -639,7 +753,7 @@ export class RuntimeMechanics {
 
       if (event.type === "buttonActivated") {
         const button = this.getObjectById(event.objectId);
-        if (!button || button.type !== "button") {
+        if (!button || !isButtonObject(button)) {
           return false;
         }
 
@@ -653,7 +767,7 @@ export class RuntimeMechanics {
 
       if (event.type === "coinCollected") {
         const coin = this.map.objects.find(
-          (mapObject) => mapObject.id === event.objectId && mapObject.type === "coin"
+          (mapObject) => mapObject.id === event.objectId && isCoinObject(mapObject)
         );
 
         return coin
@@ -690,8 +804,9 @@ export class RuntimeMechanics {
       return;
     }
 
-    const wasAlive = state.health > 0 && view.visible;
-    state.health = Math.max(0, enemy.health);
+    const wasAlive = isEnemyAlive(state.health, view.visible);
+    const previousHealth = state.health;
+    state.health = clampEnemyHealth(enemy.health, enemy.maxHealth);
     state.maxHealth = Math.max(1, enemy.maxHealth);
     state.netState = enemy.state;
     state.targetPosition.set(enemy.position.x, enemy.position.y, enemy.position.z);
@@ -708,7 +823,10 @@ export class RuntimeMechanics {
     }
 
     view.visible = true;
-    if (showFeedback && wasAlive && state.health < state.maxHealth) {
+    if (showFeedback && wasAlive && state.health < previousHealth) {
+      const damageDone = previousHealth - state.health;
+      this.audio.play("hit");
+      this.feedback.spawn("damage", fromThreeVector(view.position), `-${Math.ceil(damageDone)}`);
       this.hud.showMessage(`Inimigo: ${Math.ceil(state.health)}/${state.maxHealth}`);
     }
   }
@@ -732,31 +850,44 @@ export class RuntimeMechanics {
 
     if (showFeedback) {
       this.hud.showMessage("Inimigo derrotado");
+      this.audio.play("item");
       this.feedback.spawn(
         "item",
         view ? fromThreeVector(view.position) : state.mapObject.position,
-        "Derrotado"
+        "Inimigo -"
       );
     }
 
     this.dispatchEnemyDefeated(enemyObjectId);
   }
 
-  applyLocalPlayerHealth(health: number, message?: string): void {
+  applyLocalPlayerHealth(health: number, message?: string, damageAmount?: number): void {
     this.player.setHealth(health, this.player.getMaxHealth());
     this.hud.setHealth(this.player.getHealth(), this.player.getMaxHealth());
 
     if (message) {
       this.hud.showMessage(message);
       this.audio.play("damage");
-      this.feedback.spawn("damage", this.player.getPosition());
+      this.feedback.spawn(
+        "damage",
+        this.player.getPosition(),
+        damageAmount && damageAmount > 0 ? `-${Math.round(damageAmount)}` : undefined
+      );
     }
   }
 
-  applyLocalPlayerDefeated(): void {
+  applyLocalPlayerHealed(health: number, amount: number): void {
+    this.player.setHealth(health, this.player.getMaxHealth());
+    this.hud.setHealth(this.player.getHealth(), this.player.getMaxHealth());
+    this.audio.play("item");
+    this.feedback.spawn("item", this.player.getPosition(), `+${Math.round(amount)}`);
+    this.hud.showMessage(amount > 0 ? `Cura +${Math.round(amount)}` : "Vida atualizada");
+  }
+
+  applyLocalPlayerDefeated(message = "Voce foi derrotado. Respawn em instantes."): void {
     this.player.setHealth(0, this.player.getMaxHealth());
     this.hud.setHealth(0, this.player.getMaxHealth());
-    this.hud.showMessage("Voce morreu");
+    this.hud.showMessage(message);
     this.audio.play("death");
     this.feedback.spawn("death", this.player.getPosition());
     this.deathCooldown = Math.max(0.4, this.gameModeRuntime.getRespawnDelay());
@@ -773,11 +904,32 @@ export class RuntimeMechanics {
     this.player.resetVelocity();
     this.player.playRespawnFeedback();
     this.deathCooldown = 0;
-    this.hud.showMessage("Respawn");
+    this.audio.play("checkpoint");
+    this.feedback.spawn("checkpoint", position, "Respawn");
+    this.hud.showMessage("Voce voltou para a arena.");
   }
 
   getEquippedWeaponId(): string | null {
     return this.equippedWeapon?.id ?? null;
+  }
+
+  applyRemoteAttackVisual(payload: PlayerAttackVisualPayload): void {
+    const definition = getWeaponDefinition(payload.weaponId);
+    if (!definition || definition.weaponClass !== "ranged") {
+      return;
+    }
+
+    const direction = toThreeVector(payload.direction);
+    if (direction.lengthSq() <= 0.0001) {
+      return;
+    }
+
+    this.spawnProjectile(
+      payload.origin,
+      direction.normalize(),
+      createEquippedWeaponFromDefinition(definition),
+      false
+    );
   }
 
   getScore(): number {
@@ -824,7 +976,11 @@ export class RuntimeMechanics {
 
     this.hud.setHealth(currentHealth, this.player.getMaxHealth());
     this.audio.play("damage");
-    this.feedback.spawn("damage", position ?? this.player.getPosition());
+    this.feedback.spawn(
+      "damage",
+      position ?? this.player.getPosition(),
+      damageDone > 0 ? `-${Math.round(damageDone)}` : undefined
+    );
 
     if (emitLogicEvent && damageDone > 0) {
       this.logicRuntime.dispatch({ type: "onPlayerDamaged", amount: damageDone });
@@ -836,7 +992,7 @@ export class RuntimeMechanics {
 
     if (currentHealth <= 0) {
       if (this.isMultiplayerEnabled()) {
-        this.hud.showMessage("Voce morreu");
+        this.hud.showMessage("Voce foi derrotado. Respawn em instantes.");
         this.audio.play("death");
         this.feedback.spawn("death", position ?? this.player.getPosition());
         this.gameModeRuntime.onPlayerDeath();
@@ -861,24 +1017,18 @@ export class RuntimeMechanics {
   }
 
   private equipWeapon(itemId: string): void {
-    const normalizedWeaponId = normalizeWeaponId(itemId);
-    const catalogItemId = normalizedWeaponId === "basic_sword" ? "weapon_basic" : itemId;
-    const definition = getItemDefinition(catalogItemId);
-    const weapon =
-      definition && "damage" in definition
-        ? {
-            id: normalizedWeaponId,
-            label: definition.name === "Sword" ? "Basica" : definition.name,
-            damage: definition.damage,
-            range: definition.range,
-            cooldown: definition.cooldown,
-          }
-        : DEFAULT_WEAPON;
+    const definition = getWeaponDefinition(itemId);
+    const weapon = definition ? createEquippedWeaponFromDefinition(definition) : DEFAULT_WEAPON;
 
     this.equippedWeapon = weapon;
-    this.hud.setWeapon(weapon.label);
+    this.player.setEquippedWeapon(weapon.id);
+    this.hud.setWeapon({
+      label: weapon.label,
+      typeLabel: getWeaponHudTypeLabel(weapon),
+      cooldownProgress: 1,
+    });
 
-    const inventoryItemId = normalizedWeaponId === "basic_sword" ? "weapon_basic" : itemId;
+    const inventoryItemId = weapon.itemId;
     const existingItem = this.inventory.get(inventoryItemId);
     const now = new Date().toISOString();
 
@@ -906,14 +1056,15 @@ export class RuntimeMechanics {
       return false;
     }
 
-    const maxHealth = Math.max(1, getNumber(state.mapObject.properties?.health, state.maxHealth));
+    const config = getEnemyRuntimeConfig(state.mapObject);
+    const maxHealth = config.maxHealth;
     state.health = maxHealth;
     state.maxHealth = maxHealth;
     state.attackCooldown = 0;
     state.patrolTarget = 1;
     state.targetPosition.copy(state.spawnPosition);
     state.targetRotationY = getNumber(state.mapObject.rotation?.y, 0);
-    state.netState = getEnemyBehavior(state.mapObject);
+    state.netState = config.behavior;
     view.visible = true;
     applyObjectTransformToThree(view, state.mapObject);
     applyObjectAppearanceToThree(view, state.mapObject);
@@ -1057,19 +1208,18 @@ export class RuntimeMechanics {
   }
 
   private updateDamageZone(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if (this.deathCooldown > 0 || !this.intersects(mapObject, playerBounds)) {
+    if (!shouldApplyDamageZone(this.deathCooldown, this.intersects(mapObject, playerBounds))) {
       return;
     }
 
-    const mode = mapObject.properties?.mode === "damage" ? "damage" : "kill";
+    const mode = getDamageZoneMode(mapObject);
 
     if (mode === "damage") {
-      const amount = getNumber(
-        mapObject.properties?.damage,
-        getNumber(mapObject.properties?.damagePerSecond, 25)
-      );
+      const amount = getDamageZoneAmount(mapObject);
       this.damagePlayer(amount, "Cuidado! Voce sofreu dano", mapObject.position);
-      this.deathCooldown = this.player.isDead() ? this.deathCooldown : 0.7;
+      this.deathCooldown = this.player.isDead()
+        ? this.deathCooldown
+        : getDamageZoneCooldownSeconds();
       return;
     }
 
@@ -1090,16 +1240,10 @@ export class RuntimeMechanics {
     }
 
     this.collectedCoinIds.add(mapObject.id);
-    const value = getNumber(
-      mapObject.properties?.value,
-      getNumber(mapObject.properties?.coinValue, 1)
-    );
+    const value = getCoinAmount(mapObject);
     this.coinCount += value;
     const view = this.objectViews.get(mapObject.id);
-
-    if (view) {
-      view.visible = false;
-    }
+    hideCollectedPickupObject(view);
 
     this.hud.setCoins(this.coinCount, this.getTotalCoinObjects());
 
@@ -1307,17 +1451,10 @@ export class RuntimeMechanics {
       return false;
     }
 
-    const targetDoorId = getString(
-      mapObject.properties?.targetDoorId,
-      getString(mapObject.properties?.buttonTargetId, "")
-    );
+    const targetDoorId = getLinkedDoorIds(mapObject)[0] ?? "";
 
     if (targetDoorId && options.triggerLinkedDoor !== false) {
-      const door = this.map.objects.find(
-        (candidate) =>
-          candidate.type === "door" &&
-          (candidate.id === targetDoorId || candidate.properties?.doorId === targetDoorId)
-      );
+      const door = findLinkedDoor(this.map.objects, targetDoorId);
 
       if (!door) {
         if (!this.warnedMissingDoorIds.has(targetDoorId)) {
@@ -1352,14 +1489,7 @@ export class RuntimeMechanics {
     const view = this.objectViews.get(mapObject.id);
 
     if (view) {
-      view.scale.y = Math.max(0.12, view.scale.y * 0.45);
-      applyObjectAppearanceToThree(view, {
-        ...mapObject,
-        properties: {
-          ...mapObject.properties,
-          color: "#22c55e",
-        },
-      });
+      applyButtonActivatedVisual(view, mapObject);
     }
 
     if (options.playFeedback !== false) {
@@ -1427,7 +1557,8 @@ export class RuntimeMechanics {
         });
       } else if (mapObject.type === "enemy") {
         const view = this.objectViews.get(mapObject.id);
-        const maxHealth = Math.max(1, getNumber(mapObject.properties?.health, 50));
+        const config = getEnemyRuntimeConfig(mapObject);
+        const maxHealth = config.maxHealth;
 
         if (view) {
           view.visible = true;
@@ -1444,7 +1575,7 @@ export class RuntimeMechanics {
           patrolTarget: 1,
           targetPosition: toThreeVector(mapObject.position),
           targetRotationY: getNumber(mapObject.rotation?.y, 0),
-          netState: getEnemyBehavior(mapObject),
+          netState: config.behavior,
         });
       }
     }
@@ -1533,23 +1664,20 @@ export class RuntimeMechanics {
       }
 
       state.attackCooldown = Math.max(0, state.attackCooldown - deltaSeconds);
-      const behavior = getEnemyBehavior(state.mapObject);
-      const speed = Math.max(0, getNumber(state.mapObject.properties?.speed, 2));
-      const detectionRange = Math.max(0, getNumber(state.mapObject.properties?.detectionRange, 8));
-      const attackRange = Math.max(0.2, getNumber(state.mapObject.properties?.attackRange, 1.5));
+      const config = getEnemyRuntimeConfig(state.mapObject);
       let target: THREE.Vector3 | null = null;
       let targetPlayerId: string | undefined;
 
       if (isMultiplayer && !isHost) {
         this.interpolateEnemyView(state, view, deltaSeconds);
       } else {
-        if (behavior === "chase") {
-          const targetCandidate = this.getClosestEnemyTarget(view.position, detectionRange);
+        if (config.behavior === "chase") {
+          const targetCandidate = this.getClosestEnemyTarget(view.position, config.detectionRange);
           if (targetCandidate) {
             target = toThreeVector(targetCandidate.position);
             targetPlayerId = targetCandidate.playerId;
           }
-        } else if (behavior === "patrol") {
+        } else if (config.behavior === "patrol") {
           const patrolOffset = getThreeVector(state.mapObject.properties?.patrolOffset, {
             x: 4,
             y: 0,
@@ -1565,13 +1693,16 @@ export class RuntimeMechanics {
           }
         }
 
-        if (target && speed > 0) {
+        if (target && config.speed > 0) {
           const direction = target.clone().sub(view.position);
           direction.y = 0;
 
           if (direction.lengthSq() > 0.0001) {
             direction.normalize();
-            const step = Math.min(speed * deltaSeconds, distance2DVector(view.position, target));
+            const step = Math.min(
+              config.speed * deltaSeconds,
+              distance2DVector(view.position, target)
+            );
             view.position.addScaledVector(direction, step);
             view.position.y = state.spawnPosition.y;
             view.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI;
@@ -1580,7 +1711,7 @@ export class RuntimeMechanics {
 
         state.targetPosition.copy(view.position);
         state.targetRotationY = view.rotation.y;
-        state.netState = target ? behavior : "idle";
+        state.netState = target ? config.behavior : "idle";
 
         if (shouldSyncEnemyPositions) {
           enemyPositionUpdates.push({
@@ -1598,16 +1729,16 @@ export class RuntimeMechanics {
       const distanceToPlayer = distance2DVector(view.position, playerPosition);
 
       if (
-        (distanceToPlayer <= attackRange || enemyBounds.intersectsBox(playerBounds)) &&
-        state.attackCooldown <= 0 &&
-        this.deathCooldown <= 0
+        shouldEnemyAttackPlayer({
+          distanceToPlayer,
+          attackRange: config.attackRange,
+          intersectsPlayer: enemyBounds.intersectsBox(playerBounds),
+          attackCooldown: state.attackCooldown,
+          deathCooldown: this.deathCooldown,
+        })
       ) {
-        const damage = Math.max(1, getNumber(state.mapObject.properties?.damage, 10));
-        state.attackCooldown = Math.max(
-          0.2,
-          getNumber(state.mapObject.properties?.attackCooldown, 1)
-        );
-        this.damagePlayer(damage, "Inimigo causou dano", state.mapObject.position);
+        state.attackCooldown = config.attackCooldown;
+        this.damagePlayer(config.damage, "Inimigo causou dano", state.mapObject.position);
       }
     }
 
@@ -1619,7 +1750,7 @@ export class RuntimeMechanics {
     }
   }
 
-  private findEnemyInAttackRange(range: number): EnemyRuntimeState | null {
+  private findEnemyInAttackRange(range: number, coneDot: number): EnemyRuntimeState | null {
     const playerPosition = toThreeVector(this.player.getPosition());
     const facing = this.player.getForwardDirection();
     let bestState: EnemyRuntimeState | null = null;
@@ -1642,7 +1773,7 @@ export class RuntimeMechanics {
 
       const dot = offsetToEnemy.clone().normalize().dot(facing);
 
-      if (dot < 0.18 && distance > 0.85) {
+      if (dot < coneDot && distance > 0.85) {
         continue;
       }
 
@@ -1655,7 +1786,7 @@ export class RuntimeMechanics {
     return bestState;
   }
 
-  private findRemotePlayerInAttackRange(range: number): PlayerNetState | null {
+  private findRemotePlayerInAttackRange(range: number, coneDot: number): PlayerNetState | null {
     const playerPosition = toThreeVector(this.player.getPosition());
     const facing = this.player.getForwardDirection();
     let bestPlayer: PlayerNetState | null = null;
@@ -1675,7 +1806,7 @@ export class RuntimeMechanics {
       }
 
       const dot = offsetToPlayer.clone().normalize().dot(facing);
-      if (dot < 0.18 && distance > 0.85) {
+      if (dot < coneDot && distance > 0.85) {
         continue;
       }
 
@@ -1686,6 +1817,179 @@ export class RuntimeMechanics {
     }
 
     return bestPlayer;
+  }
+
+  private spawnProjectile(
+    origin: Vector3,
+    direction: THREE.Vector3,
+    weapon: EquippedWeapon,
+    local: boolean
+  ): void {
+    const mesh = createWeaponProjectileVisual(weapon.id);
+    const id = `projectile-${Date.now()}-${this.projectileSequence++}`;
+    const projectile = createProjectile(
+      id,
+      mesh,
+      origin,
+      direction,
+      weapon,
+      local
+    );
+
+    if (!projectile) {
+      disposeObject3D(mesh);
+      return;
+    }
+
+    this.world.add(mesh);
+    this.activeProjectiles.set(id, projectile);
+  }
+
+  private updateProjectiles(deltaSeconds: number): void {
+    if (this.activeProjectiles.size === 0) {
+      return;
+    }
+
+    const removeIds: string[] = [];
+
+    for (const projectile of this.activeProjectiles.values()) {
+      advanceProjectile(projectile, deltaSeconds);
+
+      if (projectile.local) {
+        const enemyHit = this.findEnemyHitByProjectile(projectile);
+        if (enemyHit) {
+          if (this.isMultiplayerEnabled()) {
+            this.options.multiplayer?.onEnemyHit(
+              enemyHit.mapObject.id,
+              projectile.weapon.damage,
+              projectile.weapon.id
+            );
+          } else {
+            this.damageEnemy(enemyHit, projectile.weapon.damage);
+          }
+          removeIds.push(projectile.id);
+          continue;
+        }
+
+        if (this.isMultiplayerEnabled()) {
+          const remoteHit = this.findRemotePlayerHitByProjectile(projectile);
+          if (remoteHit) {
+            this.options.multiplayer?.onPlayerAttack({
+              weaponId: projectile.weapon.id,
+              origin: projectile.origin,
+              direction: fromThreeVector(projectile.direction),
+              range: projectile.weapon.range,
+              damage: projectile.weapon.damage,
+              targetPlayerId: remoteHit.id,
+              attackType: projectile.weapon.attackType,
+            });
+            removeIds.push(projectile.id);
+            continue;
+          }
+        }
+      }
+
+      if (isProjectileExpired(projectile)) {
+        removeIds.push(projectile.id);
+      }
+    }
+
+    for (const id of removeIds) {
+      this.removeProjectile(id);
+    }
+  }
+
+  private findEnemyHitByProjectile(projectile: ActiveProjectile): EnemyRuntimeState | null {
+    let closest: EnemyRuntimeState | null = null;
+    let closestDistance = Infinity;
+
+    for (const state of this.enemyStates.values()) {
+      const view = this.objectViews.get(state.mapObject.id);
+      if (!view || !view.visible || state.health <= 0) {
+        continue;
+      }
+
+      if (!isProjectileNearPosition(projectile.mesh.position, view.position, 0.72, 1.7)) {
+        continue;
+      }
+
+      const horizontalDistance = distance2DVector(projectile.mesh.position, view.position);
+      if (horizontalDistance < closestDistance) {
+        closestDistance = horizontalDistance;
+        closest = state;
+      }
+    }
+
+    return closest;
+  }
+
+  private findRemotePlayerHitByProjectile(projectile: ActiveProjectile): PlayerNetState | null {
+    let closest: PlayerNetState | null = null;
+    let closestDistance = Infinity;
+
+    for (const remotePlayer of this.options.multiplayer?.getRemotePlayers() ?? []) {
+      if (!remotePlayer.isAlive) {
+        continue;
+      }
+
+      const remotePosition = toThreeVector(remotePlayer.position);
+      remotePosition.y += 0.9;
+      if (!isProjectileNearPosition(projectile.mesh.position, remotePosition, 0.68, 1.35)) {
+        continue;
+      }
+
+      const horizontalDistance = distance2DVector(projectile.mesh.position, remotePosition);
+      if (horizontalDistance < closestDistance) {
+        closestDistance = horizontalDistance;
+        closest = remotePlayer;
+      }
+    }
+
+    return closest;
+  }
+
+  private removeProjectile(projectileId: string): void {
+    const projectile = this.activeProjectiles.get(projectileId);
+    if (!projectile) {
+      return;
+    }
+
+    this.world.remove(projectile.mesh);
+    disposeObject3D(projectile.mesh);
+    this.activeProjectiles.delete(projectileId);
+  }
+
+  private clearProjectiles(): void {
+    for (const projectileId of [...this.activeProjectiles.keys()]) {
+      this.removeProjectile(projectileId);
+    }
+  }
+
+  private getAttackOrigin(direction: THREE.Vector3): Vector3 {
+    const position = toThreeVector(this.player.getPosition());
+    const forward = direction.clone();
+    forward.y = 0;
+
+    if (forward.lengthSq() <= 0.0001) {
+      forward.set(0, 0, -1);
+    }
+
+    forward.normalize();
+    const right = new THREE.Vector3().crossVectors(forward, UP).normalize();
+    position.addScaledVector(forward, 0.72);
+    position.addScaledVector(right, 0.24);
+    position.y += 1.08;
+    return fromThreeVector(position);
+  }
+
+  private updateWeaponCooldownHud(): void {
+    if (!this.equippedWeapon) {
+      return;
+    }
+
+    const progress =
+      this.equippedWeapon.cooldown > 0 ? 1 - this.attackCooldown / this.equippedWeapon.cooldown : 1;
+    this.hud.setWeaponCooldown(progress);
   }
 
   private interpolateEnemyView(
@@ -1736,9 +2040,9 @@ export class RuntimeMechanics {
   private damageEnemy(state: EnemyRuntimeState, amount: number): void {
     const view = this.objectViews.get(state.mapObject.id);
     const hitPosition = view ? fromThreeVector(view.position) : state.mapObject.position;
-    state.health = Math.max(0, state.health - Math.max(0, amount));
+    state.health = clampEnemyHealth(state.health - Math.max(0, amount), state.maxHealth);
     this.audio.play("hit");
-    this.feedback.spawn("damage", hitPosition);
+    this.feedback.spawn("damage", hitPosition, `-${Math.round(amount)}`);
 
     if (state.health > 0) {
       this.hud.showMessage(`Inimigo: ${Math.ceil(state.health)}/${state.maxHealth}`);
@@ -1752,7 +2056,8 @@ export class RuntimeMechanics {
     this.physicsSystem.removeCollider(state.mapObject.id);
     this.defeatedEnemyIds.add(state.mapObject.id);
     this.hud.showMessage("Inimigo derrotado");
-    this.feedback.spawn("item", hitPosition, "Derrotado");
+    this.audio.play("item");
+    this.feedback.spawn("item", hitPosition, "Inimigo -");
     this.dispatchEnemyDefeated(state.mapObject.id);
   }
 
@@ -1814,7 +2119,7 @@ export class RuntimeMechanics {
       const pickupBounds = new THREE.Box3().setFromObject(view);
       pickupBounds.expandByScalar(0.18);
 
-      if (pickupBounds.intersectsBox(playerBounds)) {
+      if (shouldCollectPickup(playerBounds, pickupBounds)) {
         this.collectItemPickup(pickup);
       }
     }
@@ -1882,7 +2187,7 @@ export class RuntimeMechanics {
           itemId === "health_pack" || itemId === "health"
             ? getSpawnerAmount(state.spawner, itemId)
             : undefined,
-        weaponId: itemId === "weapon_basic" ? "basic_sword" : undefined,
+        weaponId: normalizeWeaponId(itemId) ?? undefined,
       },
     };
     const view = createMapObject3D(pickup);
@@ -1901,15 +2206,27 @@ export class RuntimeMechanics {
     }
 
     const itemId = pickup.properties.itemId;
-    const amount = getNumber(
-      pickup.properties.amount,
-      getNumber(pickup.properties.healAmount, itemId === "coin" ? 1 : 25)
-    );
+    const amount = getPickupAmount(pickup);
     let label = getItemLabel(itemId);
     let feedbackLabel = label;
 
-    if (itemId === "health_pack" || itemId === "health") {
+    if (isHealthPickupObject(pickup)) {
       this.dispatchItemCollected("health");
+      if (this.isMultiplayerEnabled()) {
+        const requestAmount = Math.min(50, getPickupHealAmount(pickup));
+        this.options.multiplayer?.onPlayerHealRequest({
+          amount: requestAmount,
+          source: "healthPickup",
+          sourceObjectId: pickup.id,
+        });
+        label = `Cura +${Math.round(requestAmount)}`;
+        feedbackLabel = `+${Math.round(requestAmount)} vida`;
+        this.hud.showMessage(label);
+        this.audio.play("item");
+        this.feedback.spawn("item", pickup.position, feedbackLabel);
+        return;
+      }
+
       const healed = this.healPlayer(amount);
       label = `Cura +${Math.round(healed)}`;
       feedbackLabel = `+${Math.round(healed)} vida`;
@@ -1919,7 +2236,7 @@ export class RuntimeMechanics {
       return;
     }
 
-    if (itemId === "coin") {
+    if (isCoinPickupObject(pickup)) {
       const coinAmount = Math.max(1, Math.floor(amount));
       this.giveCoins(coinAmount);
       this.dispatchItemCollected("coin");
@@ -1928,10 +2245,10 @@ export class RuntimeMechanics {
       return;
     }
 
-    if (itemId === "weapon_basic" || itemId === "sword") {
+    if (isWeaponItemId(itemId)) {
       this.equipWeapon(itemId);
-      this.dispatchItemCollected("weapon_basic");
-      label = "Arma Basica";
+      this.dispatchItemCollected(getWeaponItemId(itemId) ?? itemId);
+      label = getWeaponLabel(itemId);
       feedbackLabel = "Arma";
     } else {
       this.dispatchItemCollected(itemId);
@@ -1958,7 +2275,10 @@ export class RuntimeMechanics {
 
   private markItemCollected(objectId: string, options: ItemCollectionOptions = {}): boolean {
     const pickup = this.runtimePickups.get(objectId) ?? this.getStaticItemPickup(objectId);
-    const trackSharedItem = this.isSharedWorldEnabled() || options.applyEffects === false;
+    const trackSharedItem = shouldTrackSharedPickup(
+      this.isSharedWorldEnabled(),
+      options.applyEffects
+    );
 
     if (!pickup || (trackSharedItem && this.collectedItemObjectIds.has(objectId))) {
       return false;
@@ -1971,10 +2291,7 @@ export class RuntimeMechanics {
 
     if (!this.runtimePickups.has(objectId)) {
       const view = this.objectViews.get(objectId);
-
-      if (view) {
-        view.visible = false;
-      }
+      hideCollectedPickupObject(view);
     }
 
     const sourceSpawnerId = pickup.properties.sourceSpawnerId;
@@ -2119,7 +2436,7 @@ export class RuntimeMechanics {
   }
 
   private openDoor(door: MapObject, options: DoorOpenOptions = {}): boolean {
-    const doorId = getString(door.properties?.doorId, door.id);
+    const doorId = getDoorId(door);
     const showMessage = options.showMessage !== false;
     const ignoreKeyRequirement = options.ignoreKeyRequirement === true;
 
@@ -2137,8 +2454,7 @@ export class RuntimeMechanics {
       return false;
     }
 
-    const offset = getVector(door.properties?.openOffset, { x: 0, y: 4, z: 0 });
-    view.position.add(new THREE.Vector3(offset.x, offset.y, offset.z));
+    applyDoorOpenVisual(view, door);
     this.physicsSystem.removeCollider(door.id);
     this.openedDoorIds.add(doorId);
 
@@ -2161,7 +2477,7 @@ export class RuntimeMechanics {
 
   private captureDoorPositions(): void {
     for (const mapObject of this.map.objects) {
-      if (mapObject.type !== "door") {
+      if (!isDoorObject(mapObject)) {
         continue;
       }
 
@@ -2174,7 +2490,7 @@ export class RuntimeMechanics {
   }
 
   private applyInitialDoorState(): void {
-    for (const door of this.map.objects.filter((mapObject) => mapObject.type === "door")) {
+    for (const door of this.map.objects.filter(isDoorObject)) {
       if (door.properties?.startsOpen || door.properties?.doorState === "open") {
         this.openDoor(door, {
           showMessage: false,
@@ -2199,7 +2515,7 @@ export class RuntimeMechanics {
   }
 
   private getTotalCoinObjects(): number {
-    return this.map.objects.filter((mapObject) => mapObject.type === "coin").length;
+    return this.map.objects.filter(isCoinObject).length;
   }
 
   private getTotalEnemyObjects(): number {
@@ -2210,8 +2526,7 @@ export class RuntimeMechanics {
     return (
       this.map.objects.find(
         (candidate) =>
-          candidate.type === "door" &&
-          (candidate.id === doorId || candidate.properties?.doorId === doorId)
+          isDoorObject(candidate) && (candidate.id === doorId || getDoorId(candidate) === doorId)
       ) ?? null
     );
   }
@@ -2299,69 +2614,24 @@ function getNpcDialogueLines(mapObject: MapObject, objectiveHint: string | null)
   return [...lines, `Objetivo atual: ${objectiveHint}`];
 }
 
-function getSpawnMode(value: unknown): ItemSpawnMode {
-  return value === "random" ? "random" : "fixed";
-}
-
-function getRespawnTime(spawner: MapObject): number {
-  return Math.max(0, getNumber(spawner.properties?.respawnTime, 0));
-}
-
-function getMaxSpawnedItems(spawner: MapObject): number {
-  return Math.max(1, Math.floor(getNumber(spawner.properties?.maxSpawnedItems, 1)));
-}
-
-function chooseItemId(spawner: MapObject): string | null {
-  const spawnItemType = spawner.properties?.spawnItemType;
-
-  if (spawnItemType === "health") {
-    return "health_pack";
-  }
-
-  if (spawnItemType === "coin") {
-    return "coin";
-  }
-
-  if (spawnItemType === "weapon_basic") {
-    return "weapon_basic";
-  }
-
-  const itemPool = getStringArray(spawner.properties?.itemPool);
-
-  if (itemPool.length === 0) {
-    return null;
-  }
-
-  if (getSpawnMode(spawner.properties?.spawnMode) === "random") {
-    return itemPool[Math.floor(Math.random() * itemPool.length)];
-  }
-
-  return itemPool[0];
-}
-
-function normalizeWeaponId(weaponId: string): string {
-  return weaponId === "weapon_basic" || weaponId === "sword" ? "basic_sword" : weaponId;
-}
-
-function getSpawnerAmount(spawner: MapObject, itemId: string): number {
-  const fallback = itemId === "coin" ? 1 : 25;
-  return Math.max(1, getNumber(spawner.properties?.amount, fallback));
-}
-
-function getPickupPosition(spawner: MapObject, index: number): Vector3 {
-  const scale = spawner.scale ?? { x: 1, y: 1, z: 1 };
-  const angle = index * 2.3999632297;
-  const radius = index === 0 ? 0 : 0.55;
-
+function createEquippedWeaponFromDefinition(definition: WeaponDefinition): EquippedWeapon {
   return {
-    x: spawner.position.x + Math.cos(angle) * radius,
-    y: spawner.position.y + Math.max(0.75, scale.y * 0.75),
-    z: spawner.position.z + Math.sin(angle) * radius,
+    id: definition.combatId,
+    itemId: definition.id === "sword" ? "weapon_basic" : definition.id,
+    label: definition.name,
+    weaponClass: definition.weaponClass,
+    attackType: definition.attackType,
+    damage: definition.damage,
+    range: definition.range,
+    cooldown: definition.cooldown,
+    projectileSpeed: Math.max(0, definition.projectileSpeed ?? 0),
+    coneDot: Math.max(-1, Math.min(1, definition.coneDot ?? 0.18)),
   };
 }
 
-function getSpawnerPickupId(spawner: MapObject, index: number): string {
-  return `itemPickup-${spawner.id}-${index}`;
+function getWeaponHudTypeLabel(weapon: EquippedWeapon): string {
+  const mode = weapon.weaponClass === "ranged" ? "Ranged" : "Melee";
+  return `${mode} - ${weapon.damage} dmg - ${weapon.cooldown.toFixed(2)}s`;
 }
 
 function getVector(value: unknown, fallback: Vector3): Vector3 {
@@ -2400,14 +2670,4 @@ function fromThreeVector(vector: THREE.Vector3): Vector3 {
 
 function distance2DVector(a: THREE.Vector3, b: THREE.Vector3): number {
   return Math.hypot(a.x - b.x, a.z - b.z);
-}
-
-function getEnemyBehavior(mapObject: MapObject): "idle" | "patrol" | "chase" {
-  const behavior = mapObject.properties?.behavior;
-
-  if (behavior === "idle" || behavior === "patrol" || behavior === "chase") {
-    return behavior;
-  }
-
-  return "chase";
 }

@@ -1,7 +1,9 @@
 import * as THREE from "three";
 import { disposeObject3D } from "./ObjectFactory";
+import { createWeaponVisual } from "./WeaponVisualFactory";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { LocalProfileStorage, type AvatarColors } from "../storage/LocalProfileStorage";
+import type { WeaponAttackType } from "../shared/types/ItemSchema";
 import type { Vector3 } from "../shared/types/ObjectSchema";
 
 type AvatarParts = {
@@ -30,6 +32,8 @@ export class PlayerController {
   private landSquash = 0;
   private respawnPulse = 0;
   private attackPulse = 0;
+  private attackType: WeaponAttackType = "slash";
+  private weaponVisual: THREE.Object3D | null = null;
   private maxHealth = DEFAULT_MAX_HEALTH;
   private health = DEFAULT_MAX_HEALTH;
   private dead = false;
@@ -323,7 +327,26 @@ export class PlayerController {
     this.landSquash = 0.8;
   }
 
-  playAttackFeedback(): void {
+  setEquippedWeapon(weaponId: string | null): void {
+    if (this.weaponVisual) {
+      this.avatar.rightArm.remove(this.weaponVisual);
+      disposeObject3D(this.weaponVisual);
+      this.weaponVisual = null;
+    }
+
+    if (!weaponId) {
+      return;
+    }
+
+    const visual = createWeaponVisual(weaponId);
+    visual.position.set(0, -0.48, -0.13);
+    visual.rotation.set(-0.08, 0, 0);
+    this.avatar.rightArm.add(visual);
+    this.weaponVisual = visual;
+  }
+
+  playAttackFeedback(type: WeaponAttackType = "slash"): void {
+    this.attackType = type;
     this.attackPulse = 1;
   }
 
@@ -445,6 +468,12 @@ export class PlayerController {
       10,
       deltaSeconds
     );
+    this.avatar.rightArm.rotation.y = THREE.MathUtils.damp(
+      this.avatar.rightArm.rotation.y,
+      0,
+      10,
+      deltaSeconds
+    );
     this.avatar.head.position.y = THREE.MathUtils.damp(
       this.avatar.head.position.y,
       1.55 + Math.abs(swing) * 0.025,
@@ -454,15 +483,22 @@ export class PlayerController {
 
     if (this.attackPulse > 0.01) {
       const attack = Math.sin(this.attackPulse * Math.PI);
+      const target = getAttackArmPose(this.attackType, attack);
       this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
         this.avatar.rightArm.rotation.x,
-        -1.15 - attack * 0.65,
+        target.x,
         20,
+        deltaSeconds
+      );
+      this.avatar.rightArm.rotation.y = THREE.MathUtils.damp(
+        this.avatar.rightArm.rotation.y,
+        target.y,
+        18,
         deltaSeconds
       );
       this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(
         this.avatar.rightArm.rotation.z,
-        -0.35,
+        target.z,
         18,
         deltaSeconds
       );
@@ -619,6 +655,39 @@ function createLeg(pants: THREE.Material, shoe: THREE.Material): THREE.Mesh {
   leg.add(foot);
 
   return leg;
+}
+
+function getAttackArmPose(
+  type: WeaponAttackType,
+  attack: number
+): { x: number; y: number; z: number } {
+  switch (type) {
+    case "overhead":
+      return {
+        x: -2.05 + attack * 0.85,
+        y: 0.05,
+        z: -0.1 - attack * 0.18,
+      };
+    case "stab":
+      return {
+        x: -1.08 - attack * 0.22,
+        y: -0.12,
+        z: -0.18 - attack * 0.16,
+      };
+    case "shoot":
+      return {
+        x: -1.34,
+        y: -0.06 + attack * 0.08,
+        z: -0.08,
+      };
+    case "slash":
+    default:
+      return {
+        x: -1.15 - attack * 0.65,
+        y: -0.2 + attack * 0.22,
+        z: -0.35 - attack * 0.18,
+      };
+  }
 }
 
 function dampAngle(current: number, target: number, lambda: number, deltaSeconds: number): number {

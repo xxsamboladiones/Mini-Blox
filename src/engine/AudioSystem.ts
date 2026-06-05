@@ -17,6 +17,7 @@ export type AudioCue =
   | "disappearingBlock"
   | "message"
   | "attack"
+  | "blaster"
   | "hit";
 
 type LocalAudioPreferences = {
@@ -287,6 +288,7 @@ const CUE_DEFINITIONS: Record<AudioCue, CueDefinition> = {
   },
   message: { frequencies: [440], duration: 0.08, type: "sine", volume: 0.045 },
   attack: { frequencies: [310, 220], duration: 0.08, type: "sawtooth", volume: 0.065, gap: 0.02 },
+  blaster: { frequencies: [740, 520], duration: 0.07, type: "square", volume: 0.06, gap: 0.018 },
   hit: { frequencies: [180, 120], duration: 0.11, type: "square", volume: 0.08, gap: 0.025 },
 };
 
@@ -306,7 +308,7 @@ function getCueThrottleMs(cue: AudioCue): number {
     return 180;
   }
 
-  if (cue === "attack" || cue === "hit") {
+  if (cue === "attack" || cue === "blaster" || cue === "hit") {
     return 90;
   }
 

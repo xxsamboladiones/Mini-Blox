@@ -8,6 +8,18 @@ const OWNER_CLIENT_ID = "smoke-owner-client";
 const CLOSE_TIMEOUT_MS = 2500;
 const ENEMY_OBJECT_ID = "enemy-smoke-1";
 const COIN_OBJECT_ID = "coin-smoke-1";
+const FAR_COIN_OBJECT_ID = "coin-smoke-far";
+const HEALTH_PICKUP_OBJECT_ID = "health-smoke-1";
+const BASIC_WEAPON_DAMAGE = 18;
+const BASIC_WEAPON_RANGE = 1.85;
+const BASIC_WEAPON_COOLDOWN_MS = 700;
+const DAGGER_DAMAGE = 10;
+const DAGGER_RANGE = 1.45;
+const DAGGER_COOLDOWN_MS = 380;
+const BLASTER_DAMAGE = 14;
+const BLASTER_RANGE = 12;
+const BLASTER_COOLDOWN_MS = 800;
+const SMOKE_ENEMY_HEALTH = 45;
 
 async function main() {
   console.log("=== MiniBlox Multiplayer Smoke Test ===\n");
@@ -57,6 +69,22 @@ async function main() {
     );
     console.log("Chat message broadcast reached the other client");
 
+    await sleep(1000);
+    clientA.send({
+      type: "chatMessage",
+      text: `<b>${"x".repeat(260)}</b>`,
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "chatMessage" &&
+        message.message?.type === "player" &&
+        message.message.text.length === 200 &&
+        !message.message.text.includes("<") &&
+        !message.message.text.includes(">"),
+      "B sanitized long chatMessage from A"
+    );
+    console.log("Chat length and HTML-like text were normalized");
+
     clientA.send({
       type: "playerState",
       position: { x: 0, y: 1, z: 0 },
@@ -79,38 +107,358 @@ async function main() {
     );
 
     clientA.send({
+      type: "playerAttackVisual",
+      weaponId: "dagger",
+      attackType: "stab",
+      origin: { x: 0.7, y: 2.08, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "playerAttackVisual" &&
+        message.playerId === welcomeA.playerId &&
+        message.weaponId === "dagger" &&
+        message.attackType === "stab",
+      "B playerAttackVisual from A"
+    );
+    console.log("Visual attack event was validated and broadcast");
+
+    clientA.send({
       type: "playerAttack",
       weaponId: "basic_sword",
       origin: { x: 0, y: 1, z: 0 },
       direction: { x: 1, y: 0, z: 0 },
-      range: 2,
-      damage: 25,
+      range: BASIC_WEAPON_RANGE,
+      damage: BASIC_WEAPON_DAMAGE,
       targetPlayerId: welcomeB.playerId,
     });
     await clientB.waitFor(
       (message) =>
         message.type === "playerDamaged" &&
         message.targetPlayerId === welcomeB.playerId &&
-        message.health === 75,
+        message.health === 82,
       "B playerDamaged from A"
     );
     console.log("PvP damage was validated and broadcast");
 
     clientA.send({
+      type: "playerAttack",
+      weaponId: "basic_sword",
+      origin: { x: 0, y: 1, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+      range: BASIC_WEAPON_RANGE,
+      damage: 999,
+      targetPlayerId: welcomeB.playerId,
+    });
+    await clientB.waitForNoMessage(
+      (message) => message.type === "playerDamaged" && message.targetPlayerId === welcomeB.playerId,
+      "cooldown blocked duplicate sword hit",
+      300
+    );
+
+    await sleep(BASIC_WEAPON_COOLDOWN_MS);
+    clientA.send({
+      type: "playerAttack",
+      weaponId: "admin_cannon",
+      origin: { x: 0, y: 1, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+      range: 99,
+      damage: 999,
+      targetPlayerId: welcomeB.playerId,
+    });
+    await clientB.waitForNoMessage(
+      (message) => message.type === "playerDamaged" && message.targetPlayerId === welcomeB.playerId,
+      "invalid weapon rejected",
+      300
+    );
+
+    clientA.send({
+      type: "playerAttack",
+      weaponId: "dagger",
+      origin: { x: 0, y: 1, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+      range: DAGGER_RANGE,
+      damage: 999,
+      targetPlayerId: welcomeB.playerId,
+      attackType: "stab",
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "playerDamaged" &&
+        message.targetPlayerId === welcomeB.playerId &&
+        message.health === 72,
+      "B playerDamaged by dagger"
+    );
+
+    clientA.send({
+      type: "playerAttack",
+      weaponId: "dagger",
+      origin: { x: 0, y: 1, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+      range: DAGGER_RANGE,
+      damage: DAGGER_DAMAGE,
+      targetPlayerId: welcomeB.playerId,
+      attackType: "stab",
+    });
+    await clientB.waitForNoMessage(
+      (message) => message.type === "playerDamaged" && message.targetPlayerId === welcomeB.playerId,
+      "cooldown blocked duplicate dagger hit",
+      220
+    );
+    console.log("Invalid weapon and cooldown checks rejected extra PvP damage");
+
+    await sleep(BLASTER_COOLDOWN_MS);
+    clientB.send({
+      type: "playerState",
+      position: { x: 6, y: 1, z: 0 },
+      rotationY: 0,
+      health: 72,
+      equippedWeaponId: "blaster",
+      score: 0,
+    });
+    clientA.send({
+      type: "playerAttack",
+      weaponId: "blaster",
+      origin: { x: 0, y: 1, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+      range: BLASTER_RANGE,
+      damage: 999,
+      targetPlayerId: welcomeB.playerId,
+      attackType: "shoot",
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "playerDamaged" &&
+        message.targetPlayerId === welcomeB.playerId &&
+        message.health === 58,
+      "B playerDamaged by blaster"
+    );
+    console.log("Dagger and blaster damage used server-side weapon rules");
+
+    await sleep(BLASTER_COOLDOWN_MS);
+    clientB.send({
+      type: "playerState",
+      position: { x: 1, y: 1, z: 0 },
+      rotationY: 0,
+      health: 58,
+      equippedWeaponId: "basic_sword",
+      score: 0,
+    });
+
+    for (const expectedHealth of [40, 22, 4, 0]) {
+      await sleep(BASIC_WEAPON_COOLDOWN_MS);
+      clientA.send({
+        type: "playerAttack",
+        weaponId: "basic_sword",
+        origin: { x: 0, y: 1, z: 0 },
+        direction: { x: 1, y: 0, z: 0 },
+        range: BASIC_WEAPON_RANGE,
+        damage: BASIC_WEAPON_DAMAGE,
+        targetPlayerId: welcomeB.playerId,
+      });
+      await clientB.waitFor(
+        (message) =>
+          message.type === "playerDamaged" &&
+          message.targetPlayerId === welcomeB.playerId &&
+          message.health === expectedHealth,
+        `B playerDamaged health ${expectedHealth}`
+      );
+    }
+    await clientB.waitFor(
+      (message) => message.type === "playerDefeated" && message.playerId === welcomeB.playerId,
+      "B playerDefeated"
+    );
+    await clientB.waitFor(
+      (message) =>
+        message.type === "playerRespawned" &&
+        message.playerId === welcomeB.playerId &&
+        message.health === 100,
+      "B playerRespawned"
+    );
+    console.log("PvP defeat required multiple hits and respawned the player");
+
+    await sleep(BASIC_WEAPON_COOLDOWN_MS);
+    clientB.send({
+      type: "playerState",
+      position: { x: 1, y: 1, z: 0 },
+      rotationY: 0,
+      health: 100,
+      equippedWeaponId: "basic_sword",
+      score: 0,
+    });
+    clientA.send({
+      type: "playerAttack",
+      weaponId: "basic_sword",
+      origin: { x: 0, y: 1, z: 0 },
+      direction: { x: 1, y: 0, z: 0 },
+      range: BASIC_WEAPON_RANGE,
+      damage: BASIC_WEAPON_DAMAGE,
+      targetPlayerId: welcomeB.playerId,
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "playerDamaged" &&
+        message.targetPlayerId === welcomeB.playerId &&
+        message.health === 82,
+      "B playerDamaged before heal validation"
+    );
+    clientB.send({
+      type: "playerState",
+      position: { x: 1, y: 1, z: 0 },
+      rotationY: 0,
+      health: 100,
+      equippedWeaponId: "basic_sword",
+      score: 0,
+    });
+    await sleep(200);
+    clientB.send({
+      type: "playerHealRequest",
+      amount: 30,
+      source: "healthPickup",
+      sourceObjectId: HEALTH_PICKUP_OBJECT_ID,
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "playerHealed" &&
+        message.playerId === welcomeB.playerId &&
+        message.health === 100 &&
+        message.amount === 18,
+      "B playerHealed from health pickup"
+    );
+    clientB.send({
+      type: "playerHealRequest",
+      amount: 999,
+      source: "healthPickup",
+      sourceObjectId: HEALTH_PICKUP_OBJECT_ID,
+    });
+    await clientB.waitForNoMessage(
+      (message) => message.type === "playerHealed" && message.playerId === welcomeB.playerId,
+      "invalid duplicate/oversized heal rejected",
+      300
+    );
+    console.log("Server-side healing rejected playerState abuse and accepted a valid pickup");
+
+    clientA.send({
       type: "enemyHit",
       enemyObjectId: ENEMY_OBJECT_ID,
-      damage: 60,
+      damage: 999,
+      weaponId: "admin_cannon",
+    });
+    await clientB.waitForNoMessage(
+      (message) => message.type === "enemyUpdated" && message.enemy?.objectId === ENEMY_OBJECT_ID,
+      "invalid enemy weapon rejected",
+      300
+    );
+
+    clientA.send({
+      type: "enemyPositionUpdate",
+      enemies: [
+        {
+          objectId: ENEMY_OBJECT_ID,
+          position: { x: -1.8, y: 0.5, z: 0 },
+          rotationY: 0,
+          state: "idle",
+        },
+      ],
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "enemyUpdated" &&
+        message.enemy?.objectId === ENEMY_OBJECT_ID &&
+        Math.abs(message.enemy.position.x + 1.8) < 0.001,
+      "B enemyUpdated valid host movement"
+    );
+    clientA.send({
+      type: "enemyPositionUpdate",
+      enemies: [
+        {
+          objectId: ENEMY_OBJECT_ID,
+          position: { x: 500, y: 0.5, z: 0 },
+          rotationY: 0,
+          state: "idle",
+        },
+      ],
+    });
+    await clientB.waitForNoMessage(
+      (message) =>
+        message.type === "enemyUpdated" &&
+        message.enemy?.objectId === ENEMY_OBJECT_ID &&
+        message.enemy.position.x === 500,
+      "absurd enemy teleport rejected",
+      300
+    );
+    console.log("Enemy host movement accepted plausible updates and rejected teleport");
+
+    clientA.send({
+      type: "enemyHit",
+      enemyObjectId: ENEMY_OBJECT_ID,
+      damage: 999,
       weaponId: "basic_sword",
     });
     await clientB.waitFor(
-      (message) => message.type === "enemyUpdated" && message.enemy?.objectId === ENEMY_OBJECT_ID,
-      "B enemyUpdated from A"
+      (message) =>
+        message.type === "enemyUpdated" &&
+        message.enemy?.objectId === ENEMY_OBJECT_ID &&
+        message.enemy.health === SMOKE_ENEMY_HEALTH - BASIC_WEAPON_DAMAGE,
+      "B enemyUpdated from A first hit"
     );
+    clientA.send({
+      type: "enemyHit",
+      enemyObjectId: ENEMY_OBJECT_ID,
+      damage: BASIC_WEAPON_DAMAGE,
+      weaponId: "basic_sword",
+    });
+    await clientB.waitForNoMessage(
+      (message) =>
+        message.type === "enemyUpdated" &&
+        message.enemy?.objectId === ENEMY_OBJECT_ID &&
+        message.enemy.health === SMOKE_ENEMY_HEALTH - BASIC_WEAPON_DAMAGE * 2,
+      "enemyHit cooldown blocked duplicate hit",
+      300
+    );
+
+    await sleep(BASIC_WEAPON_COOLDOWN_MS);
+    clientA.send({
+      type: "enemyHit",
+      enemyObjectId: ENEMY_OBJECT_ID,
+      damage: BASIC_WEAPON_DAMAGE,
+      weaponId: "basic_sword",
+    });
+    await clientB.waitFor(
+      (message) =>
+        message.type === "enemyUpdated" &&
+        message.enemy?.objectId === ENEMY_OBJECT_ID &&
+        message.enemy.health === SMOKE_ENEMY_HEALTH - BASIC_WEAPON_DAMAGE * 2,
+      "B enemyUpdated from A second hit"
+    );
+    await sleep(BASIC_WEAPON_COOLDOWN_MS);
+    clientA.send({
+      type: "enemyHit",
+      enemyObjectId: ENEMY_OBJECT_ID,
+      damage: BASIC_WEAPON_DAMAGE,
+      weaponId: "basic_sword",
+    });
     await clientB.waitFor(
       (message) => message.type === "enemyDefeated" && message.enemyObjectId === ENEMY_OBJECT_ID,
       "B enemyDefeated from A"
     );
     console.log("Enemy damage and defeat were synchronized");
+
+    clientA.send({
+      type: "worldEvent",
+      event: {
+        type: "coinCollected",
+        objectId: FAR_COIN_OBJECT_ID,
+      },
+    });
+    await clientB.waitForNoMessage(
+      (message) =>
+        message.type === "worldEvent" &&
+        message.event?.type === "coinCollected" &&
+        message.event.objectId === FAR_COIN_OBJECT_ID,
+      "far coin worldEvent rejected",
+      300
+    );
 
     clientA.send({
       type: "worldEvent",
@@ -279,15 +627,28 @@ function createSmokeMap() {
         properties: { value: 1 },
       },
       {
+        id: FAR_COIN_OBJECT_ID,
+        type: "coin",
+        position: { x: 30, y: 1, z: 0 },
+        properties: { value: 1 },
+      },
+      {
+        id: HEALTH_PICKUP_OBJECT_ID,
+        type: "itemPickup",
+        position: { x: 1, y: 1, z: 0 },
+        properties: { itemId: "health_pack", amount: 30 },
+      },
+      {
         id: ENEMY_OBJECT_ID,
         type: "enemy",
         position: { x: -2, y: 0.5, z: 0 },
         properties: {
-          health: 50,
+          health: SMOKE_ENEMY_HEALTH,
           damage: 8,
           speed: 1,
           detectionRange: 6,
           attackRange: 1.4,
+          attackCooldown: 1.2,
           behavior: "idle",
           collision: false,
         },
@@ -361,6 +722,18 @@ function connectClient(wsBaseUrl, roomId, clientId, playerName) {
         waiters.push({ predicate, resolve, timeoutId });
       });
     },
+    async waitForNoMessage(predicate, label, durationMs = 300) {
+      const startIndex = messages.length;
+      const deadline = Date.now() + durationMs;
+
+      while (Date.now() < deadline) {
+        const unexpected = messages.slice(startIndex).find(predicate);
+        if (unexpected) {
+          throw new Error(`Unexpected message while waiting for ${label}: ${unexpected.type}`);
+        }
+        await sleep(25);
+      }
+    },
     close() {
       return closeWebSocket(ws);
     },
@@ -390,6 +763,12 @@ function waitForOpen(ws) {
       clearTimeout(timeoutId);
       reject(error);
     });
+  });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
 }
 

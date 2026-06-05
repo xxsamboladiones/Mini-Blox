@@ -1,4 +1,5 @@
 import { createIcons, icons } from "lucide";
+import { WEAPON_SPAWNER_OPTIONS } from "../shared/ItemCatalog";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
 
 type MapObjectPatch = Partial<MapObject>;
@@ -262,7 +263,16 @@ export class PropertiesPanel {
             <select data-property="spawnItemType">
               <option value="health" ${object.properties?.spawnItemType === "health" ? "selected" : ""}>Cura</option>
               <option value="coin" ${object.properties?.spawnItemType === "coin" ? "selected" : ""}>Moeda</option>
-              <option value="weapon_basic" ${object.properties?.spawnItemType !== "health" && object.properties?.spawnItemType !== "coin" ? "selected" : ""}>Arma basica</option>
+              ${WEAPON_SPAWNER_OPTIONS.map(
+                (weapon) => `
+              <option value="${weapon.id}" ${
+                object.properties?.spawnItemType === weapon.id ||
+                (!object.properties?.spawnItemType && weapon.id === "weapon_basic")
+                  ? "selected"
+                  : ""
+              }>${weapon.label}</option>
+            `
+              ).join("")}
             </select>
           </label>
           ${this.renderNumberField("amount", "Quantidade", Number(object.properties?.amount ?? 25), 1)}

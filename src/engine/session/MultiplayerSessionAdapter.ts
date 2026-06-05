@@ -6,6 +6,8 @@ import type {
   GameNetworkEvent,
   NetworkEventCallback,
   PlayerAttackPayload,
+  PlayerAttackVisualPayload,
+  PlayerHealRequestPayload,
   PlayerInput,
   PlayerNetState,
   SharedWorldState,
@@ -121,6 +123,22 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
     }
 
     multiplayerService.sendPlayerAttack(payload);
+  }
+
+  sendPlayerAttackVisual(payload: PlayerAttackVisualPayload): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendPlayerAttackVisual(payload);
+  }
+
+  sendPlayerHealRequest(payload: PlayerHealRequestPayload): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    multiplayerService.sendPlayerHealRequest(payload);
   }
 
   sendPlayerDamageReport(
@@ -239,6 +257,7 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
         playerId,
         position: player.position,
         rotationY: player.rotationY,
+        player,
       });
     });
 
@@ -286,6 +305,29 @@ export class MultiplayerSessionAdapter implements GameSessionAdapter {
         damage,
         health,
         attackerPlayerId,
+      });
+    });
+
+    multiplayerService.onPlayerHealed((playerId, amount, health, source, sourceObjectId) => {
+      this.callbacks.onNetworkEvent?.({
+        type: "playerHealed",
+        playerId,
+        amount,
+        health,
+        source,
+        sourceObjectId,
+      });
+    });
+
+    multiplayerService.onPlayerAttackVisual((playerId, payload) => {
+      if (playerId === this.localPlayerId) {
+        return;
+      }
+
+      this.callbacks.onNetworkEvent?.({
+        type: "playerAttackVisual",
+        playerId,
+        ...payload,
       });
     });
 

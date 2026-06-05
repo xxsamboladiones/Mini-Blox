@@ -13,11 +13,7 @@ type OnlineMapsTabActions = {
   onEditMap: (map: GameMap) => void;
   onShowDetails: (summary: OnlineMapSummary) => void;
   onDownloadCopy: (summary: OnlineMapSummary) => void;
-  onPlayMultiplayer?: (
-    map: GameMap,
-    roomId: string,
-    onlineMapId?: string
-  ) => void | Promise<void>;
+  onPlayMultiplayer?: (map: GameMap, roomId: string, onlineMapId?: string) => void | Promise<void>;
   onCreateMultiplayerRoom?: (map: GameMap, onlineMapId?: string) => void | Promise<void>;
 };
 
@@ -88,7 +84,7 @@ export class OnlineMapsTab {
       this.state.loading = false;
 
       if (error instanceof OnlineServiceError && error.isOffline) {
-        this.state.error = "Servidor online indisponível. Verifique se o backend está rodando.";
+        this.state.error = "Servidor online indisponivel. Verifique se o backend esta rodando.";
       } else {
         this.state.error =
           error instanceof Error ? error.message : "Erro ao carregar mapas online.";
@@ -179,7 +175,7 @@ export class OnlineMapsTab {
         </div>
         <div class="map-card-content">
           <h3 class="map-card-title">${this.escapeHtml(map.name)}</h3>
-          <p class="map-card-description">${this.escapeHtml(map.description || "Sem descrição")}</p>
+          <p class="map-card-description">${this.escapeHtml(map.description || "Sem descricao")}</p>
           <div class="map-card-meta">
             <span class="meta-item">
               <i data-lucide="user"></i>
@@ -220,7 +216,7 @@ export class OnlineMapsTab {
             <button class="icon-button" type="button" data-action="like" title="Curtir" aria-label="Curtir mapa">
               <i data-lucide="heart"></i>
             </button>
-            <button class="icon-button" type="button" data-action="download" title="Salvar cópia local" aria-label="Salvar copia local">
+            <button class="icon-button" type="button" data-action="download" title="Salvar copia local" aria-label="Salvar copia local">
               <i data-lucide="download"></i>
             </button>
           </div>
@@ -266,7 +262,7 @@ export class OnlineMapsTab {
       this.actions.onPlayMap(gameMap);
     } catch (error) {
       if (error instanceof OnlineServiceError && error.isOffline) {
-        alert("Servidor online indisponível. Não é possível jogar este mapa agora.");
+        alert("Servidor online indisponivel. Nao e possivel jogar este mapa agora.");
       } else {
         alert(error instanceof Error ? error.message : "Erro ao carregar mapa online.");
       }
@@ -279,7 +275,7 @@ export class OnlineMapsTab {
       await this.loadOnlineMaps();
     } catch (error) {
       if (error instanceof OnlineServiceError && error.isOffline) {
-        alert("Servidor online indisponível. Não é possível curtir este mapa agora.");
+        alert("Servidor online indisponivel. Nao e possivel curtir este mapa agora.");
       } else {
         alert(error instanceof Error ? error.message : "Erro ao curtir mapa.");
       }
@@ -292,7 +288,7 @@ export class OnlineMapsTab {
       MapStorage.saveMap(localCopy);
 
       const shouldOpen = confirm(
-        `Mapa "${map.name}" salvo como cópia local!\n\nDeseja abrir no editor agora?`
+        `Mapa "${map.name}" salvo como copia local!\n\nDeseja abrir no editor agora?`
       );
 
       if (shouldOpen) {
@@ -300,7 +296,7 @@ export class OnlineMapsTab {
       }
     } catch (error) {
       if (error instanceof OnlineServiceError && error.isOffline) {
-        alert("Servidor online indisponível. Não é possível baixar este mapa agora.");
+        alert("Servidor online indisponivel. Nao e possivel baixar este mapa agora.");
       } else {
         alert(error instanceof Error ? error.message : "Erro ao baixar mapa.");
       }

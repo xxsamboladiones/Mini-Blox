@@ -3,10 +3,13 @@ import type {
   EnemyNetState,
   EnemyPositionUpdate,
   PlayerAttackPayload,
+  PlayerAttackVisualPayload,
   PlayerCombatState,
+  PlayerHealRequestPayload,
   RoomPlayer,
   SharedWorldState,
   Vector3,
+  WeaponAttackType,
   WorldEvent,
 } from "./types.js";
 import type { RoomMapIndex } from "./RoomMapIndex.js";
@@ -18,14 +21,17 @@ const MAX_WORLD_EVENT_ID_LENGTH = 160;
 const MAX_CHAT_MESSAGES = 50;
 const MAX_CHAT_TEXT_LENGTH = 200;
 const CHAT_RATE_LIMIT_MS = 1000;
-const MAX_DAMAGE_REPORT = 60;
-const DAMAGE_REPORT_RATE_LIMIT_MS = 180;
-const MAX_ENEMY_HIT_DAMAGE = 100;
-const MAX_PLAYER_ATTACK_DAMAGE = 35;
-const MAX_PLAYER_ATTACK_RANGE = 4;
-const PLAYER_ATTACK_COOLDOWN_MS = 380;
+const MAX_DAMAGE_REPORT = 30;
+const DAMAGE_REPORT_RATE_LIMIT_MS = 320;
+const PLAYER_ATTACK_RANGE_TOLERANCE = 0.7;
 const MAX_PLAYER_SPEED_UNITS_PER_SECOND = 45;
 const MAX_ABSOLUTE_POSITION = 10000;
+const ENEMY_HIT_COOLDOWN_MS = 320;
+const ENEMY_POSITION_LAG_TOLERANCE = 4;
+const DEFAULT_ENEMY_POSITION_SPEED = 12;
+const WORLD_EVENT_INTERACTION_RANGE = 3.25;
+const DOOR_INTERACTION_RANGE = 5;
+const MAX_HEAL_REQUEST_AMOUNT = 50;
 
 type RemovePlayerResult = {
   removed: boolean;
@@ -41,18 +47,60 @@ type DamageResult = {
   attackerPlayerId?: string;
 };
 
+type HealResult = {
+  player: RoomPlayer;
+  combatState: PlayerCombatState;
+  amount: number;
+  source: PlayerHealRequestPayload["source"];
+  sourceObjectId?: string;
+};
+
 type WeaponRule = {
   damage: number;
   range: number;
   cooldownMs: number;
+  attackType: WeaponAttackType;
+  weaponClass: "melee" | "ranged";
+  minDot: number;
 };
 
 const WEAPON_RULES: Record<string, WeaponRule> = {
   basic_sword: {
-    damage: MAX_PLAYER_ATTACK_DAMAGE,
-    range: MAX_PLAYER_ATTACK_RANGE,
-    cooldownMs: PLAYER_ATTACK_COOLDOWN_MS,
+    damage: 18,
+    range: 1.85,
+    cooldownMs: 650,
+    attackType: "slash",
+    weaponClass: "melee",
+    minDot: 0.18,
   },
+  heavy_hammer: {
+    damage: 32,
+    range: 1.65,
+    cooldownMs: 1150,
+    attackType: "overhead",
+    weaponClass: "melee",
+    minDot: 0.05,
+  },
+  dagger: {
+    damage: 10,
+    range: 1.45,
+    cooldownMs: 350,
+    attackType: "stab",
+    weaponClass: "melee",
+    minDot: 0.42,
+  },
+  blaster: {
+    damage: 14,
+    range: 12,
+    cooldownMs: 750,
+    attackType: "shoot",
+    weaponClass: "ranged",
+    minDot: 0.58,
+  },
+};
+
+export type PlayerAttackVisualEvent = PlayerAttackVisualPayload & {
+  playerId: string;
 };
 
 export class GameRoom {
@@ -63,6 +111,10 @@ export class GameRoom {
   private readonly lastChatAtByPlayerId = new Map<string, number>();
   private readonly lastDamageReportAtByPlayerId = new Map<string, number>();
   private readonly lastAttackAtByPlayerId = new Map<string, number>();
+  private readonly lastEnemyHitAtByKey = new Map<string, number>();
+  private readonly lastEnemyPositionUpdateAtByObjectId = new Map<string, number>();
+  private readonly usedHealSourceObjectIds = new Set<string>();
+  private lastEnemyPositionHostPlayerId: string | null = null;
   private readonly sharedState: SharedWorldState = {
     openedDoorIds: [],
     activatedButtonIds: [],
@@ -145,9 +197,15 @@ export class GameRoom {
     this.lastChatAtByPlayerId.delete(playerId);
     this.lastDamageReportAtByPlayerId.delete(playerId);
     this.lastAttackAtByPlayerId.delete(playerId);
+    deleteMapKeysByPrefix(this.lastEnemyHitAtByKey, `${playerId}:`);
 
     if (this.hostPlayerId === playerId) {
       this.hostPlayerId = this.players.keys().next().value ?? null;
+    }
+
+    if (previousHostPlayerId !== this.hostPlayerId) {
+      this.lastEnemyPositionUpdateAtByObjectId.clear();
+      this.lastEnemyPositionHostPlayerId = null;
     }
 
     this.updateActivity();
@@ -245,8 +303,14 @@ export class GameRoom {
     return this.chatMessages.map(cloneChatMessage);
   }
 
-  applyWorldEvent(event: WorldEvent): WorldEvent | null {
-    const normalized = this.normalizeWorldEvent(event);
+  applyWorldEvent(playerId: string, event: WorldEvent): WorldEvent | null {
+    const player = this.players.get(playerId);
+    const combatState = this.playerCombatStates.get(playerId);
+    if (!player || !combatState?.alive) {
+      return null;
+    }
+
+    const normalized = this.normalizeWorldEvent(player, event);
 
     if (!normalized) {
       return null;
@@ -271,9 +335,12 @@ export class GameRoom {
   applyEnemyHit(
     playerId: string,
     enemyObjectId: string,
-    damage: number
+    damage: number,
+    weaponId?: string
   ): { enemy: EnemyNetState; defeated: boolean; damage: number } | null {
-    if (!this.players.has(playerId) || typeof enemyObjectId !== "string") {
+    const player = this.players.get(playerId);
+    const combatState = this.playerCombatStates.get(playerId);
+    if (!player || !combatState?.alive || typeof enemyObjectId !== "string") {
       return null;
     }
 
@@ -282,13 +349,30 @@ export class GameRoom {
       return null;
     }
 
-    if (!Number.isFinite(damage) || damage <= 0) {
+    const normalizedWeaponId = normalizeWeaponId(weaponId);
+    const weaponRule = normalizedWeaponId ? WEAPON_RULES[normalizedWeaponId] : null;
+    if (!weaponRule || !Number.isFinite(damage) || damage <= 0) {
       return null;
     }
 
-    const appliedDamage = clamp(damage, 0, MAX_ENEMY_HIT_DAMAGE);
+    if (
+      distance3D(player.position, enemy.position) >
+      weaponRule.range + PLAYER_ATTACK_RANGE_TOLERANCE
+    ) {
+      return null;
+    }
+
+    const now = Date.now();
+    const cooldownKey = `${playerId}:${normalizedWeaponId}:${enemyObjectId}`;
+    const lastEnemyHitAt = this.lastEnemyHitAtByKey.get(cooldownKey) ?? 0;
+    if (now - lastEnemyHitAt < Math.max(ENEMY_HIT_COOLDOWN_MS, weaponRule.cooldownMs)) {
+      return null;
+    }
+
+    this.lastEnemyHitAtByKey.set(cooldownKey, now);
+    const appliedDamage = Math.min(weaponRule.damage, enemy.health);
     enemy.health = Math.max(0, enemy.health - appliedDamage);
-    enemy.updatedAt = Date.now();
+    enemy.updatedAt = now;
 
     if (enemy.health <= 0) {
       enemy.health = 0;
@@ -312,6 +396,11 @@ export class GameRoom {
     const changed: EnemyNetState[] = [];
     const now = Date.now();
 
+    if (this.lastEnemyPositionHostPlayerId !== playerId) {
+      this.lastEnemyPositionUpdateAtByObjectId.clear();
+      this.lastEnemyPositionHostPlayerId = playerId;
+    }
+
     for (const update of updates.slice(0, 64)) {
       const enemy = this.enemyStates.get(update.objectId);
 
@@ -323,6 +412,10 @@ export class GameRoom {
         continue;
       }
 
+      if (!this.isEnemyMovementPlausible(enemy, update.position, now)) {
+        continue;
+      }
+
       enemy.position = cloneVector(update.position);
       enemy.rotationY = update.rotationY;
       enemy.targetPlayerId = this.players.has(update.targetPlayerId ?? "")
@@ -330,6 +423,7 @@ export class GameRoom {
         : undefined;
       enemy.state = normalizeEnemyState(update.state, enemy.state);
       enemy.updatedAt = now;
+      this.lastEnemyPositionUpdateAtByObjectId.set(enemy.objectId, now);
       changed.push(cloneEnemyState(enemy));
     }
 
@@ -342,7 +436,8 @@ export class GameRoom {
 
   applyPlayerAttack(attackerPlayerId: string, payload: PlayerAttackPayload): DamageResult | null {
     const attacker = this.players.get(attackerPlayerId);
-    if (!attacker || !this.mapIndex.multiplayerSettings.pvpEnabled) {
+    const attackerCombat = this.playerCombatStates.get(attackerPlayerId);
+    if (!attacker || !attackerCombat?.alive || !this.mapIndex.multiplayerSettings.pvpEnabled) {
       return null;
     }
 
@@ -377,33 +472,71 @@ export class GameRoom {
       return null;
     }
 
-    const range = clamp(payload.range, 0, weaponRule.range);
-    const damage = clamp(payload.damage, 0, weaponRule.damage);
-    if (range <= 0 || damage <= 0) {
+    const clientRange = clamp(payload.range, 0, weaponRule.range);
+    if (clientRange <= 0 || payload.damage <= 0) {
       return null;
     }
 
     const distance = distance3D(attacker.position, target.position);
-    if (distance > range + 1.25) {
+    if (distance > weaponRule.range + PLAYER_ATTACK_RANGE_TOLERANCE) {
       return null;
     }
 
     const horizontalDistance = distance2D(attacker.position, target.position);
     if (
       horizontalDistance > 0.35 &&
-      !isTargetInAttackCone(attacker.position, target.position, payload.direction)
+      !isTargetInAttackCone(
+        attacker.position,
+        target.position,
+        payload.direction,
+        weaponRule.minDot
+      )
     ) {
       return null;
     }
 
     this.lastAttackAtByPlayerId.set(attackerPlayerId, now);
-    const result = this.applyDamageToPlayer(target, damage, attacker.id);
+    const result = this.applyDamageToPlayer(target, weaponRule.damage, attacker.id);
 
     if (result?.defeated) {
       attacker.score += 1;
     }
 
     return result;
+  }
+
+  createPlayerAttackVisual(
+    playerId: string,
+    payload: PlayerAttackVisualPayload
+  ): PlayerAttackVisualEvent | null {
+    const player = this.players.get(playerId);
+    const combatState = this.playerCombatStates.get(playerId);
+    if (!player || !combatState?.alive) {
+      return null;
+    }
+
+    const weaponId = normalizeWeaponId(payload.weaponId);
+    const weaponRule = weaponId ? WEAPON_RULES[weaponId] : null;
+    if (
+      !weaponId ||
+      !weaponRule ||
+      !this.isValidPosition(payload.origin) ||
+      !this.isValidDirection(payload.direction)
+    ) {
+      return null;
+    }
+
+    if (distance3D(player.position, payload.origin) > 2.75) {
+      return null;
+    }
+
+    return {
+      playerId,
+      weaponId,
+      attackType: weaponRule.attackType,
+      origin: cloneVector(payload.origin),
+      direction: normalizeDirection(payload.direction),
+    };
   }
 
   applyReportedPlayerDamage(
@@ -434,6 +567,62 @@ export class GameRoom {
 
     this.lastDamageReportAtByPlayerId.set(targetId, now);
     return this.applyDamageToPlayer(target, clamp(damage, 0, MAX_DAMAGE_REPORT));
+  }
+
+  applyPlayerHeal(playerId: string, payload: PlayerHealRequestPayload): HealResult | null {
+    const player = this.players.get(playerId);
+    const combatState = this.playerCombatStates.get(playerId);
+    if (!player || !combatState?.alive || !payload || payload.source !== "healthPickup") {
+      return null;
+    }
+
+    if (!Number.isFinite(payload.amount) || payload.amount <= 0) {
+      return null;
+    }
+
+    const requestedAmount = Math.floor(payload.amount);
+    if (requestedAmount > MAX_HEAL_REQUEST_AMOUNT) {
+      return null;
+    }
+
+    const sourceObjectId = normalizeWorldEventId(payload.sourceObjectId);
+    if (!sourceObjectId || !this.mapIndex.itemObjectIds.has(sourceObjectId)) {
+      return null;
+    }
+
+    const pickupHealAmount = this.mapIndex.itemHealAmounts.get(sourceObjectId) ?? 0;
+    if (pickupHealAmount <= 0 || this.usedHealSourceObjectIds.has(sourceObjectId)) {
+      return null;
+    }
+
+    if (!this.isPlayerNearObject(player, sourceObjectId, WORLD_EVENT_INTERACTION_RANGE)) {
+      return null;
+    }
+
+    const amount = clamp(
+      Math.min(requestedAmount, pickupHealAmount, MAX_HEAL_REQUEST_AMOUNT),
+      0,
+      combatState.maxHealth - combatState.health
+    );
+    if (amount <= 0) {
+      return null;
+    }
+
+    this.usedHealSourceObjectIds.add(sourceObjectId);
+    addUnique(this.sharedState.collectedItemObjectIds, sourceObjectId);
+
+    combatState.health = Math.min(combatState.maxHealth, combatState.health + amount);
+    this.syncPlayerFromCombatState(player, combatState);
+    player.lastUpdateAt = new Date().toISOString();
+    this.updateActivity();
+
+    return {
+      player: clonePlayer(player),
+      combatState: cloneCombatState(combatState),
+      amount,
+      source: payload.source,
+      sourceObjectId,
+    };
   }
 
   respawnPlayer(playerId: string): { player: RoomPlayer; combatState: PlayerCombatState } | null {
@@ -624,6 +813,26 @@ export class GameRoom {
     return distance3D(player.position, position) <= maxDistance;
   }
 
+  private isEnemyMovementPlausible(
+    enemy: EnemyNetState,
+    position: Vector3,
+    now: number
+  ): boolean {
+    const lastUpdateAt = this.lastEnemyPositionUpdateAtByObjectId.get(enemy.objectId);
+
+    if (!lastUpdateAt) {
+      return true;
+    }
+
+    const elapsedSeconds = Math.max(0.05, (now - lastUpdateAt) / 1000);
+    const configuredSpeed =
+      this.mapIndex.enemySpeeds.get(enemy.objectId) ?? DEFAULT_ENEMY_POSITION_SPEED;
+    const maxDistance =
+      Math.max(0.1, configuredSpeed) * elapsedSeconds + ENEMY_POSITION_LAG_TOLERANCE;
+
+    return distance3D(enemy.position, position) <= maxDistance;
+  }
+
   private isValidDirection(direction: Vector3): boolean {
     if (!this.isValidPosition(direction)) {
       return false;
@@ -637,7 +846,37 @@ export class GameRoom {
     return typeof health === "number" && Number.isFinite(health);
   }
 
-  private normalizeWorldEvent(event: WorldEvent): WorldEvent | null {
+  private resolveDoorObjectId(doorId: string): string | null {
+    return this.mapIndex.doorObjectIdsByDoorId.get(doorId) ?? null;
+  }
+
+  private canPlayerChangeDoor(player: RoomPlayer, doorObjectId: string, doorId: string): boolean {
+    if (this.isPlayerNearObject(player, doorObjectId, DOOR_INTERACTION_RANGE)) {
+      return true;
+    }
+
+    for (const [buttonObjectId, targetDoorId] of this.mapIndex.buttonTargetDoorIds.entries()) {
+      if (
+        (targetDoorId === doorId || targetDoorId === doorObjectId) &&
+        this.isPlayerNearObject(player, buttonObjectId, WORLD_EVENT_INTERACTION_RANGE)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private isPlayerNearObject(player: RoomPlayer, objectId: string, range: number): boolean {
+    const objectPosition = this.mapIndex.objectPositions.get(objectId);
+    if (!objectPosition) {
+      return false;
+    }
+
+    return distance3D(player.position, objectPosition) <= range;
+  }
+
+  private normalizeWorldEvent(player: RoomPlayer, event: WorldEvent): WorldEvent | null {
     if (!event || typeof event.type !== "string") {
       return null;
     }
@@ -650,7 +889,16 @@ export class GameRoom {
         return null;
       }
 
+      const doorObjectId = this.resolveDoorObjectId(doorId);
+      if (!doorObjectId) {
+        return null;
+      }
+
       if (objectId && !this.mapIndex.objectIds.has(objectId)) {
+        return null;
+      }
+
+      if (!this.canPlayerChangeDoor(player, doorObjectId, doorId)) {
         return null;
       }
 
@@ -666,6 +914,10 @@ export class GameRoom {
         return null;
       }
 
+      if (!this.isPlayerNearObject(player, objectId, WORLD_EVENT_INTERACTION_RANGE)) {
+        return null;
+      }
+
       return doorId ? { type: event.type, objectId, doorId } : { type: event.type, objectId };
     }
 
@@ -674,11 +926,25 @@ export class GameRoom {
         return null;
       }
 
+      if (
+        this.sharedState.collectedCoinObjectIds.includes(objectId) ||
+        !this.isPlayerNearObject(player, objectId, WORLD_EVENT_INTERACTION_RANGE)
+      ) {
+        return null;
+      }
+
       return { type: event.type, objectId };
     }
 
     if (event.type === "itemCollected") {
       if (!objectId || !this.mapIndex.itemObjectIds.has(objectId)) {
+        return null;
+      }
+
+      if (
+        this.sharedState.collectedItemObjectIds.includes(objectId) ||
+        !this.isPlayerNearObject(player, objectId, WORLD_EVENT_INTERACTION_RANGE)
+      ) {
         return null;
       }
 
@@ -708,16 +974,50 @@ function normalizePlayerName(value: string): string {
 }
 
 function normalizeChatText(value: string): string | null {
-  const text = value.trim().replace(/\s+/g, " ").slice(0, MAX_CHAT_TEXT_LENGTH);
+  const text = value
+    .trim()
+    .replace(/[<>]/g, "")
+    .replace(/\s+/g, " ")
+    .slice(0, MAX_CHAT_TEXT_LENGTH);
   return text.length > 0 ? text : null;
 }
 
 function normalizeWeaponId(value: string | null | undefined): string | null {
-  if (value === "weapon_basic" || value === "sword" || value === "basic_sword") {
+  if (
+    value === "weapon_basic" ||
+    value === "weapon_basic_sword" ||
+    value === "sword" ||
+    value === "basic_sword"
+  ) {
     return "basic_sword";
   }
 
+  if (value === "weapon_heavy_hammer" || value === "heavy_hammer" || value === "hammer") {
+    return "heavy_hammer";
+  }
+
+  if (value === "weapon_dagger" || value === "dagger") {
+    return "dagger";
+  }
+
+  if (value === "weapon_blaster" || value === "blaster") {
+    return "blaster";
+  }
+
   return null;
+}
+
+function normalizeDirection(direction: Vector3): Vector3 {
+  const length = Math.hypot(direction.x, direction.y, direction.z);
+  if (length <= 0.001) {
+    return { x: 0, y: 0, z: -1 };
+  }
+
+  return {
+    x: direction.x / length,
+    y: direction.y / length,
+    z: direction.z / length,
+  };
 }
 
 function normalizeEnemyState(
@@ -773,6 +1073,14 @@ function addUnique(values: string[], value: string): void {
   }
 }
 
+function deleteMapKeysByPrefix<T>(map: Map<string, T>, prefix: string): void {
+  for (const key of map.keys()) {
+    if (key.startsWith(prefix)) {
+      map.delete(key);
+    }
+  }
+}
+
 function removeValue(values: string[], value: string): void {
   const index = values.indexOf(value);
 
@@ -793,7 +1101,12 @@ function distance3D(a: Vector3, b: Vector3): number {
   return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
-function isTargetInAttackCone(origin: Vector3, target: Vector3, direction: Vector3): boolean {
+function isTargetInAttackCone(
+  origin: Vector3,
+  target: Vector3,
+  direction: Vector3,
+  minDot: number
+): boolean {
   const toTarget = {
     x: target.x - origin.x,
     y: 0,
@@ -809,5 +1122,5 @@ function isTargetInAttackCone(origin: Vector3, target: Vector3, direction: Vecto
   const dot =
     (toTarget.x / toTargetLength) * (direction.x / directionLength) +
     (toTarget.z / toTargetLength) * (direction.z / directionLength);
-  return dot >= 0.08;
+  return dot >= minDot;
 }

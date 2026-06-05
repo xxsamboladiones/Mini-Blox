@@ -1,4 +1,7 @@
 import type { Vector3 } from "./ObjectSchema.js";
+import type { WeaponAttackType } from "./ItemSchema.js";
+
+export type PlayerHealSource = "healthPickup";
 
 export type PlayerNetState = {
   id: string;
@@ -61,6 +64,20 @@ export type PlayerAttackPayload = {
   range: number;
   damage: number;
   targetPlayerId?: string;
+  attackType?: WeaponAttackType;
+};
+
+export type PlayerAttackVisualPayload = {
+  weaponId: "basic_sword" | string;
+  attackType: WeaponAttackType;
+  origin: Vector3;
+  direction: Vector3;
+};
+
+export type PlayerHealRequestPayload = {
+  amount: number;
+  source: PlayerHealSource;
+  sourceObjectId?: string;
 };
 
 export type SharedWorldState = {
@@ -101,13 +118,28 @@ export type PlayerInput = {
 export type GameNetworkEvent =
   | { type: "playerJoined"; player: PlayerNetState }
   | { type: "playerLeft"; playerId: string }
-  | { type: "playerMoved"; playerId: string; position: Vector3; rotationY: number }
+  | {
+      type: "playerMoved";
+      playerId: string;
+      position: Vector3;
+      rotationY: number;
+      player?: PlayerNetState;
+    }
+  | ({ type: "playerAttackVisual"; playerId: string } & PlayerAttackVisualPayload)
   | {
       type: "playerDamaged";
       targetPlayerId: string;
       attackerPlayerId?: string;
       damage: number;
       health: number;
+    }
+  | {
+      type: "playerHealed";
+      playerId: string;
+      amount: number;
+      health: number;
+      source: PlayerHealSource;
+      sourceObjectId?: string;
     }
   | { type: "playerDied"; playerId: string; killerId: string | null }
   | { type: "playerDefeated"; playerId: string; defeatedByPlayerId?: string }
@@ -161,6 +193,8 @@ export type MultiplayerClientMessage =
   | { type: "enemyStateRequest" }
   | { type: "enemyPositionUpdate"; enemies: EnemyPositionUpdate[] }
   | ({ type: "playerAttack" } & PlayerAttackPayload)
+  | ({ type: "playerAttackVisual" } & PlayerAttackVisualPayload)
+  | ({ type: "playerHealRequest" } & PlayerHealRequestPayload)
   | {
       type: "playerDamaged";
       damage: number;
@@ -189,6 +223,14 @@ export type MultiplayerServerMessage =
       damage: number;
       health: number;
     }
+  | {
+      type: "playerHealed";
+      playerId: string;
+      amount: number;
+      health: number;
+      source: PlayerHealSource;
+      sourceObjectId?: string;
+    }
   | { type: "playerDefeated"; playerId: string; defeatedByPlayerId?: string }
   | { type: "playerRespawned"; playerId: string; health: number; position: Vector3 }
   | { type: "combatState"; players: Record<string, PlayerCombatState> }
@@ -198,6 +240,7 @@ export type MultiplayerServerMessage =
   | { type: "playerJoined"; player: PlayerNetState }
   | { type: "playerLeft"; playerId: string }
   | { type: "playerUpdated"; playerId: string; player: PlayerNetState }
+  | ({ type: "playerAttackVisual"; playerId: string } & PlayerAttackVisualPayload)
   | { type: "error"; message: string }
   | { type: "pong" };
 

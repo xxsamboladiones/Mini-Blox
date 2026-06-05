@@ -1,7 +1,8 @@
 import * as THREE from "three";
-import { getItemDefinition } from "../shared/ItemCatalog";
+import { getItemDefinition, isWeaponItemId } from "../shared/ItemCatalog";
 import { getObjectCatalogItem } from "../shared/ObjectCatalog";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
+import { createWeaponVisual } from "./WeaponVisualFactory";
 
 type VisualMaterial = "default" | "metal" | "glass" | "glow" | "rubber" | "ice";
 type StandardMaterialOptions = Partial<THREE.MeshStandardMaterialParameters>;
@@ -889,18 +890,11 @@ function createPickupCore(itemId: string, material: THREE.MeshStandardMaterial):
     return coin;
   }
 
-  if (itemId === "weapon_basic" || itemId === "sword") {
-    const group = new THREE.Group();
-    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.68, 0.12), material);
-    blade.position.y = 0.18;
-    const guard = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.1, 0.12), material);
-    guard.position.y = -0.18;
-    const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.14), material);
-    hilt.position.y = -0.35;
-    group.rotation.z = -0.55;
-    group.position.y = 0.16;
-    group.add(blade, guard, hilt);
-    return group;
+  if (isWeaponItemId(itemId)) {
+    const weapon = createWeaponVisual(itemId, { forPickup: true });
+    weapon.position.y = 0.26;
+    weapon.scale.multiplyScalar(0.82);
+    return weapon;
   }
 
   const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), material);
