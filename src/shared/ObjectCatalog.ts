@@ -285,7 +285,7 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
   {
     type: "capturePoint",
     label: "Capture Point",
-    icon: "badge-dot",
+    icon: "circle-dot",
     description: "Area local que pode ser capturada para gerar pontos.",
     color: "#facc15",
     defaultScale: { x: 4, y: 0.3, z: 4 },

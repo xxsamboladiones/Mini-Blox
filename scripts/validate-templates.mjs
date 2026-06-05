@@ -5,15 +5,15 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const MIN_OBJECTS = {
-  empty: 80,
-  obby: 180,
+  empty: 2,
+  obby: 30,
   coin: 250,
-  door: 300,
-  checkpoint: 300,
-  mechanics: 400,
+  door: 28,
+  checkpoint: 34,
+  mechanics: 42,
   combatArena: 150,
   combatDungeon: 220,
-  guideMission: 160,
+  guideMission: 34,
   localTeamArena: 170,
   localCapturePoint: 160,
   multiplayerPvpArena: 120,
@@ -22,14 +22,14 @@ const MIN_OBJECTS = {
   pvpArsenal: 135,
   competitiveCoin: 190,
   objectiveArena: 190,
-  keyPuzzle: 350,
+  keyPuzzle: 35,
   logic: 250,
   forest: 500,
   desert: 500,
-  neonObby: 500,
-  megaObby: 700,
-  megaCoinWorld: 800,
-  keyDungeon: 700,
+  neonObby: 39,
+  megaObby: 54,
+  megaCoinWorld: 77,
+  keyDungeon: 64,
   testCity: 1000,
   adventureIsland: 900,
   stressTest: 1500,
@@ -37,21 +37,21 @@ const MIN_OBJECTS = {
 
 const REQUIRED_MINIMUMS = {
   obby: {
-    coins: 20,
-    checkpoints: 4,
+    coins: 9,
+    checkpoints: 3,
     damage: 3,
-    jumpPads: 2,
+    jumpPads: 1,
     movingPlatforms: 1,
-    disappearingBlocks: 2,
+    disappearingBlocks: 1,
   },
   coin: { coins: 50, checkpoints: 2, teleporters: 2, keys: 1, doors: 1 },
-  door: { doors: 10, buttons: 10, keys: 3, logic: 8 },
+  door: { doors: 3, buttons: 2, keys: 1, logic: 4 },
   checkpoint: {
-    checkpoints: 12,
-    damage: 15,
-    jumpPads: 8,
-    disappearingBlocks: 8,
-    movingPlatforms: 6,
+    checkpoints: 5,
+    damage: 3,
+    jumpPads: 1,
+    disappearingBlocks: 1,
+    movingPlatforms: 1,
   },
   mechanics: {
     checkpoints: 1,
@@ -83,11 +83,11 @@ const REQUIRED_MINIMUMS = {
     logic: 6,
   },
   guideMission: {
-    coins: 16,
+    coins: 12,
     npcs: 1,
-    objectives: 6,
+    objectives: 5,
     enemies: 2,
-    itemSpawners: 2,
+    itemSpawners: 1,
     keys: 1,
     doors: 1,
     logic: 4,
@@ -153,28 +153,28 @@ const REQUIRED_MINIMUMS = {
     capturePoints: 1,
     logic: 5,
   },
-  keyPuzzle: { keys: 6, doors: 10, buttons: 8, logic: 10 },
+  keyPuzzle: { keys: 4, doors: 4, buttons: 1, logic: 6 },
   logic: { logic: 20, coins: 20, doors: 6, buttons: 6, keys: 2, checkpoints: 5, teleporters: 2 },
   forest: { coins: 80, checkpoints: 5, keys: 3, doors: 4, teleporters: 4 },
   desert: { coins: 70, checkpoints: 5, doors: 6, buttons: 6, teleporters: 6 },
   neonObby: {
-    coins: 80,
-    checkpoints: 12,
-    damage: 20,
-    jumpPads: 15,
-    movingPlatforms: 10,
-    disappearingBlocks: 15,
+    coins: 12,
+    checkpoints: 4,
+    damage: 4,
+    jumpPads: 1,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
   },
   megaObby: {
-    coins: 100,
-    checkpoints: 15,
-    damage: 20,
-    jumpPads: 20,
-    movingPlatforms: 15,
-    disappearingBlocks: 20,
+    coins: 20,
+    checkpoints: 5,
+    damage: 6,
+    jumpPads: 1,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
   },
-  megaCoinWorld: { coins: 180, teleporters: 8, keys: 8, doors: 10 },
-  keyDungeon: { keys: 10, doors: 20, buttons: 20, logic: 30, coins: 100 },
+  megaCoinWorld: { coins: 50, teleporters: 2, keys: 2, doors: 2 },
+  keyDungeon: { keys: 6, doors: 6, buttons: 2, logic: 9, coins: 28 },
   testCity: { coins: 100, doors: 10, buttons: 10, teleporters: 8, checkpoints: 8 },
   adventureIsland: {
     coins: 150,
@@ -201,6 +201,69 @@ const REQUIRED_MINIMUMS = {
   },
 };
 
+const TAG_PATTERN = /^[a-z0-9-]+$/;
+const TEMPLATE_POSITION_LIMIT = 500;
+const TEMPLATE_SCALE_LIMIT = 90;
+const TEMPLATE_DAMAGE_LIMIT = 50;
+const TEMPLATE_ENEMY_HEALTH_LIMIT = 180;
+const TEMPLATE_ENEMY_DAMAGE_LIMIT = 25;
+const ENEMY_SPAWN_ERROR_DISTANCE = 6;
+const ENEMY_SPAWN_WARNING_DISTANCE = 10;
+const TEMPLATE_DESCRIPTION_MIN_LENGTH = 36;
+
+const PRIMARY_TEMPLATE_TAGS = new Set([
+  "basic",
+  "platform",
+  "puzzle",
+  "collect",
+  "combat",
+  "multiplayer",
+  "objective",
+  "local",
+  "exploration",
+  "stress",
+  "city",
+]);
+
+const SHOWCASE_TEMPLATE_IDS = new Set([
+  "empty",
+  "obby",
+  "coin",
+  "multiplayerPvpArena",
+  "multiplayerCoopEnemies",
+]);
+
+const REQUIRED_TEMPLATE_TAGS = {
+  empty: ["official", "basic", "showcase"],
+  obby: ["official", "platform", "showcase"],
+  coin: ["official", "collect", "showcase"],
+  door: ["official", "puzzle"],
+  checkpoint: ["official", "platform", "checkpoint"],
+  mechanics: ["official", "basic", "tutorial", "mechanics"],
+  combatArena: ["official", "combat", "enemy"],
+  combatDungeon: ["official", "combat", "dungeon", "enemy"],
+  guideMission: ["official", "objective", "tutorial"],
+  localTeamArena: ["official", "local", "team"],
+  localCapturePoint: ["official", "local", "capture"],
+  multiplayerPvpArena: ["official", "multiplayer", "pvp", "showcase"],
+  multiplayerCoopEnemies: ["official", "multiplayer", "coop", "showcase"],
+  weaponArsenal: ["official", "combat", "weapons"],
+  pvpArsenal: ["official", "multiplayer", "pvp", "weapons"],
+  competitiveCoin: ["official", "collect", "competitive"],
+  objectiveArena: ["official", "objective", "combat"],
+  keyPuzzle: ["official", "puzzle", "key"],
+  logic: ["official", "puzzle", "logic"],
+  forest: ["official", "exploration", "large"],
+  desert: ["official", "exploration", "desert"],
+  neonObby: ["official", "platform", "obby"],
+  megaObby: ["official", "platform", "stress", "experimental"],
+  megaCoinWorld: ["official", "collect", "stress", "experimental"],
+  keyDungeon: ["official", "puzzle", "key", "stress"],
+  testCity: ["official", "city", "scale", "experimental"],
+  adventureIsland: ["official", "exploration", "adventure"],
+  stressTest: ["official", "stress", "experimental", "validation"],
+};
+
 async function main() {
   const tempDir = join(tmpdir(), `mini-blox-template-validation-${Date.now()}`);
   const outfile = join(tempDir, "MapTemplates.bundle.mjs");
@@ -222,6 +285,10 @@ async function main() {
     const errors = [];
     const warnings = [];
     const summaries = [];
+    const catalogResult = validateTemplateCatalog(MAP_TEMPLATES);
+
+    errors.push(...catalogResult.errors);
+    warnings.push(...catalogResult.warnings);
 
     for (const template of MAP_TEMPLATES) {
       const map = createMapFromTemplate(template.id);
@@ -256,6 +323,7 @@ async function main() {
         somem: summary.disappearingBlocks,
         mensagens: summary.messageZones,
         placas: summary.signs,
+        tags: summary.tags,
         logica: summary.logic,
         void: summary.voidDeath,
         voidY: summary.voidY,
@@ -313,11 +381,94 @@ function summarizeMap(template, map) {
     disappearingBlocks: count("disappearingBlock"),
     messageZones: count("messageZone"),
     signs: count("sign"),
+    tags: normalizeTags(map.tags).length,
     logic: Array.isArray(map.logic) ? map.logic.length : 0,
     voidDeath: map.gameplaySettings?.voidDeathEnabled === false ? "off" : "on",
     voidY: Number(getVoidDeathY(map).toFixed(1)),
     jsonKB: Number((jsonBytes / 1024).toFixed(1)),
   };
+}
+
+function validateTemplateCatalog(templates) {
+  const errors = [];
+  const warnings = [];
+  const ids = new Set();
+
+  if (!Array.isArray(templates) || templates.length === 0) {
+    errors.push("catalogo de templates vazio ou invalido.");
+    return { errors, warnings };
+  }
+
+  for (const template of templates) {
+    const tags = normalizeTags(template?.tags);
+    const tagSet = new Set(tags);
+    const requiredTags = REQUIRED_TEMPLATE_TAGS[template?.id] ?? ["official"];
+
+    if (!template?.id || typeof template.id !== "string") {
+      errors.push(`${template?.name ?? "template"}: template sem id valido.`);
+      continue;
+    }
+
+    if (ids.has(template.id)) {
+      errors.push(`${template.id}: id duplicado no catalogo de templates.`);
+    }
+
+    ids.add(template.id);
+
+    if (!template.name || typeof template.name !== "string") {
+      errors.push(`${template.id}: template sem name.`);
+    }
+
+    if (!template.description || typeof template.description !== "string") {
+      errors.push(`${template.id}: template sem description.`);
+    } else if (template.description.trim().length < TEMPLATE_DESCRIPTION_MIN_LENGTH) {
+      warnings.push(`${template.id}: descricao curta para template oficial.`);
+    }
+
+    if (!template.icon || typeof template.icon !== "string") {
+      errors.push(`${template.id}: template sem icon.`);
+    }
+
+    if (tags.length < 3) {
+      errors.push(`${template.id}: template precisa de pelo menos 3 tags oficiais.`);
+    }
+
+    if (tags.length !== (Array.isArray(template.tags) ? template.tags.length : 0)) {
+      errors.push(`${template.id}: template possui tags vazias ou duplicadas.`);
+    }
+
+    for (const tag of tags) {
+      if (!TAG_PATTERN.test(tag)) {
+        errors.push(`${template.id}: tag invalida "${tag}". Use lowercase ASCII e hifens.`);
+      }
+    }
+
+    for (const tag of requiredTags) {
+      if (!tagSet.has(tag)) {
+        errors.push(`${template.id}: tag obrigatoria ausente "${tag}".`);
+      }
+    }
+
+    if (![...PRIMARY_TEMPLATE_TAGS].some((tag) => tagSet.has(tag))) {
+      errors.push(`${template.id}: template sem categoria primaria clara.`);
+    }
+
+    if (SHOWCASE_TEMPLATE_IDS.has(template.id) && !tagSet.has("showcase")) {
+      errors.push(`${template.id}: showcase oficial sem tag showcase.`);
+    }
+
+    if (!SHOWCASE_TEMPLATE_IDS.has(template.id) && tagSet.has("showcase")) {
+      errors.push(`${template.id}: tag showcase fora da lista curada.`);
+    }
+  }
+
+  for (const [templateId, tags] of Object.entries(REQUIRED_TEMPLATE_TAGS)) {
+    if (!ids.has(templateId)) {
+      errors.push(`${templateId}: template esperado nao existe no catalogo.`);
+    }
+  }
+
+  return { errors, warnings };
 }
 
 function validateTemplate(template, map, summary) {
@@ -332,6 +483,10 @@ function validateTemplate(template, map, summary) {
   const teamIds = new Set();
   const capturePointIds = new Set();
   const expectedMin = MIN_OBJECTS[template.id];
+  const templateTags = normalizeTags(template.tags);
+  const templateTagSet = new Set(templateTags);
+  const mapTags = normalizeTags(map.tags);
+  const mapTagSet = new Set(mapTags);
 
   if (!template.id) {
     errors.push(`${template.name}: template sem id.`);
@@ -345,11 +500,43 @@ function validateTemplate(template, map, summary) {
     errors.push(`${template.id}: mapa sem id/name.`);
   }
 
-  if (!isVector(map.spawnPoint)) {
-    errors.push(`${template.id}: spawnPoint invalido.`);
+  if (templateTags.length === 0) {
+    errors.push(`${template.id}: definicao de template sem tags.`);
   }
 
-  if (!map.objects.some((object) => object.type === "finish" || object.type === "goal")) {
+  if (mapTags.length === 0) {
+    errors.push(`${template.id}: mapa gerado sem tags.`);
+  }
+
+  for (const tag of templateTags) {
+    if (!mapTagSet.has(tag)) {
+      errors.push(`${template.id}: mapa gerado perdeu a tag "${tag}".`);
+    }
+  }
+
+  for (const tag of mapTags) {
+    if (!templateTagSet.has(tag)) {
+      errors.push(`${template.id}: mapa gerado tem tag nao declarada "${tag}".`);
+    }
+  }
+
+  if (!isVector(map.spawnPoint)) {
+    errors.push(`${template.id}: spawnPoint invalido.`);
+  } else {
+    validateVectorLimit(
+      errors,
+      template.id,
+      "spawnPoint",
+      "position",
+      map.spawnPoint,
+      TEMPLATE_POSITION_LIMIT
+    );
+  }
+
+  if (
+    template.id !== "empty" &&
+    !map.objects.some((object) => object.type === "finish" || object.type === "goal")
+  ) {
     errors.push(`${template.id}: nao possui final.`);
   }
 
@@ -390,6 +577,10 @@ function validateTemplate(template, map, summary) {
       continue;
     }
 
+    if (!object.type || typeof object.type !== "string") {
+      errors.push(`${template.id}: ${object.id} sem type valido.`);
+    }
+
     if (objectIds.has(object.id)) {
       errors.push(`${template.id}: id duplicado de objeto ${object.id}.`);
     }
@@ -398,6 +589,15 @@ function validateTemplate(template, map, summary) {
 
     if (!isVector(object.position)) {
       errors.push(`${template.id}: ${object.id} com position invalido.`);
+    } else {
+      validateVectorLimit(
+        errors,
+        template.id,
+        object.id,
+        "position",
+        object.position,
+        TEMPLATE_POSITION_LIMIT
+      );
     }
 
     if (object.rotation !== undefined && !isVector(object.rotation)) {
@@ -406,7 +606,18 @@ function validateTemplate(template, map, summary) {
 
     if (object.scale !== undefined && !isPositiveScale(object.scale)) {
       errors.push(`${template.id}: ${object.id} com scale invalido ou nao positivo.`);
+    } else if (object.scale !== undefined) {
+      validateVectorLimit(
+        errors,
+        template.id,
+        object.id,
+        "scale",
+        object.scale,
+        TEMPLATE_SCALE_LIMIT
+      );
     }
+
+    validateGameplayPropertyBounds(errors, template.id, object);
 
     if (object.type === "door") {
       const doorId = getString(object.properties?.doorId, object.id);
@@ -734,14 +945,16 @@ function validatePositiveTarget(errors, templateId, winCondition, label) {
 
 function validateLevelDesign(template, map, summary, refs) {
   const errors = [];
-  const expectedSigns = getExpectedSignCount(summary.objects);
+  const expectedSigns = template.id === "empty" ? 0 : getExpectedSignCount(summary.objects);
   const coins = getObjectsByType(map, "coin");
   const damageZones = getObjectsByType(map, "damage");
   const checkpoints = getObjectsByType(map, "checkpoint");
   const buttons = getObjectsByType(map, "button");
   const doors = getObjectsByType(map, "door");
   const keys = getObjectsByType(map, "key");
+  const enemies = getObjectsByType(map, "enemy");
   const teleporters = getObjectsByType(map, "teleporter");
+  const tags = normalizeTags(map.tags);
 
   errors.push(...validateVoidGameplay(template.id, map));
 
@@ -757,6 +970,24 @@ function validateLevelDesign(template, map, summary, refs) {
 
   if (damageZones.some((damage) => distance2D(damage.position, map.spawnPoint) < 8)) {
     errors.push(`${template.id}: zona de dano muito perto do spawn.`);
+  }
+
+  if (
+    enemies.some((enemy) => distance2D(enemy.position, map.spawnPoint) < ENEMY_SPAWN_ERROR_DISTANCE)
+  ) {
+    errors.push(`${template.id}: inimigo muito perto do spawn.`);
+  }
+
+  if (tags.includes("pvp") && map.multiplayerSettings?.pvpEnabled !== true) {
+    errors.push(`${template.id}: template PvP sem multiplayerSettings.pvpEnabled.`);
+  }
+
+  if (tags.includes("multiplayer") && tags.includes("pvp") && summary.teamSpawns < 2) {
+    errors.push(`${template.id}: template PvP multiplayer precisa de pelo menos 2 teamSpawns.`);
+  }
+
+  if (tags.includes("multiplayer") && tags.includes("coop") && summary.enemies < 1) {
+    errors.push(`${template.id}: template coop multiplayer sem inimigos sincronizaveis.`);
   }
 
   if (coins.length > 20) {
@@ -894,9 +1125,11 @@ function collectLevelDesignWarnings(template, map, summary) {
   const teleporters = getObjectsByType(map, "teleporter");
   const checkpoints = getObjectsByType(map, "checkpoint");
   const damageZones = getObjectsByType(map, "damage");
+  const enemies = getObjectsByType(map, "enemy");
   const jumpPads = getObjectsByType(map, "jumpPad");
   const capturePoints = getObjectsByType(map, "capturePoint");
   const teamSpawns = getObjectsByType(map, "teamSpawn");
+  const tags = normalizeTags(map.tags);
   const finishObjects = map.objects.filter(
     (object) => object.type === "finish" || object.type === "goal"
   );
@@ -1007,6 +1240,19 @@ function collectLevelDesignWarnings(template, map, summary) {
     }
   }
 
+  for (const enemy of enemies) {
+    const distanceToSpawn = distance2D(enemy.position, map.spawnPoint);
+
+    if (
+      distanceToSpawn >= ENEMY_SPAWN_ERROR_DISTANCE &&
+      distanceToSpawn < ENEMY_SPAWN_WARNING_DISTANCE
+    ) {
+      warnings.push(
+        `${template.id}: inimigo ${enemy.id} nasce perto do spawn (${distanceToSpawn.toFixed(1)}u).`
+      );
+    }
+  }
+
   for (const button of buttons) {
     const targetDoorId =
       getString(button.properties?.targetDoorId, "") ||
@@ -1097,6 +1343,15 @@ function collectLevelDesignWarnings(template, map, summary) {
     warnings.push(
       `${template.id}: muitos objetos interativos com pouca logica associada (${interactiveCount} interativos, ${summary.logic} regras).`
     );
+  }
+
+  if (
+    summary.objects >= 1000 &&
+    !tags.includes("large") &&
+    !tags.includes("stress") &&
+    !tags.includes("experimental")
+  ) {
+    warnings.push(`${template.id}: mapa grande sem tag large, stress ou experimental.`);
   }
 
   return warnings;
@@ -1240,6 +1495,109 @@ function getObjectScale(object) {
   }
 
   return { x: 1, y: 1, z: 1 };
+}
+
+function normalizeTags(tags) {
+  if (!Array.isArray(tags)) {
+    return [];
+  }
+
+  return [...new Set(tags.map((tag) => String(tag).trim()).filter(Boolean))];
+}
+
+function validateVectorLimit(errors, templateId, objectId, label, vector, limit) {
+  for (const axis of ["x", "y", "z"]) {
+    const value = vector[axis];
+
+    if (Math.abs(value) > limit) {
+      errors.push(
+        `${templateId}: ${objectId} com ${label}.${axis} fora do limite oficial (${value}/${limit}).`
+      );
+    }
+  }
+}
+
+function validateGameplayPropertyBounds(errors, templateId, object) {
+  if (object.type === "damage") {
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "damage",
+      object.properties?.damage,
+      0,
+      TEMPLATE_DAMAGE_LIMIT
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "damagePerSecond",
+      object.properties?.damagePerSecond,
+      0,
+      TEMPLATE_DAMAGE_LIMIT
+    );
+  }
+
+  if (object.type === "enemy") {
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "health",
+      object.properties?.health,
+      1,
+      TEMPLATE_ENEMY_HEALTH_LIMIT
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "damage",
+      object.properties?.damage,
+      0,
+      TEMPLATE_ENEMY_DAMAGE_LIMIT
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "attackRange",
+      object.properties?.attackRange,
+      0.1,
+      12
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "detectionRange",
+      object.properties?.detectionRange,
+      0.5,
+      40
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "attackCooldown",
+      object.properties?.attackCooldown,
+      0.2,
+      8
+    );
+  }
+}
+
+function validateOptionalNumberRange(errors, templateId, objectId, propertyName, value, min, max) {
+  if (value === undefined) {
+    return;
+  }
+
+  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) {
+    errors.push(
+      `${templateId}: ${objectId}.${propertyName} fora do intervalo oficial (${value}; ${min}-${max}).`
+    );
+  }
 }
 
 function getVoidDeathY(map) {

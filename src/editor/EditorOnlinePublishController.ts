@@ -1,24 +1,44 @@
 import { OnlineMapService, OnlineServiceError } from "../services/OnlineMapService.js";
+import { normalizeGameMap } from "../shared/normalizeGameMap.js";
 import { LocalProfileStorage } from "../storage/LocalProfileStorage.js";
 import type { GameMap } from "../shared/types/MapSchema";
+import {
+  EditorMapValidationError,
+  formatMapValidationIssues,
+  getBlockingValidationIssues,
+  validateEditorMap,
+} from "./EditorMapValidator.js";
 
 export type EditorOnlinePublishResult = {
   patch: Pick<GameMap, "isPublished" | "publishedAt" | "onlineMetadata">;
+  map: GameMap;
   successMessage: string;
 };
 
 export class EditorOnlinePublishController {
   async publish(map: GameMap): Promise<EditorOnlinePublishResult> {
-    const onlineId = map.onlineMetadata?.onlineId;
+    const issues = validateEditorMap(map);
+    const blocking = getBlockingValidationIssues(issues);
 
-    if (onlineId) {
-      return this.updateExisting(map, onlineId);
+    if (blocking.length > 0) {
+      throw new EditorMapValidationError(blocking);
     }
 
-    return this.publishNew(map);
+    const normalizedMap = normalizeGameMap(map);
+    const onlineId = normalizedMap.onlineMetadata?.onlineId;
+
+    if (onlineId) {
+      return this.updateExisting(normalizedMap, onlineId);
+    }
+
+    return this.publishNew(normalizedMap);
   }
 
   getErrorMessage(error: unknown, fallbackMessage: string): string {
+    if (error instanceof EditorMapValidationError) {
+      return formatMapValidationIssues(error.issues);
+    }
+
     if (error instanceof OnlineServiceError && error.isOffline) {
       return "Servidor online indisponivel. O mapa continua salvo localmente.";
     }
@@ -40,6 +60,7 @@ export class EditorOnlinePublishController {
           updatedAt: summary.updatedAt,
         },
       },
+      map,
       successMessage: "Mapa publicado online com sucesso!",
     };
   }
@@ -57,6 +78,7 @@ export class EditorOnlinePublishController {
           publishedAt: map.publishedAt,
           onlineMetadata: map.onlineMetadata,
         },
+        map,
         successMessage: "Mapa atualizado online com sucesso!",
       };
     }
@@ -71,6 +93,7 @@ export class EditorOnlinePublishController {
           updatedAt: summary.updatedAt,
         },
       },
+      map,
       successMessage: "Mapa atualizado online com sucesso!",
     };
   }

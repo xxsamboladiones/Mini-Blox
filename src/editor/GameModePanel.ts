@@ -342,7 +342,7 @@ export class GameModePanel {
     });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-team-color]").forEach((input) => {
-      input.addEventListener("input", () =>
+      input.addEventListener("change", () =>
         this.updateTeam(getIndex(input), { color: input.value }, false)
       );
     });

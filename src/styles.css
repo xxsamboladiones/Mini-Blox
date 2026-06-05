@@ -103,7 +103,7 @@ button {
 
 .topbar {
   display: grid;
-  grid-template-columns: auto minmax(170px, 300px) auto auto minmax(270px, auto);
+  grid-template-columns: auto minmax(170px, 300px) auto auto auto minmax(270px, auto);
   align-items: center;
   gap: 14px;
   padding: 10px 14px;
@@ -170,11 +170,22 @@ button {
 }
 
 .tool-strip,
+.history-actions,
 .top-actions,
 .editor-options {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.history-actions {
+  padding-inline: 2px;
+}
+
+.history-button:disabled {
+  background: #151e2e;
+  color: #738197;
+  border-color: #263143;
 }
 
 .top-actions {
@@ -2554,6 +2565,7 @@ svg {
   }
 
   .editor-options,
+  .history-actions,
   .top-actions {
     grid-column: 1 / -1;
     justify-content: flex-start;
@@ -4365,6 +4377,7 @@ textarea:focus-visible {
   }
 
   .editor-options,
+  .history-actions,
   .top-actions {
     grid-column: auto;
     justify-content: flex-start;

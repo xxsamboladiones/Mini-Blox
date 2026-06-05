@@ -15,10 +15,17 @@ import {
   createMapObject as createMapObjectData,
   getObjectCatalogItem,
 } from "../shared/ObjectCatalog";
+import { normalizeGameMap } from "../shared/normalizeGameMap";
 import { resolveVisualSettings } from "../shared/VisualSettings";
 import type { GameMap } from "../shared/types/MapSchema";
 import type { BuiltInObjectType, MapAsset, MapObject, Vector3 } from "../shared/types/ObjectSchema";
 import type { LogicRule } from "../shared/types/ScriptSchema";
+import {
+  cloneEditorObjectWithNewId,
+  ensureObjectDefaults,
+  isValidSelectedObject,
+  patchObjectProperties,
+} from "./EditorObjectUtils";
 import { readFileAsDataUrl } from "./readFileAsDataUrl";
 import type { EditorTool } from "./ToolManager";
 
@@ -26,6 +33,7 @@ type EditorSceneOptions = {
   onSelectionChange?: (mapObject: MapObject | null) => void;
   onMapChange?: (map: GameMap) => void;
   onModeChange?: (mode: "edit" | "test") => void;
+  onSceneCommit?: (event: EditorSceneCommitEvent) => void;
   onToast?: (message: string) => void;
 };
 
@@ -36,6 +44,37 @@ type LoadMapOptions = {
 type SnapOptions = {
   enabled: boolean;
   size: number;
+};
+
+export type EditorSceneChangeReason =
+  | "object-added"
+  | "object-deleted"
+  | "object-duplicated"
+  | "object-transform-commit"
+  | "object-properties-commit"
+  | "metadata-commit"
+  | "environment-commit"
+  | "audio-commit"
+  | "logic-commit"
+  | "objective-commit"
+  | "game-mode-commit"
+  | "map-imported"
+  | "map-cleared"
+  | "unknown";
+
+export interface EditorSceneCommitEvent {
+  reason: EditorSceneChangeReason;
+  objectId?: string;
+  before: GameMap;
+  after: GameMap;
+  selectedObjectIdBefore?: string | null;
+  selectedObjectIdAfter?: string | null;
+}
+
+type PendingTransformCommit = {
+  objectId: string;
+  before: GameMap;
+  selectedObjectIdBefore: string | null;
 };
 
 export class EditorScene {
@@ -66,13 +105,14 @@ export class EditorScene {
   private mode: "edit" | "test" = "edit";
   private activeTool: EditorTool = "translate";
   private snapOptions: SnapOptions = { enabled: false, size: 0.5 };
+  private pendingTransformCommit: PendingTransformCommit | null = null;
 
   constructor(
     private readonly container: HTMLElement,
     initialMap: GameMap,
     private readonly options: EditorSceneOptions = {}
   ) {
-    this.map = structuredClone(initialMap);
+    this.map = normalizeGameMap(initialMap);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
@@ -124,7 +164,7 @@ export class EditorScene {
   }
 
   async loadMap(map: GameMap, options: LoadMapOptions = {}): Promise<void> {
-    this.map = structuredClone(map);
+    this.map = normalizeGameMap(map);
     this.hiddenObjectIds.clear();
     this.clearWorld();
     this.applyVisualSettings();
@@ -231,6 +271,9 @@ export class EditorScene {
   }
 
   async addObject(type: BuiltInObjectType): Promise<MapObject> {
+    const before = this.createCommitSnapshot();
+    const selectedObjectIdBefore = this.selectedId;
+
     if (type === "spawn") {
       const existingSpawn = this.map.objects.find((mapObject) => mapObject.type === "spawn");
 
@@ -245,6 +288,7 @@ export class EditorScene {
 
         this.selectObject(existingSpawn.id);
         this.emitMapChange();
+        this.emitSceneCommit("object-transform-commit", existingSpawn.id, before, selectedObjectIdBefore);
         return structuredClone(existingSpawn);
       }
     }
@@ -259,10 +303,13 @@ export class EditorScene {
     this.refreshCollider(mapObject.id);
     this.selectObject(mapObject.id);
     this.emitMapChange();
+    this.emitSceneCommit("object-added", mapObject.id, before, selectedObjectIdBefore);
     return structuredClone(mapObject);
   }
 
   async importModel(file: File): Promise<MapObject> {
+    const before = this.createCommitSnapshot();
+    const selectedObjectIdBefore = this.selectedId;
     const dataUrl = await readFileAsDataUrl(file);
     const asset: MapAsset = {
       id: createId("asset"),
@@ -284,6 +331,7 @@ export class EditorScene {
     this.refreshCollider(mapObject.id);
     this.selectObject(mapObject.id);
     this.emitMapChange();
+    this.emitSceneCommit("object-added", mapObject.id, before, selectedObjectIdBefore);
     return structuredClone(mapObject);
   }
 
@@ -337,14 +385,7 @@ export class EditorScene {
       return;
     }
 
-    Object.assign(mapObject, patch);
-
-    if (patch.properties) {
-      mapObject.properties = {
-        ...mapObject.properties,
-        ...patch.properties,
-      };
-    }
+    Object.assign(mapObject, patchObjectProperties(mapObject, patch));
 
     applyObjectTransformToThree(view, mapObject);
     applyObjectAppearanceToThree(view, mapObject);
@@ -376,11 +417,14 @@ export class EditorScene {
       return null;
     }
 
+    const before = this.createCommitSnapshot();
+    const selectedObjectIdBefore = this.selectedId;
     const duplicate = this.createDuplicateObject(this.copiedObject);
     this.map.objects.push(duplicate);
     await this.addViewForObject(duplicate);
     this.selectObject(duplicate.id);
     this.emitMapChange();
+    this.emitSceneCommit("object-duplicated", duplicate.id, before, selectedObjectIdBefore);
     return structuredClone(duplicate);
   }
 
@@ -396,11 +440,14 @@ export class EditorScene {
     }
 
     this.syncSelectedObjectFromView();
+    const before = this.createCommitSnapshot();
+    const selectedObjectIdBefore = this.selectedId;
     const duplicate = this.createDuplicateObject(source);
     this.map.objects.push(duplicate);
     await this.addViewForObject(duplicate);
     this.selectObject(duplicate.id);
     this.emitMapChange();
+    this.emitSceneCommit("object-duplicated", duplicate.id, before, selectedObjectIdBefore);
     return structuredClone(duplicate);
   }
 
@@ -409,6 +456,8 @@ export class EditorScene {
       return false;
     }
 
+    const before = this.createCommitSnapshot();
+    const selectedObjectIdBefore = this.selectedId;
     const selected = this.selectedId;
     const view = this.objectViews.get(selected);
 
@@ -424,6 +473,7 @@ export class EditorScene {
     this.selectObject(null);
     this.syncSpawnPointFromObjects();
     this.emitMapChange();
+    this.emitSceneCommit("object-deleted", selected, before, selectedObjectIdBefore);
     return true;
   }
 
@@ -649,18 +699,18 @@ export class EditorScene {
   }
 
   private selectObject(id: string | null): void {
-    this.selectedId = id;
+    this.selectedId = isValidSelectedObject(id, this.map.objects) ? id : null;
     this.transformControls.detach();
     this.transformHelper.visible = false;
     this.selectionBox.visible = false;
 
-    if (!id) {
+    if (!this.selectedId) {
       this.options.onSelectionChange?.(null);
       return;
     }
 
-    const view = this.objectViews.get(id);
-    const mapObject = this.map.objects.find((candidate) => candidate.id === id);
+    const view = this.objectViews.get(this.selectedId);
+    const mapObject = this.map.objects.find((candidate) => candidate.id === this.selectedId);
 
     if (!view || !mapObject) {
       this.options.onSelectionChange?.(null);
@@ -724,10 +774,10 @@ export class EditorScene {
   }
 
   private createDuplicateObject(source: MapObject): MapObject {
-    const duplicate: MapObject = structuredClone(source);
-    duplicate.id = createId(source.type);
-    duplicate.name = this.getCopyName(source.name ?? String(source.type));
-    duplicate.position = this.offsetPlacementPoint(source.position);
+    const duplicate: MapObject = cloneEditorObjectWithNewId(source, {
+      name: this.getCopyName(source.name ?? String(source.type)),
+      position: this.offsetPlacementPoint(source.position),
+    });
 
     if (duplicate.type === "door") {
       duplicate.properties = {
@@ -747,7 +797,7 @@ export class EditorScene {
       };
     }
 
-    return duplicate;
+    return ensureObjectDefaults(duplicate);
   }
 
   private getNextObjectName(type: BuiltInObjectType): string {
@@ -958,6 +1008,32 @@ export class EditorScene {
     this.options.onMapChange?.(this.getSnapshot());
   }
 
+  private createCommitSnapshot(): GameMap {
+    return this.getSnapshot();
+  }
+
+  private emitSceneCommit(
+    reason: EditorSceneChangeReason,
+    objectId: string | undefined,
+    before: GameMap,
+    selectedObjectIdBefore: string | null
+  ): void {
+    const after = this.getSnapshot();
+
+    if (areMapsEquivalent(before, after)) {
+      return;
+    }
+
+    this.options.onSceneCommit?.({
+      reason,
+      objectId,
+      before,
+      after,
+      selectedObjectIdBefore,
+      selectedObjectIdAfter: this.selectedId,
+    });
+  }
+
   private resize(): void {
     const width = Math.max(1, this.container.clientWidth);
     const height = Math.max(1, this.container.clientHeight);
@@ -998,7 +1074,38 @@ export class EditorScene {
   };
 
   private readonly handleTransformDraggingChanged = (event: { value: unknown }): void => {
-    this.orbitControls.enabled = this.mode === "edit" && event.value !== true;
+    const dragging = event.value === true;
+    this.orbitControls.enabled = this.mode === "edit" && !dragging;
+
+    if (this.mode !== "edit") {
+      return;
+    }
+
+    if (dragging) {
+      if (this.selectedId && !this.pendingTransformCommit) {
+        this.pendingTransformCommit = {
+          objectId: this.selectedId,
+          before: this.createCommitSnapshot(),
+          selectedObjectIdBefore: this.selectedId,
+        };
+      }
+      return;
+    }
+
+    if (!this.pendingTransformCommit) {
+      return;
+    }
+
+    const pending = this.pendingTransformCommit;
+    this.pendingTransformCommit = null;
+    this.syncSelectedObjectFromView();
+    this.refreshSelectionBox();
+    this.emitSceneCommit(
+      "object-transform-commit",
+      pending.objectId,
+      pending.before,
+      pending.selectedObjectIdBefore
+    );
   };
 
   private readonly handleTransformObjectChange = (): void => {
@@ -1116,4 +1223,8 @@ function createId(prefix: string): string {
   }
 
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function areMapsEquivalent(a: GameMap, b: GameMap): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
 }

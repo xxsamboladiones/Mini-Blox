@@ -91,28 +91,28 @@ const TEMPLATE_CONFIGS = [
   {
     id: "empty",
     name: "Mapa vazio",
-    description: "Sandbox grande e limpo com grid visual, areas livres, placas e final distante.",
+    description: "Base realmente limpa para comecar uma criacao sem itens, objetivos ou decoracao.",
     icon: "square",
     style: "sandbox",
     theme: "classic",
     ambientMusic: "none",
-    tags: ["sandbox", "grande", "classic"],
-    minObjects: 110,
-    sections: 5,
-    areas: 6,
-    coins: 8,
+    tags: ["official", "basic", "sandbox", "showcase", "classic"],
+    minObjects: 2,
+    sections: 1,
+    areas: 1,
+    coins: 0,
     doors: 0,
     buttons: 0,
     keys: 0,
-    checkpoints: 2,
+    checkpoints: 0,
     damageZones: 0,
     jumpPads: 0,
     teleporters: 0,
     movingPlatforms: 0,
     disappearingBlocks: 0,
-    messageZones: 4,
-    logicRules: 1,
-    decorations: 60,
+    messageZones: 0,
+    logicRules: 0,
+    decorations: 0,
   },
   {
     id: "obby",
@@ -123,23 +123,23 @@ const TEMPLATE_CONFIGS = [
     style: "obby",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["obby", "iniciante", "linear"],
-    minObjects: 180,
-    sections: 10,
+    tags: ["official", "platform", "obby", "tutorial", "checkpoint", "showcase"],
+    minObjects: 30,
+    sections: 7,
     areas: 3,
-    coins: 32,
+    coins: 18,
     doors: 0,
     buttons: 0,
     keys: 0,
-    checkpoints: 5,
-    damageZones: 4,
-    jumpPads: 3,
-    teleporters: 2,
-    movingPlatforms: 2,
-    disappearingBlocks: 3,
-    messageZones: 8,
+    checkpoints: 4,
+    damageZones: 3,
+    jumpPads: 1,
+    teleporters: 0,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
+    messageZones: 4,
     logicRules: 2,
-    decorations: 34,
+    decorations: 8,
   },
   {
     id: "coin",
@@ -150,7 +150,7 @@ const TEMPLATE_CONFIGS = [
     style: "coinWorld",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["moedas", "coleta", "grass", "exploracao"],
+    tags: ["official", "collect", "exploration", "puzzle", "showcase", "grass"],
     minObjects: 250,
     sections: 7,
     areas: 5,
@@ -171,80 +171,80 @@ const TEMPLATE_CONFIGS = [
   {
     id: "door",
     name: "Porta e botao",
-    description: "Puzzle grande de salas, portas, botoes, atalhos, chaves e logica visual.",
+    description: "Puzzle limpo com salas em linha, botoes perto das portas e uma chave clara.",
     icon: "door-open",
     style: "puzzle",
     theme: "classic",
     ambientMusic: "dark",
-    tags: ["porta", "botao", "puzzle", "logica"],
-    minObjects: 370,
-    sections: 10,
-    areas: 8,
-    coins: 30,
-    doors: 10,
-    buttons: 10,
-    keys: 3,
-    checkpoints: 4,
-    damageZones: 3,
-    jumpPads: 2,
-    teleporters: 4,
-    movingPlatforms: 2,
-    disappearingBlocks: 3,
-    messageZones: 8,
-    logicRules: 10,
-    decorations: 120,
+    tags: ["official", "puzzle", "door", "button", "logic", "classic"],
+    minObjects: 28,
+    sections: 4,
+    areas: 4,
+    coins: 8,
+    doors: 3,
+    buttons: 2,
+    keys: 1,
+    checkpoints: 1,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 4,
+    logicRules: 3,
+    decorations: 6,
   },
   {
     id: "checkpoint",
     name: "Checkpoint + zona de morte",
-    description: "Mapa grande de desafio com respawn justo, perigos, saltos e risco por moedas.",
+    description: "Desafio curto com checkpoints antes de cada perigo e zonas de morte evitaveis.",
     icon: "flag",
     style: "challenge",
     theme: "desert",
     ambientMusic: "adventure",
-    tags: ["checkpoint", "perigo", "desafio"],
-    minObjects: 380,
-    sections: 12,
+    tags: ["official", "platform", "checkpoint", "hazard", "challenge", "desert"],
+    minObjects: 34,
+    sections: 5,
     areas: 3,
-    coins: 55,
-    doors: 2,
-    buttons: 2,
-    keys: 1,
-    checkpoints: 12,
-    damageZones: 15,
-    jumpPads: 8,
-    teleporters: 2,
-    movingPlatforms: 6,
-    disappearingBlocks: 8,
-    messageZones: 10,
-    logicRules: 7,
-    decorations: 130,
+    coins: 12,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 5,
+    damageZones: 4,
+    jumpPads: 1,
+    teleporters: 0,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
+    messageZones: 4,
+    logicRules: 2,
+    decorations: 6,
   },
   {
     id: "mechanics",
     name: "Mapa de Mecanicas",
-    description: "Laboratorio gigante com secoes separadas para testar cada mecanica pronta.",
+    description: "Laboratorio limpo com uma estacao clara para cada mecanica jogavel.",
     icon: "sparkles",
     style: "mechanics",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["mecanicas", "demo", "laboratorio"],
-    minObjects: 480,
-    sections: 12,
-    areas: 12,
-    coins: 50,
-    doors: 6,
-    buttons: 6,
-    keys: 4,
-    checkpoints: 8,
-    damageZones: 8,
-    jumpPads: 8,
-    teleporters: 6,
-    movingPlatforms: 6,
-    disappearingBlocks: 8,
-    messageZones: 14,
-    logicRules: 14,
-    decorations: 160,
+    tags: ["official", "basic", "tutorial", "logic", "mechanics", "neon"],
+    minObjects: 42,
+    sections: 8,
+    areas: 8,
+    coins: 14,
+    doors: 2,
+    buttons: 2,
+    keys: 1,
+    checkpoints: 2,
+    damageZones: 1,
+    jumpPads: 1,
+    teleporters: 2,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
+    messageZones: 8,
+    logicRules: 4,
+    decorations: 10,
   },
   {
     id: "combatArena",
@@ -254,7 +254,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "dark",
     ambientMusic: "adventure",
-    tags: ["combate", "arena", "acao"],
+    tags: ["official", "combat", "arena", "enemy", "weapons", "dark"],
     minObjects: 170,
     sections: 4,
     areas: 3,
@@ -281,7 +281,7 @@ const TEMPLATE_CONFIGS = [
     style: "dungeon",
     theme: "dark",
     ambientMusic: "dark",
-    tags: ["combate", "dungeon", "acao"],
+    tags: ["official", "combat", "dungeon", "enemy", "boss", "dark"],
     minObjects: 240,
     sections: 5,
     areas: 5,
@@ -307,11 +307,11 @@ const TEMPLATE_CONFIGS = [
     style: "forest",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["missao", "npc", "objetivos"],
-    minObjects: 180,
+    tags: ["official", "objective", "tutorial", "npc", "combat", "grass"],
+    minObjects: 34,
     sections: 5,
     areas: 5,
-    coins: 24,
+    coins: 12,
     doors: 1,
     buttons: 1,
     keys: 1,
@@ -321,9 +321,9 @@ const TEMPLATE_CONFIGS = [
     teleporters: 0,
     movingPlatforms: 0,
     disappearingBlocks: 0,
-    messageZones: 5,
+    messageZones: 4,
     logicRules: 5,
-    decorations: 82,
+    decorations: 8,
   },
   {
     id: "localTeamArena",
@@ -334,7 +334,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "dark",
     ambientMusic: "adventure",
-    tags: ["times", "arena", "local"],
+    tags: ["official", "local", "team", "combat", "arena", "dark"],
     minObjects: 170,
     sections: 4,
     areas: 3,
@@ -357,11 +357,11 @@ const TEMPLATE_CONFIGS = [
     name: "Capture Point Local",
     description:
       "Arena pequena com dois times locais e ponto central que gera pontuacao ao capturar.",
-    icon: "badge-dot",
+    icon: "circle-dot",
     style: "challenge",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["capture", "times", "pontuacao"],
+    tags: ["official", "local", "team", "capture", "arena", "neon"],
     minObjects: 160,
     sections: 4,
     areas: 3,
@@ -387,7 +387,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["multiplayer", "pvp", "times"],
+    tags: ["official", "multiplayer", "pvp", "team", "arena", "showcase"],
     minObjects: 120,
     sections: 3,
     areas: 2,
@@ -414,7 +414,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "grass",
     ambientMusic: "adventure",
-    tags: ["multiplayer", "coop", "inimigos"],
+    tags: ["official", "multiplayer", "coop", "combat", "enemy", "showcase"],
     minObjects: 130,
     sections: 3,
     areas: 3,
@@ -441,7 +441,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["combate", "armas", "teste"],
+    tags: ["official", "combat", "weapons", "test", "enemy", "classic"],
     minObjects: 125,
     sections: 3,
     areas: 3,
@@ -468,7 +468,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["multiplayer", "pvp", "armas"],
+    tags: ["official", "multiplayer", "pvp", "weapons", "team", "neon"],
     minObjects: 135,
     sections: 3,
     areas: 3,
@@ -494,7 +494,7 @@ const TEMPLATE_CONFIGS = [
     style: "coinWorld",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["moedas", "competitivo", "local"],
+    tags: ["official", "collect", "competitive", "local", "score", "grass"],
     minObjects: 190,
     sections: 5,
     areas: 4,
@@ -520,7 +520,7 @@ const TEMPLATE_CONFIGS = [
     style: "challenge",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["objetivos", "arena", "missao"],
+    tags: ["official", "objective", "combat", "arena", "capture", "classic"],
     minObjects: 190,
     sections: 5,
     areas: 4,
@@ -541,28 +541,28 @@ const TEMPLATE_CONFIGS = [
   {
     id: "keyPuzzle",
     name: "Puzzle com Chave",
-    description: "Escape room grande com seis chaves, varias salas, dicas e portas encadeadas.",
+    description: "Puzzle sequencial com chaves antes das portas e salas sem bloqueios confusos.",
     icon: "key-round",
     style: "dungeon",
     theme: "dark",
     ambientMusic: "dark",
-    tags: ["puzzle", "chave", "escape"],
-    minObjects: 430,
-    sections: 10,
-    areas: 10,
-    coins: 40,
-    doors: 10,
-    buttons: 8,
-    keys: 6,
-    checkpoints: 5,
-    damageZones: 4,
-    jumpPads: 2,
-    teleporters: 2,
-    movingPlatforms: 2,
-    disappearingBlocks: 4,
-    messageZones: 10,
-    logicRules: 12,
-    decorations: 150,
+    tags: ["official", "puzzle", "key", "door", "dungeon", "dark"],
+    minObjects: 35,
+    sections: 5,
+    areas: 5,
+    coins: 10,
+    doors: 4,
+    buttons: 1,
+    keys: 4,
+    checkpoints: 2,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 5,
+    logicRules: 4,
+    decorations: 8,
   },
   {
     id: "logic",
@@ -572,7 +572,7 @@ const TEMPLATE_CONFIGS = [
     style: "logic",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["logica", "tutorial", "demo"],
+    tags: ["official", "puzzle", "logic", "tutorial", "mechanics", "neon"],
     minObjects: 250,
     sections: 11,
     areas: 11,
@@ -599,7 +599,7 @@ const TEMPLATE_CONFIGS = [
     style: "forest",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["bosque", "grass", "exploracao"],
+    tags: ["official", "exploration", "collect", "puzzle", "large", "grass"],
     minObjects: 640,
     sections: 10,
     areas: 8,
@@ -625,7 +625,7 @@ const TEMPLATE_CONFIGS = [
     style: "desert",
     theme: "desert",
     ambientMusic: "adventure",
-    tags: ["deserto", "ruinas", "templo"],
+    tags: ["official", "exploration", "puzzle", "platform", "large", "desert"],
     minObjects: 650,
     sections: 10,
     areas: 9,
@@ -647,107 +647,107 @@ const TEMPLATE_CONFIGS = [
     id: "neonObby",
     name: "Neon Obby",
     description:
-      "Obby neon gigante com glow, muitos perigos, jump pads, plataformas moveis e final chamativo.",
+      "Obby neon limpo com checkpoints, brilho, saltos possiveis e perigos fora das plataformas.",
     icon: "zap",
     style: "neon",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["neon", "obby", "glow"],
-    minObjects: 650,
-    sections: 16,
+    tags: ["official", "platform", "obby", "checkpoint", "large", "neon"],
+    minObjects: 39,
+    sections: 9,
     areas: 4,
-    coins: 80,
-    doors: 4,
-    buttons: 4,
-    keys: 2,
-    checkpoints: 12,
-    damageZones: 20,
-    jumpPads: 15,
-    teleporters: 4,
-    movingPlatforms: 10,
-    disappearingBlocks: 15,
-    messageZones: 16,
-    logicRules: 10,
-    decorations: 260,
+    coins: 22,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 5,
+    damageZones: 4,
+    jumpPads: 1,
+    teleporters: 0,
+    movingPlatforms: 1,
+    disappearingBlocks: 1,
+    messageZones: 5,
+    logicRules: 2,
+    decorations: 12,
   },
   {
     id: "megaObby",
     name: "Mega Obby Extremo",
     description:
-      "Obby extremo de escala gigante para testar runtime, checkpoints e hazards em sequencia.",
+      "Obby longo e legivel com checkpoints frequentes, gaps possiveis e hazards abaixo da rota.",
     icon: "route",
     style: "obby",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["mega", "obby", "stress"],
-    minObjects: 850,
-    sections: 18,
+    tags: ["official", "platform", "obby", "stress", "experimental", "neon"],
+    minObjects: 54,
+    sections: 12,
     areas: 4,
-    coins: 100,
-    doors: 6,
-    buttons: 6,
-    keys: 3,
-    checkpoints: 15,
-    damageZones: 20,
-    jumpPads: 20,
-    teleporters: 6,
-    movingPlatforms: 15,
-    disappearingBlocks: 20,
-    messageZones: 18,
-    logicRules: 14,
-    decorations: 360,
+    coins: 30,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 7,
+    damageZones: 6,
+    jumpPads: 2,
+    teleporters: 0,
+    movingPlatforms: 2,
+    disappearingBlocks: 2,
+    messageZones: 6,
+    logicRules: 2,
+    decorations: 14,
   },
   {
     id: "megaCoinWorld",
     name: "Mundo de Coleta Gigante",
-    description: "Mundo aberto enorme com oito areas, muitas moedas, chaves, portas e teleportes.",
+    description: "Mundo de coleta amplo e organizado por ilhas, com moedas em trilhas legiveis.",
     icon: "coins",
     style: "coinWorld",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["mega", "moedas", "exploracao"],
-    minObjects: 920,
-    sections: 12,
-    areas: 8,
-    coins: 180,
-    doors: 10,
-    buttons: 10,
-    keys: 8,
-    checkpoints: 8,
-    damageZones: 8,
-    jumpPads: 8,
-    teleporters: 8,
-    movingPlatforms: 8,
-    disappearingBlocks: 8,
-    messageZones: 12,
-    logicRules: 18,
-    decorations: 480,
+    tags: ["official", "collect", "exploration", "stress", "experimental", "grass"],
+    minObjects: 77,
+    sections: 6,
+    areas: 6,
+    coins: 54,
+    doors: 2,
+    buttons: 0,
+    keys: 2,
+    checkpoints: 3,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 2,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 6,
+    logicRules: 3,
+    decorations: 12,
   },
   {
     id: "keyDungeon",
     name: "Dungeon de Chaves",
-    description: "Dungeon gigante com muitas chaves, portas, botoes, moedas e logica encadeada.",
+    description: "Dungeon sequencial com chaves antes das portas, rotas claras e salas jogaveis.",
     icon: "key-round",
     style: "dungeon",
     theme: "dark",
     ambientMusic: "dark",
-    tags: ["dungeon", "chaves", "puzzle"],
-    minObjects: 850,
-    sections: 14,
-    areas: 12,
-    coins: 100,
-    doors: 20,
-    buttons: 20,
-    keys: 10,
-    checkpoints: 10,
-    damageZones: 10,
-    jumpPads: 6,
-    teleporters: 8,
-    movingPlatforms: 8,
-    disappearingBlocks: 8,
-    messageZones: 16,
-    logicRules: 32,
-    decorations: 360,
+    tags: ["official", "puzzle", "key", "door", "stress", "dark"],
+    minObjects: 64,
+    sections: 7,
+    areas: 7,
+    coins: 24,
+    doors: 6,
+    buttons: 2,
+    keys: 6,
+    checkpoints: 3,
+    damageZones: 1,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 7,
+    logicRules: 8,
+    decorations: 12,
   },
   {
     id: "testCity",
@@ -758,7 +758,7 @@ const TEMPLATE_CONFIGS = [
     style: "city",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["cidade", "teste", "escala"],
+    tags: ["official", "city", "scale", "experimental", "validation", "classic"],
     minObjects: 1200,
     sections: 10,
     areas: 10,
@@ -785,7 +785,7 @@ const TEMPLATE_CONFIGS = [
     style: "island",
     theme: "grass",
     ambientMusic: "adventure",
-    tags: ["ilha", "aventura", "exploracao"],
+    tags: ["official", "exploration", "collect", "adventure", "large", "grass"],
     minObjects: 1050,
     sections: 12,
     areas: 8,
@@ -812,7 +812,7 @@ const TEMPLATE_CONFIGS = [
     style: "stress",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["stress", "escala", "teste"],
+    tags: ["official", "stress", "scale", "experimental", "validation", "neon"],
     minObjects: 1500,
     sections: 20,
     areas: 14,
@@ -840,6 +840,7 @@ export type MapTemplateDefinition = {
   name: string;
   description: string;
   icon: string;
+  tags: string[];
 };
 
 export const MAP_TEMPLATES: MapTemplateDefinition[] = TEMPLATE_CONFIGS.map((template) => ({
@@ -847,6 +848,7 @@ export const MAP_TEMPLATES: MapTemplateDefinition[] = TEMPLATE_CONFIGS.map((temp
   name: template.name,
   description: template.description,
   icon: template.icon,
+  tags: [...template.tags],
 }));
 
 const TEMPLATE_BY_ID = TEMPLATE_CONFIGS.reduce(
@@ -921,11 +923,11 @@ export function createMapFromTemplate(templateId: MapTemplateId = "empty"): Game
 
 function createGeneratedMap(config: TemplateConfig): GameMap {
   if (config.id === "empty") {
-    return createDesignedSandboxMap(config);
+    return createCleanSandboxMap(config);
   }
 
   if (config.id === "obby") {
-    return createDesignedObbyMap(config);
+    return createCleanObbyTemplateMap(config, "basic");
   }
 
   if (config.id === "coin") {
@@ -945,7 +947,39 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
   }
 
   if (config.id === "guideMission") {
-    return createDesignedGuideMissionMap(config);
+    return createCleanGuideMissionMap(config);
+  }
+
+  if (config.id === "door") {
+    return createCleanDoorButtonMap(config);
+  }
+
+  if (config.id === "checkpoint") {
+    return createCleanCheckpointChallengeMap(config);
+  }
+
+  if (config.id === "mechanics") {
+    return createCleanMechanicsMap(config);
+  }
+
+  if (config.id === "keyPuzzle") {
+    return createCleanKeySequenceMap(config, "puzzle");
+  }
+
+  if (config.id === "neonObby") {
+    return createCleanObbyTemplateMap(config, "neon");
+  }
+
+  if (config.id === "megaObby") {
+    return createCleanObbyTemplateMap(config, "mega");
+  }
+
+  if (config.id === "megaCoinWorld") {
+    return createCleanMegaCoinWorldMap(config);
+  }
+
+  if (config.id === "keyDungeon") {
+    return createCleanKeySequenceMap(config, "dungeon");
   }
 
   if (config.id === "localTeamArena") {
@@ -1335,20 +1369,959 @@ function getDefaultTeamsForTemplate(templateId: string): TeamDefinition[] {
 
 function isDesignedGuidedTemplate(templateId: string): boolean {
   return [
-    "door",
-    "checkpoint",
-    "mechanics",
-    "keyPuzzle",
     "forest",
     "desert",
-    "neonObby",
-    "megaObby",
-    "megaCoinWorld",
-    "keyDungeon",
     "testCity",
     "adventureIsland",
     "stressTest",
   ].includes(templateId);
+}
+
+type CleanObbyVariant = "basic" | "neon" | "mega";
+type CleanKeySequenceVariant = "puzzle" | "dungeon";
+
+function createCleanSandboxMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 4 });
+  createCleanPlatform(builder, { x: 0, y: 0.2, z: 0 }, "Base vazia para criacao", 28, 22, {
+    color: "#dbeafe",
+  });
+
+  return builder.map;
+}
+
+function createCleanObbyTemplateMap(config: TemplateConfig, variant: CleanObbyVariant): GameMap {
+  const builder = new TemplateBuilder(config);
+  const isMega = variant === "mega";
+  const isNeon = variant !== "basic";
+  const sectionCount = isMega ? 12 : isNeon ? 9 : 7;
+  const spacing = isMega ? 8.5 : 8;
+  const route: MapObject[] = [];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 4 });
+
+  for (let index = 0; index < sectionCount; index += 1) {
+    const previous = route.at(-1);
+    const position = {
+      x: index === 0 ? 0 : ((index % 4) - 1.5) * (isMega ? 2.4 : 1.8),
+      y: 0.2 + Math.floor(index / 4) * 0.15,
+      z: 4 - index * spacing,
+    };
+    const color =
+      index % 3 === 0
+        ? builder.palette.platform
+        : index % 3 === 1
+          ? builder.palette.accent
+          : builder.palette.secondary;
+    let platform: MapObject;
+
+    if (index === Math.floor(sectionCount * 0.58)) {
+      platform = createMovingPlatform(builder, { ...position, y: position.y + 0.05 }, {
+        name: "Trecho movel curto e seguro",
+        scale: { x: 6, y: 0.35, z: 4.5 },
+        properties: {
+          color: builder.palette.accent,
+          startOffset: { x: -1.1, y: 0, z: 0 },
+          endOffset: { x: 1.1, y: 0, z: 0 },
+          speed: 0.85,
+          loop: true,
+        },
+      });
+    } else if (index === Math.floor(sectionCount * 0.72)) {
+      platform = createDisappearingBlock(builder, { ...position, y: position.y + 0.04 }, {
+        name: "Bloco que some com margem",
+        scale: { x: 6.5, y: 0.42, z: 4.8 },
+        properties: {
+          color: builder.palette.secondary,
+          delayBeforeDisappear: 1.6,
+          respawnDelay: 2.2,
+        },
+      });
+    } else {
+      platform = createCleanPlatform(builder, position, `Plataforma segura ${index + 1}`, 7, 5.2, {
+        color,
+      });
+    }
+
+    route.push(platform);
+
+    if (previous) {
+      const gapCenter = {
+        x: (previous.position.x + platform.position.x) / 2,
+        y: Math.min(previous.position.y, platform.position.y) - 0.08,
+        z: (previous.position.z + platform.position.z) / 2,
+      };
+
+      if (index >= 2) {
+        createDamageZone(builder, { ...gapCenter, y: 0.03 }, {
+          name: `Zona de queda do vao ${index}`,
+          scale: { x: 5.2, y: 0.22, z: 2.4 },
+          properties: {
+            color: builder.palette.hazard,
+            mode: "kill",
+            collision: false,
+            opacity: isNeon ? 0.55 : 0.42,
+          },
+        });
+      }
+
+      if (index % 2 === 0) {
+        createCoinLine(
+          builder,
+          { x: previous.position.x, y: previous.position.y + 0.85, z: previous.position.z - 1.6 },
+          { x: platform.position.x, y: platform.position.y + 0.85, z: platform.position.z + 1.6 },
+          isMega ? 4 : 3,
+          `${config.name} moeda guia ${index}`
+        );
+      }
+    }
+
+    if (index > 0 && index % 2 === 0) {
+      createCheckpoint(builder, {
+        x: platform.position.x - 2.1,
+        y: platform.position.y + 0.55,
+        z: platform.position.z + 1.2,
+      }, `Checkpoint obby ${index}`);
+    }
+
+    if (index === Math.floor(sectionCount * 0.35)) {
+      createJumpPad(builder, {
+        x: platform.position.x + 2.1,
+        y: platform.position.y + 0.55,
+        z: platform.position.z - 0.6,
+      }, {
+        name: "Jump pad de salto curto",
+        properties: {
+          color: "#22c55e",
+          force: isMega ? 10.5 : 9.5,
+          cooldown: 0.35,
+        },
+      });
+    }
+  }
+
+  const first = route[0];
+  const middle = route[Math.floor(route.length / 2)];
+  const last = route.at(-1);
+
+  if (first) {
+    createSign(
+      builder,
+      { x: first.position.x - 3.2, y: first.position.y + 0.6, z: first.position.z + 2.2 },
+      "Gaps curtos: pule no centro das plataformas."
+    );
+  }
+
+  if (middle) {
+    createSign(
+      builder,
+      { x: middle.position.x + 3.3, y: middle.position.y + 0.6, z: middle.position.z },
+      "Checkpoints ficam antes dos trechos de risco."
+    );
+  }
+
+  if (last) {
+    createSign(
+      builder,
+      { x: last.position.x - 3, y: last.position.y + 0.6, z: last.position.z - 1.8 },
+      "Fim do obby logo a frente."
+    );
+    const final = createFinish(builder, {
+      x: last.position.x,
+      y: last.position.y + 0.65,
+      z: last.position.z - 1.4,
+    }, {
+      name: `Final - ${config.name}`,
+      properties: {
+        message: `${config.name} concluido!`,
+        requiresAllCoins: false,
+      },
+    });
+    addFinishRule(builder, final, `${config.name}: finaliza ao tocar no portal.`);
+  }
+
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.15, z: 1.2 },
+    `${config.name}: rota limpa, checkpoints frequentes e perigos somente nos vaos.`,
+    { name: `Mensagem inicial - ${config.name}`, scale: { x: 8, y: 1.4, z: 2.2 } }
+  );
+
+  return builder.map;
+}
+
+function createCleanDoorButtonMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const rooms = [
+    { x: 0, y: 0.2, z: 5, name: "Sala inicial" },
+    { x: 0, y: 0.2, z: -7, name: "Sala do botao azul" },
+    { x: 0, y: 0.2, z: -19, name: "Sala da chave verde" },
+    { x: 0, y: 0.2, z: -31, name: "Sala final" },
+  ];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 6.5 });
+  rooms.forEach((room, index) => {
+    createCleanPlatform(builder, room, room.name, 16, 10, {
+      color: index % 2 === 0 ? builder.palette.platform : "#c7d2fe",
+    });
+  });
+
+  createCleanBridge(builder, rooms[0], rooms[1], "Corredor para porta azul", 5);
+  createCleanBridge(builder, rooms[1], rooms[2], "Corredor para porta laranja", 5);
+  createCleanBridge(builder, rooms[2], rooms[3], "Corredor para porta verde", 5);
+
+  const doorA = createCleanDoor(builder, { x: 0, y: 1.65, z: -1 }, "door_button_a", "Porta azul do primeiro botao", "#2563eb");
+  const doorB = createCleanDoor(builder, { x: 0, y: 1.65, z: -13 }, "door_button_b", "Porta laranja do segundo botao", "#f97316");
+  const doorC = createCleanDoor(builder, { x: 0, y: 1.65, z: -25 }, "door_key_green", "Porta verde da chave", "#22c55e", "door_green_key");
+  const buttonA = createButton(builder, { x: -4.6, y: 0.62, z: 3.2 }, {
+    name: "Botao abre porta azul",
+    properties: {
+      color: "#2563eb",
+      targetDoorId: getDoorId(doorA),
+      buttonTargetId: getDoorId(doorA),
+      oneTime: true,
+    },
+  });
+  const buttonB = createButton(builder, { x: 4.6, y: 0.62, z: -8.8 }, {
+    name: "Botao abre porta laranja",
+    properties: {
+      color: "#f97316",
+      targetDoorId: getDoorId(doorB),
+      buttonTargetId: getDoorId(doorB),
+      oneTime: true,
+    },
+  });
+  const key = createKey(builder, { x: -3.2, y: 0.82, z: -18.6 }, {
+    name: "Chave verde antes da porta",
+    properties: {
+      color: "#22c55e",
+      keyId: "door_green_key",
+      label: "Chave Verde",
+    },
+  });
+
+  createCoinLine(builder, { x: -3, y: 0.85, z: 4 }, { x: 3, y: 0.85, z: 4 }, 4, "Moeda sala inicial");
+  createCoinLine(builder, { x: -3, y: 0.85, z: -7 }, { x: 3, y: 0.85, z: -7 }, 4, "Moeda sala do botao");
+  createCheckpoint(builder, { x: 5.4, y: 0.75, z: -18.8 }, "Checkpoint antes da porta verde");
+  createSign(builder, { x: -6.2, y: 0.6, z: 6.5 }, "Aperte o botao azul ao lado da porta.");
+  createSign(builder, { x: 5.8, y: 0.6, z: -6.6 }, "Cada sala resolve a porta seguinte.");
+  createSign(builder, { x: -5.5, y: 0.6, z: -21.4 }, "Pegue a chave antes da porta verde.");
+  createMessageZone(builder, { x: 0, y: 1.2, z: 2 }, "Puzzle limpo: botoes e chave estao sempre antes da porta.", {
+    name: "Mensagem porta e botao",
+    scale: { x: 8, y: 1.4, z: 2 },
+  });
+
+  const final = createFinish(builder, { x: 0, y: 0.85, z: -33.2 }, {
+    name: "Final do puzzle de portas",
+    properties: { message: "Portas resolvidas sem parede falsa!", requiresAllCoins: false },
+  });
+
+  builder.addLogic("Botao azul abre porta azul", { type: "onButtonActivated", objectId: buttonA.id }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(doorA) },
+  ]);
+  builder.addLogic("Botao laranja abre porta laranja", { type: "onButtonActivated", objectId: buttonB.id }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(doorB) },
+  ]);
+  builder.addLogic("Chave verde abre a porta verde", { type: "onKeyCollected", keyId: getKeyObjectId(key) }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(doorC) },
+  ]);
+  addFinishRule(builder, final, "Porta e botao: finaliza o puzzle.");
+
+  return builder.map;
+}
+
+function createCleanCheckpointChallengeMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const platforms = [
+    { x: 0, y: 0.2, z: 5 },
+    { x: 0, y: 0.2, z: -5 },
+    { x: 2, y: 0.28, z: -15 },
+    { x: -2, y: 0.34, z: -25 },
+    { x: 0, y: 0.38, z: -35 },
+  ];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 6.4 });
+  platforms.forEach((platform, index) => {
+    createCleanPlatform(builder, platform, `Ilha de checkpoint ${index + 1}`, 8, 6, {
+      color: index % 2 === 0 ? builder.palette.platform : builder.palette.secondary,
+    });
+
+    createCheckpoint(builder, {
+      x: platform.x - 2.3,
+      y: platform.y + 0.55,
+      z: platform.z + 1.4,
+    }, `Checkpoint seguro ${index + 1}`);
+
+    if (index > 1) {
+      const previous = platforms[index - 1];
+      createDamageZone(builder, {
+        x: (previous.x + platform.x) / 2,
+        y: 0.03,
+        z: (previous.z + platform.z) / 2,
+      }, {
+        name: `Zona de morte abaixo do vao ${index}`,
+        scale: { x: 6, y: 0.22, z: 2.5 },
+        properties: {
+          color: builder.palette.hazard,
+          mode: "kill",
+          collision: false,
+          opacity: 0.44,
+        },
+      });
+    }
+  });
+
+  createCoinLine(builder, { x: 0, y: 0.9, z: -5 }, { x: 2, y: 0.95, z: -15 }, 4, "Moeda risco 1");
+  createCoinLine(builder, { x: 2, y: 0.95, z: -15 }, { x: -2, y: 1, z: -25 }, 4, "Moeda risco 2");
+  createCoinLine(builder, { x: -2, y: 1, z: -25 }, { x: 0, y: 1.05, z: -35 }, 4, "Moeda risco 3");
+  createJumpPad(builder, { x: 2.3, y: 0.82, z: -15.8 }, {
+    name: "Jump pad opcional curto",
+    properties: { color: "#22c55e", force: 9, cooldown: 0.35 },
+  });
+  createMovingPlatform(builder, { x: -0.8, y: 0.42, z: -30 }, {
+    name: "Plataforma movel lateral curta",
+    scale: { x: 4.5, y: 0.35, z: 3 },
+    properties: {
+      color: builder.palette.accent,
+      startOffset: { x: -0.8, y: 0, z: 0 },
+      endOffset: { x: 0.8, y: 0, z: 0 },
+      speed: 0.75,
+      loop: true,
+    },
+  });
+  createDisappearingBlock(builder, { x: 2.4, y: 0.43, z: -29.5 }, {
+    name: "Bloco que some opcional",
+    scale: { x: 3.2, y: 0.38, z: 2.5 },
+    properties: { color: "#f59e0b", delayBeforeDisappear: 1.5, respawnDelay: 2.4 },
+  });
+
+  createSign(builder, { x: -3.4, y: 0.7, z: 6.7 }, "Checkpoints antes dos perigos.");
+  createSign(builder, { x: 4.2, y: 0.75, z: -15.2 }, "Zonas vermelhas ficam nos vaos, nao nas plataformas.");
+  createSign(builder, { x: -4.2, y: 0.78, z: -34.2 }, "Toque no final depois do ultimo checkpoint.");
+  createMessageZone(builder, { x: 0, y: 1.2, z: 2.4 }, "Desafio revisado: pule com margem e use checkpoints.", {
+    name: "Mensagem checkpoint",
+    scale: { x: 8, y: 1.4, z: 2 },
+  });
+
+  const final = createFinish(builder, { x: 0, y: 1, z: -36.7 }, {
+    name: "Final do desafio de checkpoint",
+    properties: { message: "Desafio concluido com checkpoints justos!", requiresAllCoins: false },
+  });
+  addFinishRule(builder, final, "Checkpoint: finaliza desafio.");
+
+  return builder.map;
+}
+
+function createCleanMechanicsMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const stations = [
+    { x: 0, y: 0.2, z: 6, name: "Entrada" },
+    { x: -13, y: 0.2, z: -5, name: "Moedas" },
+    { x: 13, y: 0.2, z: -5, name: "Botao e porta" },
+    { x: -13, y: 0.2, z: -18, name: "Chave" },
+    { x: 13, y: 0.2, z: -18, name: "Jump pad" },
+    { x: -13, y: 0.2, z: -31, name: "Teleporte" },
+    { x: 13, y: 0.2, z: -31, name: "Plataformas especiais" },
+    { x: 0, y: 0.2, z: -44, name: "Final" },
+  ];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 7.2 });
+  stations.forEach((station, index) => {
+    createCleanPlatform(builder, station, `Estacao - ${station.name}`, 13, 9, {
+      color: index % 2 === 0 ? builder.palette.platform : builder.palette.secondary,
+    });
+  });
+
+  createCleanBridge(builder, stations[0], stations[1], "Ponte entrada moedas", 4);
+  createCleanBridge(builder, stations[0], stations[2], "Ponte entrada botao", 4);
+  createCleanBridge(builder, stations[1], stations[3], "Ponte moedas chave", 4);
+  createCleanBridge(builder, stations[2], stations[4], "Ponte botao jump pad", 4);
+  createCleanBridge(builder, stations[3], stations[5], "Ponte chave teleporte", 4);
+  createCleanBridge(builder, stations[4], stations[6], "Ponte jump pad especiais", 4);
+  createCleanBridge(builder, stations[5], stations[7], "Ponte teleporte final", 4);
+  createCleanBridge(builder, stations[6], stations[7], "Ponte especiais final", 4);
+
+  createCoinLine(builder, { x: -16, y: 0.85, z: -5 }, { x: -10, y: 0.85, z: -5 }, 7, "Moeda estacao");
+  createCheckpoint(builder, { x: 0, y: 0.75, z: 4.2 }, "Checkpoint entrada laboratorio");
+  createCheckpoint(builder, { x: 0, y: 0.75, z: -42.5 }, "Checkpoint final laboratorio");
+
+  const door = createCleanDoor(builder, { x: 13, y: 1.65, z: -8.2 }, "mechanics_button_door", "Porta de teste do botao", "#8b5cf6");
+  const button = createButton(builder, { x: 9.3, y: 0.62, z: -4.2 }, {
+    name: "Botao de teste",
+    properties: {
+      color: "#f97316",
+      targetDoorId: getDoorId(door),
+      buttonTargetId: getDoorId(door),
+      oneTime: true,
+    },
+  });
+  const keyDoor = createCleanDoor(builder, { x: -13, y: 1.65, z: -21.2 }, "mechanics_key_door", "Porta de teste da chave", "#22c55e", "mechanics_key");
+  const key = createKey(builder, { x: -16.2, y: 0.82, z: -17.6 }, {
+    name: "Chave de teste",
+    properties: { color: "#22c55e", keyId: "mechanics_key", label: "Chave de Teste" },
+  });
+
+  createJumpPad(builder, { x: 13, y: 0.75, z: -17.8 }, {
+    name: "Jump pad de laboratorio",
+    properties: { color: "#22c55e", force: 10, cooldown: 0.35 },
+  });
+  createDamageZone(builder, { x: 9.2, y: 0.03, z: -21.5 }, {
+    name: "Zona de dano demonstrativa lateral",
+    scale: { x: 3.2, y: 0.22, z: 2.4 },
+    properties: {
+      color: builder.palette.hazard,
+      mode: "kill",
+      collision: false,
+      opacity: 0.45,
+    },
+  });
+
+  const teleporterA = createTeleporter(builder, { x: -16, y: 0.78, z: -31 }, {
+    name: "Teleporte A",
+    properties: {
+      color: builder.palette.accent,
+      teleporterId: "mechanics_teleporter_a",
+      targetTeleporterId: "mechanics_teleporter_b",
+      cooldown: 1,
+    },
+  });
+  const teleporterB = createTeleporter(builder, { x: -10, y: 0.78, z: -31 }, {
+    name: "Teleporte B",
+    properties: {
+      color: builder.palette.accent,
+      teleporterId: "mechanics_teleporter_b",
+      targetTeleporterId: "mechanics_teleporter_a",
+      cooldown: 1,
+    },
+  });
+  createMovingPlatform(builder, { x: 10.8, y: 0.48, z: -31 }, {
+    name: "Plataforma movel de teste",
+    scale: { x: 4.2, y: 0.35, z: 2.8 },
+    properties: {
+      color: builder.palette.accent,
+      startOffset: { x: -1, y: 0, z: 0 },
+      endOffset: { x: 1, y: 0, z: 0 },
+      speed: 0.75,
+      loop: true,
+    },
+  });
+  createDisappearingBlock(builder, { x: 15.2, y: 0.48, z: -31 }, {
+    name: "Bloco que some de teste",
+    scale: { x: 3.4, y: 0.42, z: 2.8 },
+    properties: { color: "#f59e0b", delayBeforeDisappear: 1.5, respawnDelay: 2.5 },
+  });
+
+  createSign(builder, { x: -4.4, y: 0.7, z: 7.4 }, "Cada ilha testa uma mecanica.");
+  createSign(builder, { x: 7.4, y: 0.7, z: -5 }, "Botao e chave ficam ao lado da porta alvo.");
+  createSign(builder, { x: -17.2, y: 0.7, z: -31 }, "Teleporte tem par reciproco visivel.");
+  createSign(builder, { x: 4.4, y: 0.7, z: -44 }, "Volte ou finalize quando terminar os testes.");
+  createMessageZone(builder, { x: 0, y: 1.2, z: 3.4 }, "Mapa de mecanicas reorganizado em estacoes curtas.", {
+    name: "Mensagem mapa de mecanicas",
+    scale: { x: 8, y: 1.4, z: 2 },
+  });
+
+  builder.addLogic("Botao de teste abre porta", { type: "onButtonActivated", objectId: button.id }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(door) },
+  ]);
+  builder.addLogic("Chave de teste abre porta", { type: "onKeyCollected", keyId: getKeyObjectId(key) }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(keyDoor) },
+  ]);
+  builder.addLogic("Teleporte A mostra dica", { type: "onPlayerEnterObject", objectId: teleporterA.id }, [{ type: "once" }], [
+    { type: "showMessage", message: "Teleporte A leva ao par B." },
+  ]);
+  builder.addLogic("Teleporte B mostra dica", { type: "onPlayerEnterObject", objectId: teleporterB.id }, [{ type: "once" }], [
+    { type: "showMessage", message: "Teleporte B volta ao par A." },
+  ]);
+
+  const final = createFinish(builder, { x: 0, y: 0.85, z: -46 }, {
+    name: "Final do laboratorio",
+    properties: { message: "Mecanicas testadas em mapa limpo!", requiresAllCoins: false },
+  });
+  addFinishRule(builder, final, "Mecanicas: finaliza laboratorio.");
+
+  return builder.map;
+}
+
+function createCleanGuideMissionMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 8 });
+  createCleanPlatform(builder, { x: 0, y: 0.2, z: 4 }, "Praca inicial do guia", 18, 12, {
+    color: "#bfdbfe",
+  });
+  createCleanPlatform(builder, { x: 0, y: 0.2, z: -8 }, "Trilha da chave", 15, 10, {
+    color: builder.palette.platform,
+  });
+  createCleanPlatform(builder, { x: 0, y: 0.2, z: -20 }, "Clareira dos inimigos", 16, 10, {
+    color: "#bbf7d0",
+  });
+  createCleanPlatform(builder, { x: 0, y: 0.2, z: -32 }, "Saida da missao", 15, 10, {
+    color: builder.palette.secondary,
+  });
+  createCleanBridge(builder, { x: 0, y: 0.2, z: 4 }, { x: 0, y: 0.2, z: -8 }, "Ponte para chave", 4.5);
+  createCleanBridge(builder, { x: 0, y: 0.2, z: -8 }, { x: 0, y: 0.2, z: -20 }, "Ponte para combate", 4.5);
+  createCleanBridge(builder, { x: 0, y: 0.2, z: -20 }, { x: 0, y: 0.2, z: -32 }, "Ponte para saida", 4.5);
+
+  const guide = createNpc(builder, { x: 0, y: 0.75, z: 3.3 }, {
+    name: "Guia da missao",
+    scale: { x: 1.15, y: 1.15, z: 1.15 },
+    properties: {
+      color: "#4ecdc4",
+      npcName: "Guia",
+      dialog: "Estou bem na sua frente. Mire em mim e pressione E para iniciar a missao.",
+      dialogue: [
+        "Boa! O E funcionou.",
+        "Agora pegue a chave, atravesse a porta e derrote os inimigos.",
+      ],
+      interactionRange: 7,
+      showQuestHint: true,
+      collision: false,
+    },
+  });
+  createSign(builder, { x: -6.8, y: 0.65, z: 8 }, "Clique no jogo, mire no Guia e pressione E.");
+  createSign(builder, { x: 5.8, y: 0.65, z: -8 }, "A chave fica antes da porta.");
+  createSign(builder, { x: -5.8, y: 0.65, z: -20 }, "Derrote os inimigos e siga para a saida.");
+
+  const key = createKey(builder, { x: -3.5, y: 0.82, z: -7.8 }, {
+    name: "Chave da missao",
+    properties: { color: "#22c55e", keyId: "guide_gate_key", label: "Chave da Missao" },
+  });
+  const door = createCleanDoor(builder, { x: 0, y: 1.65, z: -14 }, "guide_gate", "Porta da missao", "#22c55e", "guide_gate_key");
+  const button = createButton(builder, { x: 3.8, y: 0.62, z: -8.2 }, {
+    name: "Botao de dica da porta",
+    properties: {
+      color: "#f97316",
+      targetDoorId: getDoorId(door),
+      buttonTargetId: getDoorId(door),
+      oneTime: true,
+    },
+  });
+  createCoinLine(builder, { x: -5, y: 0.85, z: -4 }, { x: 5, y: 0.85, z: -4 }, 6, "Moeda da trilha guia");
+  createCoinLine(builder, { x: -4, y: 0.85, z: -20 }, { x: 4, y: 0.85, z: -20 }, 6, "Moeda da clareira guia");
+  createCheckpoint(builder, { x: 4.8, y: 0.75, z: -8 }, "Checkpoint da chave");
+  createCheckpoint(builder, { x: 4.8, y: 0.75, z: -20 }, "Checkpoint da clareira");
+  createItemSpawner(builder, { x: -4.8, y: 0.82, z: 4 }, {
+    name: "Arma basica da missao",
+    properties: {
+      color: "#06b6d4",
+      spawnItemType: "weapon_basic",
+      itemPool: ["weapon_basic"],
+      spawnMode: "fixed",
+      respawnTime: 10,
+      spawnOnStart: true,
+      maxSpawnedItems: 1,
+      collision: false,
+    },
+  });
+  const enemyA = createEnemy(builder, { x: -3.8, y: 0.75, z: -21 }, {
+    name: "Inimigo da clareira A",
+    properties: { health: 35, damage: 8, speed: 1.7, detectionRange: 7, attackRange: 1.4 },
+  });
+  const enemyB = createEnemy(builder, { x: 3.8, y: 0.75, z: -19 }, {
+    name: "Inimigo da clareira B",
+    properties: { health: 35, damage: 8, speed: 1.7, detectionRange: 7, attackRange: 1.4 },
+  });
+  const final = createFinish(builder, { x: 0, y: 0.85, z: -34 }, {
+    name: "Final da missao do guia",
+    properties: { message: "Missao do Guia concluida!", requiresAllCoins: false },
+  });
+
+  builder.addObjective({
+    id: "guide_talk",
+    title: "Fale com o Guia",
+    description: "Mire no NPC a frente e pressione E.",
+    type: "customLogic",
+    required: true,
+    visible: true,
+    completedMessage: "Guia acionado.",
+  });
+  builder.addObjective({
+    id: "guide_key",
+    title: "Pegue a chave",
+    type: "collectKey",
+    targetKeyId: getKeyObjectId(key),
+    required: true,
+    visible: true,
+    completedMessage: "Chave coletada.",
+  });
+  builder.addObjective({
+    id: "guide_open_door",
+    title: "Abra a porta",
+    type: "openDoor",
+    targetDoorId: getDoorId(door),
+    required: true,
+    visible: true,
+    completedMessage: "Porta aberta.",
+  });
+  builder.addObjective({
+    id: "guide_defeat_enemies",
+    title: "Derrote os inimigos",
+    type: "defeatEnemies",
+    targetAmount: 2,
+    required: true,
+    visible: true,
+    completedMessage: "Clareira segura.",
+  });
+  builder.addObjective({
+    id: "guide_finish",
+    title: "Chegue ao final",
+    type: "reachObject",
+    targetObjectId: final.id,
+    required: true,
+    visible: true,
+    completedMessage: "Missao finalizada.",
+  });
+
+  builder.addLogic("Guia inicia a missao", { type: "onNpcInteracted", objectId: guide.id }, [{ type: "once" }], [
+    { type: "completeObjective", objectiveId: "guide_talk" },
+    { type: "showMessage", message: "Guia acionado. Pegue a chave e avance." },
+  ]);
+  builder.addLogic("Botao da porta mostra dica", { type: "onButtonActivated", objectId: button.id }, [{ type: "once" }], [
+    { type: "showMessage", message: "A porta abre com a chave verde ao lado da trilha." },
+  ]);
+  builder.addLogic("Chave da missao abre porta", { type: "onKeyCollected", keyId: getKeyObjectId(key) }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(door) },
+  ]);
+  builder.addLogic("Primeiro inimigo derrotado", { type: "onEnemyDefeated", objectId: enemyA.id }, [{ type: "once" }], [
+    { type: "showMessage", message: "Um inimigo derrotado." },
+  ]);
+  builder.addLogic("Segundo inimigo derrotado", { type: "onEnemyDefeated", objectId: enemyB.id }, [{ type: "once" }], [
+    { type: "showMessage", message: "Clareira limpa." },
+  ]);
+  addFinishRule(builder, final, "Missao do Guia: finaliza ao tocar no portal.");
+
+  createMessageZone(builder, { x: 0, y: 1.2, z: 6.2 }, "Mire no Guia e pressione E para iniciar a missao.", {
+    name: "Mensagem inicial do guia",
+    scale: { x: 8, y: 1.4, z: 2 },
+  });
+
+  return builder.map;
+}
+
+function createCleanKeySequenceMap(config: TemplateConfig, variant: CleanKeySequenceVariant): GameMap {
+  const builder = new TemplateBuilder(config);
+  const isDungeon = variant === "dungeon";
+  const roomCount = isDungeon ? 7 : 5;
+  const doorCount = roomCount - 1;
+  const rooms = Array.from({ length: roomCount }, (_, index) => ({
+    x: index % 2 === 0 ? 0 : isDungeon ? 5 : 3,
+    y: 0.2,
+    z: 6 - index * 12,
+    name: `${isDungeon ? "Sala da dungeon" : "Sala do puzzle"} ${index + 1}`,
+  }));
+  const doors: MapObject[] = [];
+  const keys: MapObject[] = [];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 7.3 });
+  rooms.forEach((room, index) => {
+    createCleanPlatform(builder, room, room.name, isDungeon ? 15 : 14, 9.5, {
+      color: index % 2 === 0 ? builder.palette.platform : builder.palette.secondary,
+    });
+
+    if (index > 0) {
+      createCleanBridge(builder, rooms[index - 1], room, `Corredor chave ${index}`, 4.4);
+    }
+  });
+
+  for (let index = 0; index < doorCount; index += 1) {
+    const current = rooms[index];
+    const next = rooms[index + 1];
+    const keyId = `${config.id}_key_${index + 1}`;
+    const door = createCleanDoor(
+      builder,
+      {
+        x: (current.x + next.x) / 2,
+        y: 1.65,
+        z: (current.z + next.z) / 2,
+      },
+      `${config.id}_door_${index + 1}`,
+      `Porta ${index + 1} da sequencia`,
+      index % 2 === 0 ? "#22c55e" : "#8b5cf6",
+      keyId
+    );
+    const key = createKey(builder, {
+      x: current.x + (index % 2 === 0 ? -3.4 : 3.4),
+      y: 0.82,
+      z: current.z - 1.5,
+    }, {
+      name: `Chave ${index + 1} antes da porta`,
+      properties: {
+        color: index % 2 === 0 ? "#22c55e" : "#8b5cf6",
+        keyId,
+        label: `Chave ${index + 1}`,
+      },
+    });
+
+    doors.push(door);
+    keys.push(key);
+
+    builder.addLogic(`Chave ${index + 1} abre porta ${index + 1}`, { type: "onKeyCollected", keyId }, [{ type: "once" }], [
+      { type: "openDoor", doorId: getDoorId(door) },
+    ]);
+
+    createCoinLine(
+      builder,
+      { x: current.x - 3, y: 0.85, z: current.z + 1.5 },
+      { x: current.x + 3, y: 0.85, z: current.z + 1.5 },
+      isDungeon ? 4 : 2,
+      `${config.name} moedas sala ${index + 1}`
+    );
+
+    if (index > 0 && index % 2 === 0) {
+      createCheckpoint(builder, { x: current.x + 4.4, y: 0.75, z: current.z + 1.6 }, `Checkpoint sala ${index + 1}`);
+    }
+  }
+
+  if (isDungeon) {
+    const firstButtonDoor = doors[1];
+    const secondButtonDoor = doors[4];
+    const buttonA = createButton(builder, { x: rooms[1].x - 4.2, y: 0.62, z: rooms[1].z + 1.6 }, {
+      name: "Botao de dica sala 2",
+      properties: {
+        color: "#f97316",
+        targetDoorId: getDoorId(firstButtonDoor),
+        buttonTargetId: getDoorId(firstButtonDoor),
+        oneTime: true,
+      },
+    });
+    const buttonB = createButton(builder, { x: rooms[4].x + 4.2, y: 0.62, z: rooms[4].z + 1.6 }, {
+      name: "Botao de dica sala 5",
+      properties: {
+        color: "#f97316",
+        targetDoorId: getDoorId(secondButtonDoor),
+        buttonTargetId: getDoorId(secondButtonDoor),
+        oneTime: true,
+      },
+    });
+    createDamageZone(builder, { x: rooms[3].x - 4.6, y: 0.03, z: rooms[3].z - 1.6 }, {
+      name: "Armadilha lateral da dungeon",
+      scale: { x: 3.4, y: 0.22, z: 2.6 },
+      properties: { color: builder.palette.hazard, mode: "kill", collision: false, opacity: 0.45 },
+    });
+    builder.addLogic("Botao sala 2 mostra porta alvo", { type: "onButtonActivated", objectId: buttonA.id }, [{ type: "once" }], [
+      { type: "showMessage", message: "A chave desta sala abre a proxima porta." },
+    ]);
+    builder.addLogic("Botao sala 5 mostra porta alvo", { type: "onButtonActivated", objectId: buttonB.id }, [{ type: "once" }], [
+      { type: "showMessage", message: "Sem atalhos falsos: siga a sequencia das chaves." },
+    ]);
+  } else {
+    const button = createButton(builder, { x: rooms[1].x + 4, y: 0.62, z: rooms[1].z + 1.5 }, {
+      name: "Botao de dica do puzzle",
+      properties: {
+        color: "#f97316",
+        targetDoorId: getDoorId(doors[1]),
+        buttonTargetId: getDoorId(doors[1]),
+        oneTime: true,
+      },
+    });
+    builder.addLogic("Botao do puzzle mostra dica", { type: "onButtonActivated", objectId: button.id }, [{ type: "once" }], [
+      { type: "showMessage", message: "As chaves sempre ficam antes das portas." },
+    ]);
+  }
+
+  createSign(builder, { x: -5.5, y: 0.68, z: 7.2 }, "Pegue a chave da sala antes de avancar.");
+  createSign(builder, { x: 6.2, y: 0.68, z: rooms[Math.min(2, rooms.length - 1)].z }, "Nenhuma porta leva para parede.");
+  createSign(builder, { x: -5.8, y: 0.68, z: rooms.at(-1)?.z ?? -40 }, "A ultima sala contem o final.");
+  createMessageZone(builder, { x: 0, y: 1.2, z: 4 }, `${config.name}: sequencia limpa de chaves e portas.`, {
+    name: `Mensagem ${config.name}`,
+    scale: { x: 8, y: 1.4, z: 2 },
+  });
+
+  const lastRoom = rooms.at(-1) ?? rooms[0];
+  createCoinLine(
+    builder,
+    { x: lastRoom.x - 3, y: 0.85, z: lastRoom.z + 1.5 },
+    { x: lastRoom.x + 3, y: 0.85, z: lastRoom.z + 1.5 },
+    isDungeon ? 4 : 2,
+    `${config.name} moedas finais`
+  );
+  const final = createFinish(builder, { x: lastRoom.x, y: 0.85, z: lastRoom.z - 2.8 }, {
+    name: `Final - ${config.name}`,
+    properties: { message: `${config.name} concluido!`, requiresAllCoins: false },
+  });
+  addFinishRule(builder, final, `${config.name}: finaliza sequencia.`);
+
+  return builder.map;
+}
+
+function createCleanMegaCoinWorldMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const areas = [
+    { x: 0, y: 0.2, z: 6, name: "Hub de coleta" },
+    { x: -18, y: 0.2, z: -8, name: "Ilha azul" },
+    { x: 18, y: 0.2, z: -8, name: "Ilha verde" },
+    { x: -18, y: 0.2, z: -24, name: "Ilha da chave" },
+    { x: 18, y: 0.2, z: -24, name: "Ilha da porta" },
+    { x: 0, y: 0.2, z: -40, name: "Ilha final" },
+  ];
+
+  addSpawn(builder, { x: 0, y: 0.75, z: 7.4 });
+  areas.forEach((area, index) => {
+    createCleanPlatform(builder, area, area.name, index === 0 ? 18 : 15, index === 0 ? 12 : 10, {
+      color: index % 2 === 0 ? builder.palette.platform : builder.palette.secondary,
+    });
+  });
+
+  createCleanBridge(builder, areas[0], areas[1], "Ponte hub ilha azul", 4.2);
+  createCleanBridge(builder, areas[0], areas[2], "Ponte hub ilha verde", 4.2);
+  createCleanBridge(builder, areas[1], areas[3], "Ponte ilha azul chave", 4.2);
+  createCleanBridge(builder, areas[2], areas[4], "Ponte ilha verde porta", 4.2);
+  createCleanBridge(builder, areas[3], areas[5], "Ponte chave final", 4.2);
+  createCleanBridge(builder, areas[4], areas[5], "Ponte porta final", 4.2);
+
+  areas.forEach((area, index) => {
+    createCoinCluster(builder, { x: area.x, y: 0.85, z: area.z }, index === 0 ? 10 : 8, 3.3, `${area.name} moeda`);
+  });
+
+  createCheckpoint(builder, { x: 0, y: 0.75, z: 3.4 }, "Checkpoint hub de coleta");
+  createCheckpoint(builder, { x: -18, y: 0.75, z: -22.2 }, "Checkpoint ilha da chave");
+  createCheckpoint(builder, { x: 0, y: 0.75, z: -37.4 }, "Checkpoint ilha final");
+  const keyA = createKey(builder, { x: -21.8, y: 0.82, z: -24 }, {
+    name: "Chave azul da coleta",
+    properties: { color: "#3b82f6", keyId: "coin_world_blue_key", label: "Chave Azul" },
+  });
+  const keyB = createKey(builder, { x: 14.2, y: 0.82, z: -24 }, {
+    name: "Chave verde da coleta",
+    properties: { color: "#22c55e", keyId: "coin_world_green_key", label: "Chave Verde" },
+  });
+  const doorA = createCleanDoor(builder, { x: -9, y: 1.65, z: -32 }, "coin_world_blue_door", "Porta azul da coleta", "#3b82f6", "coin_world_blue_key");
+  const doorB = createCleanDoor(builder, { x: 9, y: 1.65, z: -32 }, "coin_world_green_door", "Porta verde da coleta", "#22c55e", "coin_world_green_key");
+  const teleporterA = createTeleporter(builder, { x: -4.5, y: 0.78, z: 6 }, {
+    name: "Teleporte hub",
+    properties: {
+      color: builder.palette.accent,
+      teleporterId: "coin_world_teleporter_a",
+      targetTeleporterId: "coin_world_teleporter_b",
+      cooldown: 1,
+    },
+  });
+  const teleporterB = createTeleporter(builder, { x: 0, y: 0.78, z: -40 }, {
+    name: "Teleporte final",
+    properties: {
+      color: builder.palette.accent,
+      teleporterId: "coin_world_teleporter_b",
+      targetTeleporterId: "coin_world_teleporter_a",
+      cooldown: 1,
+    },
+  });
+
+  createSign(builder, { x: -6.8, y: 0.68, z: 8 }, "Colete em ilhas: trilhas visiveis, sem bagunca.");
+  createSign(builder, { x: -23.4, y: 0.68, z: -24 }, "Chaves ficam em ilhas abertas.");
+  createSign(builder, { x: 11.6, y: 0.68, z: -32 }, "Portas protegem a rota final.");
+  createMessageZone(builder, { x: 0, y: 1.2, z: 3.4 }, "Mundo de coleta revisado com ilhas e objetivos claros.", {
+    name: "Mensagem mundo de coleta",
+    scale: { x: 8, y: 1.4, z: 2 },
+  });
+
+  builder.addLogic("Chave azul abre porta azul", { type: "onKeyCollected", keyId: getKeyObjectId(keyA) }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(doorA) },
+  ]);
+  builder.addLogic("Chave verde abre porta verde", { type: "onKeyCollected", keyId: getKeyObjectId(keyB) }, [{ type: "once" }], [
+    { type: "openDoor", doorId: getDoorId(doorB) },
+  ]);
+  builder.addLogic("Teleporte hub mostra dica", { type: "onPlayerEnterObject", objectId: teleporterA.id }, [{ type: "once" }], [
+    { type: "showMessage", message: "Teleporte rapido para a ilha final." },
+  ]);
+
+  const final = createFinish(builder, { x: 0, y: 0.85, z: -43 }, {
+    name: "Final do mundo de coleta",
+    properties: { message: "Coleta gigante concluida sem poluicao visual!", requiresAllCoins: false },
+  });
+  addFinishRule(builder, final, "Mundo de coleta: finaliza ao tocar no portal.");
+
+  return builder.map;
+}
+
+function createCleanPlatform(
+  builder: TemplateBuilder,
+  position: Vector3,
+  name: string,
+  width: number,
+  length: number,
+  options: { color?: string; height?: number; properties?: MapObjectProperties } = {}
+): MapObject {
+  const color = options.color ?? builder.palette.platform;
+  const properties: MapObjectProperties = {
+    color,
+    collision: true,
+    ...(options.properties ?? {}),
+  };
+
+  if (builder.palette.glow) {
+    properties.material = "glow";
+    properties.emissive = color;
+  }
+
+  return createPlatform(builder, position, {
+    name,
+    scale: { x: width, y: options.height ?? 0.4, z: length },
+    properties,
+  });
+}
+
+function createCleanBridge(
+  builder: TemplateBuilder,
+  from: Vector3,
+  to: Vector3,
+  name: string,
+  width = 3.6
+): MapObject {
+  const dx = to.x - from.x;
+  const dz = to.z - from.z;
+  const length = Math.max(1, Math.hypot(dx, dz));
+  const color = builder.palette.glow ? builder.palette.accent : builder.palette.secondary;
+  const properties: MapObjectProperties = {
+    color,
+    collision: true,
+  };
+
+  if (builder.palette.glow) {
+    properties.material = "glow";
+    properties.emissive = color;
+  }
+
+  return createPlatform(
+    builder,
+    {
+      x: (from.x + to.x) / 2,
+      y: (from.y + to.y) / 2 - 0.01,
+      z: (from.z + to.z) / 2,
+    },
+    {
+      name,
+      scale: { x: width, y: 0.34, z: length },
+      rotation: { x: 0, y: Math.atan2(dx, dz), z: 0 },
+      properties,
+    }
+  );
+}
+
+function createCleanDoor(
+  builder: TemplateBuilder,
+  position: Vector3,
+  doorId: string,
+  name: string,
+  color: string,
+  requiredKeyId?: string
+): MapObject {
+  return createDoor(builder, position, {
+    name,
+    properties: {
+      color,
+      doorId,
+      startsOpen: false,
+      doorState: "closed",
+      openOffset: { x: 0, y: 3.8, z: 0 },
+      ...(requiredKeyId ? { requiredKeyId } : {}),
+    },
+  });
+}
+
+function addFinishRule(builder: TemplateBuilder, final: MapObject, name: string): void {
+  builder.addLogic(name, { type: "onPlayerEnterObject", objectId: final.id }, [{ type: "once" }], [
+    { type: "finishMap" },
+  ]);
 }
 
 function createDesignedSandboxMap(config: TemplateConfig): GameMap {

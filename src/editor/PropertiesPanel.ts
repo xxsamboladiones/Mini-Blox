@@ -1,6 +1,7 @@
 import { createIcons, icons } from "lucide";
 import { WEAPON_SPAWNER_OPTIONS } from "../shared/ItemCatalog";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
+import { sanitizeScale, sanitizeVector } from "./EditorObjectUtils";
 
 type MapObjectPatch = Partial<MapObject>;
 
@@ -12,7 +13,9 @@ export class PropertiesPanel {
     private readonly onChange: (patch: MapObjectPatch) => void,
     private readonly onFocus: () => void,
     private readonly onDuplicate: () => void,
-    private readonly onDelete: () => void
+    private readonly onDelete: () => void,
+    private readonly onCommitBegin: () => void = () => {},
+    private readonly onCommitEnd: () => void = () => {}
   ) {}
 
   render(): void {
@@ -86,6 +89,7 @@ export class PropertiesPanel {
   }
 
   setObject(mapObject: MapObject | null): void {
+    this.finishPropertyCommit();
     this.selectedObject = mapObject;
     this.render();
   }
@@ -345,10 +349,12 @@ export class PropertiesPanel {
   }
 
   private renderNumberField(property: string, label: string, value: number, step: number): string {
+    const safeValue = Number.isFinite(value) ? value : 0;
+
     return `
       <label class="field">
         <span>${label}</span>
-        <input data-property="${property}" type="number" step="${step}" value="${value}" />
+        <input data-property="${property}" type="number" step="${step}" value="${safeValue}" />
       </label>
     `;
   }
@@ -419,6 +425,7 @@ export class PropertiesPanel {
   }
 
   private bindInputs(): void {
+    this.bindCommitLifecycle();
     this.root
       .querySelector<HTMLInputElement>('[data-field="name"]')
       ?.addEventListener("input", (event) => {
@@ -426,6 +433,9 @@ export class PropertiesPanel {
         this.selectedObject = this.selectedObject ? { ...this.selectedObject, name: value } : null;
         this.onChange({ name: value });
       });
+    this.root.querySelector<HTMLInputElement>('[data-field="name"]')?.addEventListener("change", () => {
+      this.finishPropertyCommit();
+    });
 
     this.root
       .querySelector<HTMLInputElement>('[data-field="color"]')
@@ -433,28 +443,57 @@ export class PropertiesPanel {
         const color = (event.currentTarget as HTMLInputElement).value;
         this.onChange({ properties: { color } });
       });
+    this.root.querySelector<HTMLInputElement>('[data-field="color"]')?.addEventListener("change", () => {
+      this.finishPropertyCommit();
+    });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-vector]").forEach((input) => {
       input.addEventListener("input", () => this.handleVectorInput(input));
+      input.addEventListener("change", () => {
+        this.handleVectorInput(input);
+        this.finishPropertyCommit();
+      });
     });
 
     this.root
       .querySelectorAll<HTMLInputElement | HTMLSelectElement>("[data-property]")
       .forEach((input) => {
-        input.addEventListener("input", () => this.handlePropertyInput(input));
-        input.addEventListener("change", () => this.handlePropertyInput(input));
+        if (isDiscreteInput(input)) {
+          input.addEventListener("change", () => {
+            this.handlePropertyInput(input);
+            this.finishPropertyCommit();
+          });
+        } else {
+          input.addEventListener("input", () => this.handlePropertyInput(input));
+          input.addEventListener("change", () => {
+            this.handlePropertyInput(input);
+            this.finishPropertyCommit();
+          });
+        }
       });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-property-vector]").forEach((input) => {
       input.addEventListener("input", () => this.handlePropertyVectorInput(input));
+      input.addEventListener("change", () => {
+        this.handlePropertyVectorInput(input);
+        this.finishPropertyCommit();
+      });
     });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-property-list]").forEach((input) => {
       input.addEventListener("input", () => this.handlePropertyListInput(input));
+      input.addEventListener("change", () => {
+        this.handlePropertyListInput(input);
+        this.finishPropertyCommit();
+      });
     });
 
     this.root.querySelectorAll<HTMLTextAreaElement>("[data-property-lines]").forEach((textarea) => {
       textarea.addEventListener("input", () => this.handlePropertyLinesInput(textarea));
+      textarea.addEventListener("change", () => {
+        this.handlePropertyLinesInput(textarea);
+        this.finishPropertyCommit();
+      });
     });
 
     this.root
@@ -466,6 +505,49 @@ export class PropertiesPanel {
     this.root
       .querySelector<HTMLButtonElement>("[data-focus]")
       ?.addEventListener("click", this.onFocus);
+  }
+
+  private commitActive = false;
+
+  private bindCommitLifecycle(): void {
+    const inputs = this.root.querySelectorAll<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >(
+      '[data-field="name"], [data-field="color"], [data-vector], [data-property], [data-property-vector], [data-property-list], [data-property-lines]'
+    );
+
+    inputs.forEach((input) => {
+      input.addEventListener("focus", () => this.beginPropertyCommit());
+      input.addEventListener("blur", () => this.finishPropertyCommit());
+      input.addEventListener("keydown", (event) => {
+        if (!(event instanceof KeyboardEvent)) {
+          return;
+        }
+
+        if (event.key === "Enter" && !(input instanceof HTMLTextAreaElement)) {
+          this.finishPropertyCommit();
+          input.blur();
+        }
+      });
+    });
+  }
+
+  private beginPropertyCommit(): void {
+    if (this.commitActive || !this.selectedObject) {
+      return;
+    }
+
+    this.commitActive = true;
+    this.onCommitBegin();
+  }
+
+  private finishPropertyCommit(): void {
+    if (!this.commitActive) {
+      return;
+    }
+
+    this.commitActive = false;
+    this.onCommitEnd();
   }
 
   private handleVectorInput(input: HTMLInputElement): void {
@@ -480,9 +562,20 @@ export class PropertiesPanel {
       vectorName === "rotation"
         ? radiansToDegreesVector(this.selectedObject.rotation ?? { x: 0, y: 0, z: 0 })
         : { ...(this.selectedObject[vectorName] ?? getDefaultVector(vectorName)) };
-    current[axis] = Number(input.value);
+    const nextValue = readNumericInput(input, current[axis]);
 
-    const next = vectorName === "rotation" ? degreesToRadiansVector(current) : current;
+    if (nextValue === null) {
+      return;
+    }
+
+    current[axis] = nextValue;
+
+    const next =
+      vectorName === "rotation"
+        ? degreesToRadiansVector(current)
+        : vectorName === "scale"
+          ? sanitizeScale(current)
+          : sanitizeVector(current, getDefaultVector(vectorName));
     this.selectedObject = { ...this.selectedObject, [vectorName]: next };
     this.onChange({ [vectorName]: next });
   }
@@ -494,12 +587,11 @@ export class PropertiesPanel {
       return;
     }
 
-    const value =
-      input instanceof HTMLInputElement && input.type === "number"
-        ? Number(input.value)
-        : input instanceof HTMLInputElement && input.type === "checkbox"
-          ? input.checked
-          : input.value;
+    const value = readPropertyInputValue(input, this.selectedObject?.properties?.[property]);
+
+    if (value === null) {
+      return;
+    }
 
     const properties: Record<string, unknown> = { [property]: value };
 
@@ -511,6 +603,15 @@ export class PropertiesPanel {
       properties.buttonTargetId = value;
     }
 
+    this.selectedObject = this.selectedObject
+      ? {
+          ...this.selectedObject,
+          properties: {
+            ...this.selectedObject.properties,
+            ...properties,
+          },
+        }
+      : null;
     this.onChange({ properties });
   }
 
@@ -527,15 +628,22 @@ export class PropertiesPanel {
       y: 0,
       z: 0,
     });
-    current[axis] = Number(input.value);
+    const nextValue = readNumericInput(input, current[axis]);
+
+    if (nextValue === null) {
+      return;
+    }
+
+    current[axis] = nextValue;
+    const next = sanitizeVector(current, { x: 0, y: 0, z: 0 });
     this.selectedObject = {
       ...this.selectedObject,
       properties: {
         ...this.selectedObject.properties,
-        [property]: current,
+        [property]: next,
       },
     };
-    this.onChange({ properties: { [property]: current } });
+    this.onChange({ properties: { [property]: next } });
   }
 
   private handlePropertyListInput(input: HTMLInputElement): void {
@@ -639,12 +747,46 @@ function getVectorProperty(value: unknown, fallback: Vector3): Vector3 {
     "z" in value &&
     typeof value.x === "number" &&
     typeof value.y === "number" &&
-    typeof value.z === "number"
+    typeof value.z === "number" &&
+    Number.isFinite(value.x) &&
+    Number.isFinite(value.y) &&
+    Number.isFinite(value.z)
   ) {
     return { x: value.x, y: value.y, z: value.z };
   }
 
   return { ...fallback };
+}
+
+function readNumericInput(input: HTMLInputElement, fallback: number): number | null {
+  if (input.value.trim() === "") {
+    return null;
+  }
+
+  const value = Number(input.value);
+  return Number.isFinite(value) ? value : Number.isFinite(fallback) ? fallback : null;
+}
+
+function readPropertyInputValue(
+  input: HTMLInputElement | HTMLSelectElement,
+  fallback: unknown
+): unknown | null {
+  if (input instanceof HTMLInputElement && input.type === "number") {
+    return readNumericInput(input, typeof fallback === "number" ? fallback : 0);
+  }
+
+  if (input instanceof HTMLInputElement && input.type === "checkbox") {
+    return input.checked;
+  }
+
+  return input.value;
+}
+
+function isDiscreteInput(input: HTMLInputElement | HTMLSelectElement): boolean {
+  return (
+    input instanceof HTMLSelectElement ||
+    (input instanceof HTMLInputElement && input.type === "checkbox")
+  );
 }
 
 function getStringArrayProperty(value: unknown, fallback: string[]): string[] {

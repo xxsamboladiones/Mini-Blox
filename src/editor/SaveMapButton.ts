@@ -13,6 +13,7 @@ type SaveMapButtonActions = {
 export class SaveMapButton {
   private testing = false;
   private isOnlinePublished = false;
+  private publishing = false;
 
   constructor(
     private readonly root: HTMLElement,
@@ -20,8 +21,14 @@ export class SaveMapButton {
   ) {}
 
   render(): void {
-    const publishLabel = this.isOnlinePublished ? "Atualizar Online" : "Publicar Online";
-    const publishIcon = this.isOnlinePublished ? "refresh-cw" : "send";
+    const publishLabel = this.publishing
+      ? this.isOnlinePublished
+        ? "Atualizando..."
+        : "Publicando..."
+      : this.isOnlinePublished
+        ? "Atualizar Online"
+        : "Publicar Online";
+    const publishIcon = this.publishing ? "loader-circle" : this.isOnlinePublished ? "refresh-cw" : "send";
 
     this.root.innerHTML = `
       <button class="top-action" type="button" data-action="test">
@@ -32,7 +39,7 @@ export class SaveMapButton {
         <i data-lucide="save"></i>
         <span>Salvar</span>
       </button>
-      <button class="top-action" type="button" data-action="publish">
+      <button class="top-action" type="button" data-action="publish" ${this.publishing ? "disabled" : ""}>
         <i data-lucide="${publishIcon}"></i>
         <span>${publishLabel}</span>
       </button>
@@ -79,6 +86,11 @@ export class SaveMapButton {
 
   setOnlinePublished(isOnlinePublished: boolean): void {
     this.isOnlinePublished = isOnlinePublished;
+    this.render();
+  }
+
+  setPublishing(publishing: boolean): void {
+    this.publishing = publishing;
     this.render();
   }
 

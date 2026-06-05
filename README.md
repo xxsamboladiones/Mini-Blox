@@ -1,4 +1,4 @@
-# MiniBlox Alpha 0.1.1
+# MiniBlox Alpha 0.1.5
 
 MiniBlox is a TypeScript sandbox map editor and lightweight 3D game runtime for the browser.
 
@@ -16,8 +16,43 @@ The current alpha focuses on a playable creator loop: build maps, test them in t
 - Remote avatars, shared world events, synchronized enemies and basic PvP
 - Chat/lobby social flow with room list and host migration
 - HUD with multiplayer state, chat, objectives, score, health and weapons
-- Templates for obby, combat, PvP and coop enemy arenas
+- Official templates for basic, platform, puzzle, collect, combat, PvP and coop examples
 - Basic logic/objective/game-mode panels
+
+## Alpha 0.1.5 Template Quality Pass
+
+- All 28 built-in templates were audited as official playable examples
+- Template tags now use a consistent lowercase taxonomy for basic, platform, puzzle, collect, combat, multiplayer, local, exploration, stress and showcase categories
+- Five curated showcase templates are marked for quick starts: sandbox, obby, coin collect, multiplayer PvP and multiplayer coop enemies
+- `MAP_TEMPLATES` now exposes template tags so UI/catalog surfaces can reason about the same metadata as generated maps
+- `node scripts/validate-templates.mjs` now checks catalog metadata, required tags, generated map tag parity, transform bounds, enemy/damage limits and multiplayer template requirements
+- No intentional gameplay, backend, multiplayer protocol or schema changes
+
+## Alpha 0.1.4 History UI e Commit Coverage
+
+- Discreet Undo/Redo buttons in the editor top bar using the same history controller as shortcuts
+- History state now updates button disabled states through controller change notifications
+- Metadata, visual environment, audio, logic, objectives and game-mode edits enter history
+- Continuous fields use a single commit at the end of the interaction instead of per-key/per-tick snapshots
+- No intentional gameplay, backend, multiplayer protocol, schema or template changes
+
+## Alpha 0.1.3 Undo/Redo e Transform Commit
+
+- Basic editor history for object add, duplicate, delete, transform and property edits
+- Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z support for undo/redo outside text fields
+- Transform commit event prevents one drag/move/rotate/scale gesture from creating many history entries
+- Properties commit on blur/Enter instead of creating history on every keystroke
+- No intentional gameplay, backend, multiplayer protocol, schema or template changes
+
+## Alpha 0.1.2 Editor Stability
+
+- Editor persistence moved into a small controller for local save, load, import and export
+- Test mode now starts from a normalized snapshot with local validation before runtime boot
+- Online publish/update validates the editor snapshot locally before calling the backend
+- Shared map normalization is used by editor snapshots and runtime loading
+- Object editing is safer against invalid numbers, non-positive scale and stale selection
+- Editor keyboard shortcuts are isolated in a disposable controller
+- No intentional gameplay, multiplayer protocol, backend or schema changes
 
 ## Alpha 0.1.1 Runtime Cleanup
 

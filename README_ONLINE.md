@@ -1,6 +1,22 @@
 # MiniBlox Online e Multiplayer MVP
 
-Este documento cobre o backend online, catalogo de mapas e multiplayer MVP do MiniBlox Alpha 0.1.1.
+Este documento cobre o backend online, catalogo de mapas e multiplayer MVP do MiniBlox Alpha 0.1.5.
+
+## Alpha 0.1.5
+
+Esta etapa fez um quality pass nos 28 templates oficiais: tags foram padronizadas, cinco templates showcase foram curados e `validate-templates` passou a validar metadata do catalogo, paridade de tags no mapa gerado, limites de posicao/escala, vida/dano de inimigos e requisitos de templates multiplayer. Nao houve mudanca intencional de gameplay, backend, protocolo multiplayer ou schema.
+
+## Alpha 0.1.4
+
+Esta etapa adicionou botoes discretos de Undo/Redo no editor e expandiu o historico para metadata, ambiente visual, audio, logica, objetivos e modo de jogo com commits unicos para campos continuos. Nao houve mudanca intencional de gameplay, backend, protocolo multiplayer ou schema.
+
+## Alpha 0.1.3
+
+Esta etapa adicionou undo/redo basico no editor com Ctrl+Z/Ctrl+Y, usando um evento de transform commit para evitar snapshots por frame durante move/rotate/scale. Propriedades entram no historico por commit controlado. Nao houve mudanca intencional de gameplay, backend, protocolo multiplayer ou schema.
+
+## Alpha 0.1.2
+
+Esta etapa focou estabilidade do editor: save/load/import/export foram isolados em controller, test mode e publish usam snapshot normalizado, e o publish valida erros locais obvios antes de chamar o backend. Nao houve mudanca intencional de gameplay, protocolo multiplayer, backend ou schema.
 
 ## Alpha 0.1.1
 

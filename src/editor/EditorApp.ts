@@ -7,18 +7,21 @@ import { LogicPanel } from "./LogicPanel";
 import { ObjectivesPanel } from "./ObjectivesPanel";
 import { GameModePanel } from "./GameModePanel";
 import { SaveMapButton } from "./SaveMapButton";
-import { EditorScene } from "./EditorScene";
+import {
+  EditorScene,
+  type EditorSceneChangeReason,
+  type EditorSceneCommitEvent,
+} from "./EditorScene";
 import { ToolManager, type EditorTool } from "./ToolManager";
-import { GameRuntime } from "../engine/GameRuntime";
 import { AMBIENT_MUSIC_LABELS, resolveAudioSettings } from "../shared/AudioSettings";
 import { createMapFromTemplate } from "../shared/MapTemplates";
+import { normalizeGameMap } from "../shared/normalizeGameMap";
 import {
   getThemeVisualSettings,
   MAP_THEME_LABELS,
   resolveVisualSettings,
 } from "../shared/VisualSettings";
 import {
-  assertGameMap,
   type AmbientMusic,
   type AudioSettings,
   type GameMap,
@@ -26,8 +29,11 @@ import {
   type VisualTheme,
 } from "../shared/types/MapSchema";
 import type { BuiltInObjectType } from "../shared/types/ObjectSchema";
-import { MapStorage } from "../storage/MapStorage";
 import { EditorOnlinePublishController } from "./EditorOnlinePublishController";
+import { EditorHistoryController } from "./EditorHistoryController";
+import { EditorPersistenceController } from "./EditorPersistenceController";
+import { EditorShortcutController } from "./EditorShortcutController";
+import { EditorTestModeController } from "./EditorTestModeController";
 
 type EditorAppOptions = {
   initialMap?: GameMap;
@@ -46,9 +52,29 @@ export class EditorApp {
   private objectOutliner: ObjectOutliner | null = null;
   private saveButtons: SaveMapButton | null = null;
   private readonly onlinePublishController = new EditorOnlinePublishController();
-  private testRuntime: GameRuntime | null = null;
+  private readonly persistenceController = new EditorPersistenceController({
+    getSnapshot: () => this.getCurrentSnapshot(),
+    loadMap: (map) => this.loadEditorMap(map),
+    getCurrentMapId: () => this.currentMap.id,
+    showToast: (message) => this.showToast(message),
+  });
+  private readonly historyController = new EditorHistoryController({
+    getSnapshot: () => this.getCurrentSnapshot(),
+    applySnapshot: (map, selectedObjectId) => this.applyHistorySnapshot(map, selectedObjectId),
+    getSelectedObjectId: () => this.editorScene?.getSelectedId() ?? null,
+    normalizeSnapshot: normalizeGameMap,
+    canRecord: () => !this.testing,
+    maxEntries: 50,
+  });
+  private testModeController: EditorTestModeController | null = null;
+  private shortcutController: EditorShortcutController | null = null;
+  private historyUnsubscribe: (() => void) | null = null;
   private currentMap: GameMap = createDefaultMap();
   private testing = false;
+  private publishing = false;
+  private pendingHistoryCommitReason: EditorSceneChangeReason | null = null;
+  private pendingHistoryCommitObjectId: string | undefined;
+  private pendingHistoryCommitTimer = 0;
 
   constructor(
     private readonly root: HTMLElement,
@@ -56,17 +82,22 @@ export class EditorApp {
   ) {}
 
   start(): void {
-    this.currentMap = structuredClone(
-      this.options.initialMap ?? MapStorage.getLastMap() ?? createDefaultMap()
+    this.currentMap = normalizeGameMap(
+      this.options.initialMap ?? this.persistenceController.loadLocal() ?? createDefaultMap()
     );
+    this.historyController.clear();
     this.renderShell();
     void this.initialize();
   }
 
   destroy(): void {
-    window.removeEventListener("keydown", this.handleKeyboardShortcut);
-    this.testRuntime?.dispose();
-    this.testRuntime = null;
+    this.shortcutController?.dispose();
+    this.shortcutController = null;
+    this.historyUnsubscribe?.();
+    this.historyUnsubscribe = null;
+    this.testModeController?.dispose();
+    this.testModeController = null;
+    this.cancelActiveHistoryCommit();
     this.editorScene?.dispose();
     this.editorScene = null;
     this.root.replaceChildren();
@@ -90,7 +121,19 @@ export class EditorApp {
       },
       onMapChange: (map) => this.handleMapChange(map),
       onModeChange: (mode) => this.handleModeChange(mode),
+      onSceneCommit: (event) => this.handleSceneCommit(event),
       onToast: (message) => this.showToast(message),
+    });
+
+    this.testModeController = new EditorTestModeController({
+      getSnapshot: () => this.getCurrentSnapshot(),
+      mountElement: viewport,
+      enterEditorTestMode: () => this.editorScene?.enterTestMode(),
+      exitEditorTestMode: () => this.editorScene?.exitTestMode(),
+      onStarted: (map) => {
+        this.currentMap = map;
+      },
+      showToast: (message) => this.showToast(message),
     });
 
     const objectPanel = new ObjectPanel(objectPanelRoot, (type) => this.addObject(type));
@@ -110,29 +153,47 @@ export class EditorApp {
     });
 
     this.logicPanel = new LogicPanel(logicPanelRoot, {
-      onChange: (logic) => this.editorScene?.updateLogic(logic),
-      onDebugChange: (logicDebug) => this.editorScene?.updateMapInfo({ logicDebug }),
+      onChange: (logic) =>
+        this.commitImmediateHistoryChange("logic-commit", () => this.editorScene?.updateLogic(logic)),
+      onDebugChange: (logicDebug) =>
+        this.commitImmediateHistoryChange("logic-commit", () =>
+          this.editorScene?.updateMapInfo({ logicDebug })
+        ),
     });
     this.logicPanel.setMap(this.currentMap);
 
     this.objectivesPanel = new ObjectivesPanel(objectivesPanelRoot, {
-      onChange: (objectives) => this.editorScene?.updateMapInfo({ objectives }),
-      onGameplayChange: (gameplaySettings) => this.editorScene?.updateMapInfo({ gameplaySettings }),
+      onChange: (objectives) =>
+        this.commitImmediateHistoryChange("objective-commit", () =>
+          this.editorScene?.updateMapInfo({ objectives })
+        ),
+      onGameplayChange: (gameplaySettings) =>
+        this.commitImmediateHistoryChange("objective-commit", () =>
+          this.editorScene?.updateMapInfo({ gameplaySettings })
+        ),
     });
     this.objectivesPanel.setMap(this.currentMap);
 
     this.gameModePanel = new GameModePanel(gameModePanelRoot, {
-      onGameModeChange: (gameModeSettings) => this.editorScene?.updateMapInfo({ gameModeSettings }),
-      onTeamsChange: (teams) => this.editorScene?.updateMapInfo({ teams }),
+      onGameModeChange: (gameModeSettings) =>
+        this.commitImmediateHistoryChange("game-mode-commit", () =>
+          this.editorScene?.updateMapInfo({ gameModeSettings })
+        ),
+      onTeamsChange: (teams) =>
+        this.commitImmediateHistoryChange("game-mode-commit", () =>
+          this.editorScene?.updateMapInfo({ teams })
+        ),
     });
     this.gameModePanel.setMap(this.currentMap);
 
     this.propertiesPanel = new PropertiesPanel(
       propertiesPanelRoot,
-      (patch) => this.editorScene?.updateSelectedObject(patch),
+      (patch) => this.updateSelectedObjectFromProperties(patch),
       () => this.focusSelectedObject(),
       () => void this.duplicateSelectedObject(),
-      () => this.deleteSelectedObject()
+      () => this.deleteSelectedObject(),
+      () => this.beginPropertyCommit(),
+      () => this.commitPropertyCommit()
     );
     this.propertiesPanel.render();
 
@@ -147,13 +208,30 @@ export class EditorApp {
     this.saveButtons.setMap(this.currentMap);
     this.saveButtons.render();
 
+    this.historyUnsubscribe?.();
+    this.historyUnsubscribe = this.historyController.subscribe(() => this.updateHistoryControls());
+    this.bindHistoryControls();
     this.bindToolbar();
     this.bindSnapControls();
     this.bindMapInputs();
     this.bindEnvironmentInputs();
     this.bindAudioInputs();
     this.bindImportInput();
-    window.addEventListener("keydown", this.handleKeyboardShortcut);
+    this.shortcutController = new EditorShortcutController({
+      isEnabled: () => !this.testing,
+      onSave: () => this.saveMap(),
+      onUndo: () => void this.undo(),
+      onRedo: () => void this.redo(),
+      onImport: () => this.openImportDialog(),
+      onDuplicate: () => void this.duplicateSelectedObject(),
+      onCopy: () => this.copySelectedObject(),
+      onPaste: () => void this.pasteCopiedObject(),
+      onDelete: () => this.deleteSelectedObject(),
+      onDeselect: () => this.editorScene?.deselectObject(),
+      onToolChange: (tool) => this.toolManager.setTool(tool),
+      onFocusSelected: () => this.focusSelectedObject(),
+      onFocusMap: () => this.focusMap(),
+    });
     this.updateStats(this.currentMap);
     await this.editorScene.start();
     this.refreshOutliner();
@@ -183,6 +261,15 @@ export class EditorApp {
             ${this.renderToolButton("translate", "move-3d", "Mover")}
             ${this.renderToolButton("rotate", "rotate-3d", "Girar")}
             ${this.renderToolButton("scale", "scaling", "Escalar")}
+          </div>
+
+          <div id="history-actions" class="history-actions" role="toolbar" aria-label="Historico">
+            <button class="tool-button history-button" type="button" data-history-action="undo" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>
+              <i data-lucide="undo-2"></i>
+            </button>
+            <button class="tool-button history-button" type="button" data-history-action="redo" title="Refazer (Ctrl+Y)" aria-label="Refazer" disabled>
+              <i data-lucide="redo-2"></i>
+            </button>
           </div>
 
           <div class="editor-options">
@@ -396,6 +483,16 @@ export class EditorApp {
     `;
   }
 
+  private bindHistoryControls(): void {
+    this.root
+      .querySelector<HTMLButtonElement>('[data-history-action="undo"]')
+      ?.addEventListener("click", () => void this.undo());
+    this.root
+      .querySelector<HTMLButtonElement>('[data-history-action="redo"]')
+      ?.addEventListener("click", () => void this.redo());
+    this.updateHistoryControls();
+  }
+
   private bindToolbar(): void {
     const buttons = [...this.root.querySelectorAll<HTMLButtonElement>("[data-tool]")];
 
@@ -443,7 +540,7 @@ export class EditorApp {
       this.updatePublishStatus(this.currentMap);
     };
 
-    inputs.forEach((input) => input.addEventListener("input", apply));
+    this.bindContinuousHistoryInputs(inputs, "metadata-commit", apply);
     this.root
       .querySelector<HTMLButtonElement>("[data-capture-thumbnail]")
       ?.addEventListener("click", () => this.captureThumbnail());
@@ -451,10 +548,10 @@ export class EditorApp {
 
   private bindEnvironmentInputs(): void {
     const themeInput = this.root.querySelector<HTMLSelectElement>("#map-theme-input");
-    const inputs = [
+    const fogEnabledInput = this.root.querySelector<HTMLInputElement>("#fog-enabled-input");
+    const continuousInputs = [
       this.root.querySelector<HTMLInputElement>("#sky-color-input"),
       this.root.querySelector<HTMLInputElement>("#ground-color-input"),
-      this.root.querySelector<HTMLInputElement>("#fog-enabled-input"),
       this.root.querySelector<HTMLInputElement>("#fog-color-input"),
       this.root.querySelector<HTMLInputElement>("#fog-near-input"),
       this.root.querySelector<HTMLInputElement>("#fog-far-input"),
@@ -462,7 +559,11 @@ export class EditorApp {
       this.root.querySelector<HTMLInputElement>("#sun-light-input"),
     ].filter((input): input is HTMLInputElement => Boolean(input));
 
-    themeInput?.addEventListener("change", () => {
+    this.bindDiscreteHistoryInput(themeInput, "environment-commit", () => {
+      if (!themeInput) {
+        return;
+      }
+
       const theme = getVisualTheme(themeInput.value);
       const settings = getThemeVisualSettings(theme);
       this.currentMap.visualSettings = settings;
@@ -476,20 +577,18 @@ export class EditorApp {
       this.editorScene?.updateMapInfo({ visualSettings: settings });
     };
 
-    inputs.forEach((input) => {
-      input.addEventListener("input", apply);
-      input.addEventListener("change", apply);
-    });
+    this.bindDiscreteHistoryInput(fogEnabledInput, "environment-commit", apply);
+    this.bindContinuousHistoryInputs(continuousInputs, "environment-commit", apply);
   }
 
   private bindAudioInputs(): void {
-    const inputs = [
+    const rangeInputs = [
       this.root.querySelector<HTMLInputElement>("#master-volume-input"),
       this.root.querySelector<HTMLInputElement>("#sfx-volume-input"),
       this.root.querySelector<HTMLInputElement>("#music-volume-input"),
-      this.root.querySelector<HTMLSelectElement>("#ambient-music-input"),
-      this.root.querySelector<HTMLInputElement>("#audio-muted-input"),
-    ].filter((input): input is HTMLInputElement | HTMLSelectElement => Boolean(input));
+    ].filter((input): input is HTMLInputElement => Boolean(input));
+    const musicInput = this.root.querySelector<HTMLSelectElement>("#ambient-music-input");
+    const mutedInput = this.root.querySelector<HTMLInputElement>("#audio-muted-input");
 
     const apply = (): void => {
       const settings = this.readAudioInputs();
@@ -498,10 +597,9 @@ export class EditorApp {
       this.editorScene?.updateMapInfo({ audioSettings: settings });
     };
 
-    inputs.forEach((input) => {
-      input.addEventListener("input", apply);
-      input.addEventListener("change", apply);
-    });
+    this.bindContinuousHistoryInputs(rangeInputs, "audio-commit", apply, { commitOnEnter: false });
+    this.bindDiscreteHistoryInput(musicInput, "audio-commit", apply);
+    this.bindDiscreteHistoryInput(mutedInput, "audio-commit", apply);
     this.updateAudioOutputLabels(this.currentMap.audioSettings);
   }
 
@@ -516,6 +614,67 @@ export class EditorApp {
 
       input.value = "";
     });
+  }
+
+  private bindContinuousHistoryInputs(
+    inputs: Array<HTMLInputElement | HTMLTextAreaElement>,
+    reason: EditorSceneChangeReason,
+    apply: () => void,
+    options: { commitOnEnter?: boolean } = {}
+  ): void {
+    inputs.forEach((input) => {
+      const begin = (): void => this.beginHistoryCommit(reason);
+      const commit = (): void => this.commitActiveHistoryCommit(reason);
+
+      input.addEventListener("focus", begin);
+      input.addEventListener("pointerdown", begin);
+      input.addEventListener("input", () => {
+        begin();
+        apply();
+      });
+      input.addEventListener("change", () => {
+        begin();
+        apply();
+        commit();
+      });
+      input.addEventListener("blur", commit);
+      input.addEventListener("keydown", (event) => {
+        const keyboardEvent = event as KeyboardEvent;
+
+        if (
+          options.commitOnEnter !== false &&
+          keyboardEvent.key === "Enter" &&
+          !(input instanceof HTMLTextAreaElement)
+        ) {
+          commit();
+          input.blur();
+        }
+      });
+    });
+  }
+
+  private bindDiscreteHistoryInput(
+    input: HTMLInputElement | HTMLSelectElement | null,
+    reason: EditorSceneChangeReason,
+    apply: () => void
+  ): void {
+    input?.addEventListener("focus", () => this.beginHistoryCommit(reason));
+    input?.addEventListener("pointerdown", () => this.beginHistoryCommit(reason));
+    input?.addEventListener("change", () => {
+      this.beginHistoryCommit(reason);
+      apply();
+      this.commitActiveHistoryCommit(reason);
+    });
+  }
+
+  private commitImmediateHistoryChange(
+    reason: EditorSceneChangeReason,
+    apply: () => void,
+    objectId?: string
+  ): void {
+    this.beginHistoryCommit(reason, objectId);
+    apply();
+    this.commitActiveHistoryCommit(reason);
   }
 
   private async addObject(type: BuiltInObjectType): Promise<void> {
@@ -533,15 +692,8 @@ export class EditorApp {
   }
 
   private toggleTestMode(): void {
-    if (!this.editorScene) {
-      return;
-    }
-
-    if (this.testing) {
-      this.stopRuntimeTest();
-    } else {
-      void this.startRuntimeTest();
-    }
+    this.commitActiveHistoryCommit();
+    void this.testModeController?.toggle();
   }
 
   private captureThumbnail(): void {
@@ -556,40 +708,58 @@ export class EditorApp {
       return;
     }
 
+    this.beginHistoryCommit("metadata-commit");
     const map = this.getCurrentSnapshot();
     map.thumbnail = thumbnail;
     this.currentMap = map;
     this.editorScene?.updateMapInfo({ thumbnail });
-    MapStorage.saveMap(map);
+    this.persistenceController.saveLocal({ map, silent: true, validate: false });
     this.updateThumbnailPreview(thumbnail);
+    this.commitActiveHistoryCommit("metadata-commit");
     this.showToast("Thumbnail capturada.");
   }
 
   private exportMap(): void {
-    const map = this.getCurrentSnapshot();
-    downloadJson(map, `mini-blox-${slugify(map.name)}.json`);
-    this.showToast("Mapa exportado.");
+    this.commitActiveHistoryCommit();
+    try {
+      this.currentMap = this.persistenceController.exportJson();
+    } catch (error) {
+      this.showToast(error instanceof Error ? error.message : "Nao foi possivel exportar o mapa.");
+    }
   }
 
   private saveMap(): void {
-    const map = this.getCurrentSnapshot();
-    MapStorage.saveMap(map);
-    this.currentMap = map;
-    this.showToast("Mapa salvo com sucesso.");
+    this.commitActiveHistoryCommit();
+    try {
+      this.currentMap = this.persistenceController.saveLocal();
+    } catch (error) {
+      this.showToast(error instanceof Error ? error.message : "Nao foi possivel salvar o mapa.");
+    }
   }
 
   private async publishMap(): Promise<void> {
+    if (this.publishing) {
+      return;
+    }
+
+    this.commitActiveHistoryCommit();
     const map = this.getCurrentSnapshot();
     const isUpdate = Boolean(map.onlineMetadata?.onlineId);
     this.showToast(isUpdate ? "Atualizando mapa online..." : "Publicando mapa online...");
+    this.publishing = true;
+    this.saveButtons?.setPublishing(true);
 
     try {
       const result = await this.onlinePublishController.publish(map);
-      Object.assign(map, result.patch);
+      const publishedMap = { ...result.map, ...result.patch };
+      Object.assign(map, publishedMap);
       this.editorScene?.updateMapInfo(result.patch);
-      MapStorage.saveMap(map);
-      this.currentMap = map;
-      this.updatePublishStatus(map);
+      this.currentMap = this.persistenceController.saveLocal({
+        map: publishedMap,
+        silent: true,
+        validate: false,
+      });
+      this.updatePublishStatus(this.currentMap);
       this.showToast(result.successMessage);
     } catch (error) {
       this.showToast(
@@ -598,6 +768,10 @@ export class EditorApp {
           isUpdate ? "Erro ao atualizar mapa online." : "Erro ao publicar mapa online."
         )
       );
+    } finally {
+      this.publishing = false;
+      this.saveButtons?.setPublishing(false);
+      this.saveButtons?.setMap(this.currentMap);
     }
   }
 
@@ -606,8 +780,8 @@ export class EditorApp {
       this.stopRuntimeTest();
     }
 
-    const map = this.getCurrentSnapshot();
-    MapStorage.saveMap(map);
+    this.commitActiveHistoryCommit();
+    const map = this.persistenceController.saveLocal({ silent: true });
     this.options.onBackToMenu?.(map);
   }
 
@@ -829,8 +1003,11 @@ export class EditorApp {
   private handleMapChange(map: GameMap): void {
     const nextMap = structuredClone(map);
     this.applyMetadataToMap(nextMap);
-    this.currentMap = nextMap;
-    MapStorage.saveMap(nextMap);
+    this.currentMap = this.persistenceController.saveLocal({
+      map: nextMap,
+      silent: true,
+      validate: false,
+    });
     this.assetPanel?.setAssets(nextMap.assets ?? []);
     this.gameModePanel?.setMap(nextMap);
     this.objectivesPanel?.setMap(nextMap);
@@ -841,14 +1018,40 @@ export class EditorApp {
     this.saveButtons?.setMap(nextMap);
   }
 
+  private handleSceneCommit(event: EditorSceneCommitEvent): void {
+    this.historyController.push(event.reason, event.before, event.after, {
+      objectId: event.objectId,
+      selectedObjectIdBefore: event.selectedObjectIdBefore,
+      selectedObjectIdAfter: event.selectedObjectIdAfter,
+    });
+  }
+
   private handleModeChange(mode: "edit" | "test"): void {
     this.testing = mode === "test";
     this.saveButtons?.setTesting(this.testing);
+    this.updateHistoryControls();
     const badge = this.root.querySelector<HTMLElement>("#mode-badge");
 
     if (badge) {
       badge.textContent = this.testing ? "Teste" : "Editando";
       badge.classList.toggle("testing", this.testing);
+    }
+  }
+
+  private updateHistoryControls(): void {
+    const undoButton = this.root.querySelector<HTMLButtonElement>('[data-history-action="undo"]');
+    const redoButton = this.root.querySelector<HTMLButtonElement>('[data-history-action="redo"]');
+    const undoDisabled = this.testing || !this.historyController.canUndo();
+    const redoDisabled = this.testing || !this.historyController.canRedo();
+
+    if (undoButton) {
+      undoButton.disabled = undoDisabled;
+      undoButton.setAttribute("aria-disabled", String(undoDisabled));
+    }
+
+    if (redoButton) {
+      redoButton.disabled = redoDisabled;
+      redoButton.setAttribute("aria-disabled", String(redoDisabled));
     }
   }
 
@@ -923,6 +1126,133 @@ export class EditorApp {
     this.objectOutliner?.setHiddenIds(this.editorScene?.getHiddenObjectIds() ?? []);
   }
 
+  private async loadEditorMap(map: GameMap, selectedObjectId: string | null = null): Promise<void> {
+    const normalizedMap = normalizeGameMap(map);
+    this.currentMap = normalizedMap;
+    await this.editorScene?.loadMap(normalizedMap, { emitChange: false });
+    this.syncMetadataInputs(normalizedMap);
+    this.propertiesPanel?.setObject(null);
+    this.assetPanel?.setAssets(normalizedMap.assets ?? []);
+    this.gameModePanel?.setMap(normalizedMap);
+    this.objectivesPanel?.setMap(normalizedMap);
+    this.logicPanel?.setMap(normalizedMap);
+    if (selectedObjectId && normalizedMap.objects.some((object) => object.id === selectedObjectId)) {
+      this.editorScene?.selectObjectById(selectedObjectId);
+    }
+    this.refreshOutliner(normalizedMap);
+    this.updateStats(normalizedMap);
+    this.saveButtons?.setMap(normalizedMap);
+  }
+
+  private async applyHistorySnapshot(
+    map: GameMap,
+    selectedObjectId: string | null = null
+  ): Promise<void> {
+    await this.loadEditorMap(map, selectedObjectId);
+    this.currentMap = this.persistenceController.saveLocal({
+      map: this.currentMap,
+      silent: true,
+      validate: false,
+    });
+  }
+
+  private beginHistoryCommit(reason: EditorSceneChangeReason, objectId?: string): void {
+    if (this.testing) {
+      return;
+    }
+
+    if (this.pendingHistoryCommitReason === reason) {
+      return;
+    }
+
+    this.commitActiveHistoryCommit();
+    this.pendingHistoryCommitReason = reason;
+    this.pendingHistoryCommitObjectId = objectId;
+    this.historyController.begin(reason, objectId);
+  }
+
+  private commitActiveHistoryCommit(reason = this.pendingHistoryCommitReason): void {
+    if (!this.pendingHistoryCommitReason) {
+      return;
+    }
+
+    if (reason && reason !== this.pendingHistoryCommitReason) {
+      return;
+    }
+
+    window.clearTimeout(this.pendingHistoryCommitTimer);
+    const commitReason = this.pendingHistoryCommitReason;
+    const objectId = this.pendingHistoryCommitObjectId;
+    this.pendingHistoryCommitReason = null;
+    this.pendingHistoryCommitObjectId = undefined;
+    this.historyController.commit(commitReason, objectId);
+  }
+
+  private cancelActiveHistoryCommit(): void {
+    window.clearTimeout(this.pendingHistoryCommitTimer);
+    this.pendingHistoryCommitReason = null;
+    this.pendingHistoryCommitObjectId = undefined;
+    this.historyController.cancel();
+  }
+
+  private scheduleActiveHistoryCommit(reason: EditorSceneChangeReason, delay = 700): void {
+    window.clearTimeout(this.pendingHistoryCommitTimer);
+    this.pendingHistoryCommitTimer = window.setTimeout(
+      () => this.commitActiveHistoryCommit(reason),
+      delay
+    );
+  }
+
+  private beginPropertyCommit(): void {
+    this.beginHistoryCommit(
+      "object-properties-commit",
+      this.editorScene?.getSelectedId() ?? undefined
+    );
+  }
+
+  private commitPropertyCommit(): void {
+    this.commitActiveHistoryCommit("object-properties-commit");
+  }
+
+  private updateSelectedObjectFromProperties(patch: Partial<GameMap["objects"][number]>): void {
+    if (!this.testing) {
+      this.beginPropertyCommit();
+    }
+
+    this.editorScene?.updateSelectedObject(patch);
+    this.scheduleActiveHistoryCommit("object-properties-commit");
+  }
+
+  private async undo(): Promise<void> {
+    if (this.testing) {
+      return;
+    }
+
+    this.commitActiveHistoryCommit();
+
+    try {
+      const restored = await this.historyController.undo();
+      this.showToast(restored ? "Desfeito." : "Nada para desfazer.");
+    } catch {
+      this.showToast("Nao foi possivel desfazer.");
+    }
+  }
+
+  private async redo(): Promise<void> {
+    if (this.testing) {
+      return;
+    }
+
+    this.commitActiveHistoryCommit();
+
+    try {
+      const restored = await this.historyController.redo();
+      this.showToast(restored ? "Refeito." : "Nada para refazer.");
+    } catch {
+      this.showToast("Nao foi possivel refazer.");
+    }
+  }
+
   private openImportDialog(): void {
     this.root.querySelector<HTMLInputElement>("#map-import-input")?.click();
   }
@@ -933,100 +1263,19 @@ export class EditorApp {
         this.stopRuntimeTest();
       }
 
-      const parsed: unknown = JSON.parse(await file.text());
-      assertGameMap(parsed);
-      const importedMap = prepareImportedMap(parsed, this.currentMap.id);
-      if (!importedMap) {
-        this.showToast("Importacao cancelada.");
-        return;
-      }
-      this.currentMap = importedMap;
-      await this.editorScene?.loadMap(importedMap, { emitChange: false });
-
-      MapStorage.saveMap(importedMap);
-      this.syncMetadataInputs(importedMap);
-      this.propertiesPanel?.setObject(null);
-      this.assetPanel?.setAssets(importedMap.assets ?? []);
-      this.gameModePanel?.setMap(importedMap);
-      this.objectivesPanel?.setMap(importedMap);
-      this.logicPanel?.setMap(importedMap);
-      this.refreshOutliner(importedMap);
-      this.updateStats(importedMap);
-      this.showToast("Mapa carregado.");
-    } catch {
-      this.showToast("JSON invalido. O arquivo precisa ser um GameMap.");
+      this.cancelActiveHistoryCommit();
+      this.historyController.begin("map-imported");
+      this.currentMap = await this.persistenceController.importJsonFile(file);
+      this.historyController.commit("map-imported");
+    } catch (error) {
+      this.historyController.cancel();
+      this.showToast(error instanceof Error ? error.message : "JSON invalido.");
     }
-  }
-
-  private async startRuntimeTest(): Promise<void> {
-    if (!this.editorScene || this.testing) {
-      return;
-    }
-
-    this.currentMap = this.getCurrentSnapshot();
-    this.editorScene.enterTestMode();
-    const viewport = this.getElement("scene-root");
-    const runtime = new GameRuntime(viewport, {
-      onBackToMenu: () => this.stopRuntimeTest(),
-      onEditMap: () => this.stopRuntimeTest(),
-    });
-    this.testRuntime = runtime;
-    await runtime.loadMap(this.currentMap);
-    this.showToast("Teste iniciado.");
   }
 
   private stopRuntimeTest(): void {
-    this.testRuntime?.dispose();
-    this.testRuntime = null;
-    this.editorScene?.exitTestMode();
-    this.showToast("Modo edicao.");
+    this.testModeController?.stop();
   }
-
-  private readonly handleKeyboardShortcut = (event: KeyboardEvent): void => {
-    if (this.testing || isEditableTarget(event.target)) {
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-
-    if (event.ctrlKey || event.metaKey) {
-      if (key === "d") {
-        event.preventDefault();
-        void this.duplicateSelectedObject();
-      } else if (key === "c") {
-        event.preventDefault();
-        this.copySelectedObject();
-      } else if (key === "v") {
-        event.preventDefault();
-        void this.pasteCopiedObject();
-      }
-
-      return;
-    }
-
-    if (key === "delete" || key === "backspace") {
-      event.preventDefault();
-      this.deleteSelectedObject();
-    } else if (key === "escape") {
-      event.preventDefault();
-      this.editorScene?.deselectObject();
-    } else if (key === "w") {
-      event.preventDefault();
-      this.toolManager.setTool("translate");
-    } else if (key === "e") {
-      event.preventDefault();
-      this.toolManager.setTool("rotate");
-    } else if (key === "r") {
-      event.preventDefault();
-      this.toolManager.setTool("scale");
-    } else if (key === "f") {
-      event.preventDefault();
-      this.focusSelectedObject();
-    } else if (key === "home") {
-      event.preventDefault();
-      this.focusMap();
-    }
-  };
 
   private getElement(id: string): HTMLElement {
     const element = this.root.querySelector<HTMLElement>(`#${id}`);
@@ -1040,61 +1289,7 @@ export class EditorApp {
 }
 
 export function createDefaultMap(): GameMap {
-  return createMapFromTemplate("obby");
-}
-
-function downloadJson(map: GameMap, fileName: string): void {
-  const blob = new Blob([JSON.stringify(map, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
-function slugify(value: string): string {
-  return (
-    value
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "mapa"
-  );
-}
-
-function prepareImportedMap(map: GameMap, currentMapId: string): GameMap | null {
-  const importedMap = structuredClone(map);
-
-  if (!MapStorage.hasMap(importedMap.id) || importedMap.id === currentMapId) {
-    return importedMap;
-  }
-
-  const choice = window.prompt(
-    `Ja existe um mapa com o ID "${importedMap.id}". Digite "substituir", "copia" ou "cancelar".`,
-    "copia"
-  );
-
-  if (!choice || choice.toLowerCase().trim() === "cancelar") {
-    return null;
-  }
-
-  if (choice.toLowerCase().trim() === "substituir") {
-    return importedMap;
-  }
-
-  const now = new Date().toISOString();
-  return {
-    ...importedMap,
-    id: createId("map"),
-    name: `${importedMap.name} (importado)`,
-    isPublished: false,
-    publishedAt: undefined,
-    createdAt: now,
-    updatedAt: now,
-  };
+  return normalizeGameMap(createMapFromTemplate("obby"));
 }
 
 function getVisualTheme(value: string): VisualTheme {
@@ -1163,14 +1358,6 @@ function parseTags(value: string): string[] {
   ];
 }
 
-function createId(prefix: string): string {
-  if (globalThis.crypto?.randomUUID) {
-    return `${prefix}-${globalThis.crypto.randomUUID()}`;
-  }
-
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -1185,12 +1372,4 @@ function escapeAttribute(value: string): string {
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
 }
