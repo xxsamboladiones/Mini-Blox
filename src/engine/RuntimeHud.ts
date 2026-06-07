@@ -55,6 +55,12 @@ export type RuntimeWeaponHudInfo = {
   cooldownProgress: number;
 };
 
+export type RuntimeSessionHudStatus = {
+  label: string;
+  detail?: string;
+  controls?: string[];
+};
+
 export type GameModeSummary = {
   mode: string;
   teamName?: string;
@@ -70,6 +76,7 @@ export type GameModeSummary = {
   deaths: number;
   objectivesCompleted: number;
   capturePointsOwned: number;
+  elapsedTimeSeconds?: number;
 };
 
 export type MultiplayerHudPlayer = {
@@ -95,6 +102,7 @@ export class RuntimeHud {
   private readonly mapLabel = document.createElement("div");
   private readonly healthPanel = document.createElement("div");
   private readonly weaponPanel = document.createElement("div");
+  private readonly sessionPanel = document.createElement("div");
   private readonly gameModePanel = document.createElement("div");
   private readonly coinCounter = document.createElement("div");
   private readonly keyInventory = document.createElement("div");
@@ -106,8 +114,10 @@ export class RuntimeHud {
   private readonly message = document.createElement("div");
   private readonly victoryPanel = document.createElement("div");
   private readonly pausePanel = document.createElement("div");
+  private readonly defeatPanel = document.createElement("div");
   private readonly multiplayerPanel = document.createElement("div");
   private messageTimeout = 0;
+  private defeatTimeout = 0;
   private actions: RuntimeHudActions | null = null;
   private objectivesExpanded = false;
   private objectivesCollapsed = false;
@@ -117,6 +127,8 @@ export class RuntimeHud {
   private audioMuted = false;
   private coinState: { count: number; total?: number } = { count: 0 };
   private gameModeStatus: GameModeHudStatus | null = null;
+  private sessionStatus: RuntimeSessionHudStatus | null = null;
+  private sessionTimeSeconds: number | null = null;
   private multiplayerInfo: (MultiplayerHudInfo & { onLeaveRoom: () => void }) | null = null;
 
   constructor(container: HTMLElement) {
@@ -127,6 +139,7 @@ export class RuntimeHud {
     this.mapLabel.className = "runtime-map-label";
     this.healthPanel.className = "runtime-health-panel";
     this.weaponPanel.className = "runtime-weapon-panel";
+    this.sessionPanel.className = "runtime-session-panel hidden";
     this.gameModePanel.className = "runtime-game-mode-panel";
     this.coinCounter.className = "runtime-coin-counter";
     this.keyInventory.className = "runtime-key-inventory";
@@ -138,9 +151,15 @@ export class RuntimeHud {
     this.message.className = "runtime-message";
     this.victoryPanel.className = "runtime-victory hidden";
     this.pausePanel.className = "runtime-pause hidden";
+    this.defeatPanel.className = "runtime-defeat hidden";
     this.multiplayerPanel.className = "runtime-multiplayer-panel hidden";
 
-    this.topLeftCluster.append(this.mapLabel, this.gameModePanel, this.multiplayerPanel);
+    this.topLeftCluster.append(
+      this.mapLabel,
+      this.sessionPanel,
+      this.gameModePanel,
+      this.multiplayerPanel
+    );
     this.bottomLeftCluster.append(
       this.healthPanel,
       this.weaponPanel,
@@ -158,6 +177,7 @@ export class RuntimeHud {
       this.chatPanel,
       this.message,
       this.dialoguePanel,
+      this.defeatPanel,
       this.victoryPanel,
       this.pausePanel
     );
@@ -166,6 +186,8 @@ export class RuntimeHud {
     this.setMapName("Mini Blox");
     this.setHealth(100, 100);
     this.setWeapon(null);
+    this.setSessionStatus(null);
+    this.setSessionTime(null);
     this.setGameModeStatus(null);
     this.setCoins(0);
     this.setKeys([]);
@@ -192,12 +214,21 @@ export class RuntimeHud {
       </button>
     `
       : "";
+    const restartButton = this.multiplayerInfo
+      ? ""
+      : `
+      <button class="top-action icon-runtime-action" type="button" data-runtime-action="restart" title="Reiniciar (R)" aria-label="Reiniciar mapa">
+        <i data-lucide="rotate-ccw"></i>
+        <span>Reiniciar</span>
+      </button>
+    `;
 
     this.actionBar.innerHTML = `
-      <button class="top-action" type="button" data-runtime-action="pause" title="Pausar" aria-label="Pausar">
+      <button class="top-action" type="button" data-runtime-action="pause" title="Pausar (Esc)" aria-label="Pausar">
         <i data-lucide="pause"></i>
         <span>Pausar</span>
       </button>
+      ${restartButton}
       <button class="top-action icon-runtime-action" type="button" data-runtime-action="mute" title="Mutar audio" aria-label="Mutar audio">
         <i data-lucide="${this.audioMuted ? "volume-x" : "volume-2"}"></i>
         <span data-audio-muted-label>${this.audioMuted ? "Mudo" : "Som"}</span>
@@ -207,6 +238,9 @@ export class RuntimeHud {
     this.actionBar
       .querySelector<HTMLButtonElement>('[data-runtime-action="pause"]')
       ?.addEventListener("click", () => this.actions?.onPause?.());
+    this.actionBar
+      .querySelector<HTMLButtonElement>('[data-runtime-action="restart"]')
+      ?.addEventListener("click", () => this.actions?.onRestart());
     this.actionBar
       .querySelector<HTMLButtonElement>('[data-runtime-action="mute"]')
       ?.addEventListener("click", () => this.actions?.onToggleMute?.());
@@ -247,6 +281,41 @@ export class RuntimeHud {
 
   setCoins(count: number, total?: number): void {
     this.coinState = typeof total === "number" ? { count, total } : { count };
+    this.renderStatsPanel();
+  }
+
+  setSessionStatus(status: RuntimeSessionHudStatus | null): void {
+    this.sessionStatus = status;
+
+    if (!status) {
+      this.sessionPanel.classList.add("hidden");
+      this.sessionPanel.replaceChildren();
+      return;
+    }
+
+    const controls = (status.controls ?? []).slice(0, 5);
+    this.sessionPanel.classList.remove("hidden");
+    this.sessionPanel.innerHTML = `
+      <div class="runtime-session-main">
+        <span class="runtime-card-label">Sessao</span>
+        <strong>${escapeHtml(status.label)}</strong>
+        ${status.detail ? `<small>${escapeHtml(status.detail)}</small>` : ""}
+      </div>
+      ${
+        controls.length > 0
+          ? `
+        <div class="runtime-session-controls">
+          ${controls.map((control) => `<span>${escapeHtml(control)}</span>`).join("")}
+        </div>
+      `
+          : ""
+      }
+    `;
+  }
+
+  setSessionTime(seconds: number | null): void {
+    this.sessionTimeSeconds =
+      typeof seconds === "number" && Number.isFinite(seconds) ? Math.max(0, seconds) : null;
     this.renderStatsPanel();
   }
 
@@ -462,13 +531,17 @@ export class RuntimeHud {
       return;
     }
 
+    const sessionLabel =
+      this.sessionStatus?.label ??
+      (this.multiplayerPanel.classList.contains("hidden") ? "Solo" : "Multiplayer");
     this.pausePanel.classList.remove("hidden");
     this.pausePanel.innerHTML = `
       <div class="runtime-pause-content">
         <div class="runtime-overlay-heading">
           <strong>Pausado</strong>
-          <span>${this.multiplayerPanel.classList.contains("hidden") ? "Solo" : "Multiplayer"}</span>
+          <span>${escapeHtml(sessionLabel)}</span>
         </div>
+        <p class="runtime-pause-hint">Esc continua/pausa. R reinicia o mapa.</p>
         <div class="runtime-pause-actions">
           <button class="top-action primary" type="button" data-pause-action="continue">
             <i data-lucide="play"></i>
@@ -519,6 +592,7 @@ export class RuntimeHud {
     window.clearTimeout(this.messageTimeout);
     this.message.classList.remove("visible");
     this.hidePause();
+    this.hideDefeat();
     this.hideDialogue();
     this.victoryPanel.classList.remove("hidden");
     const stats = buildVictoryStats(summary, coinCount, this.multiplayerInfo?.playerCount ?? null);
@@ -575,8 +649,104 @@ export class RuntimeHud {
     this.victoryPanel.replaceChildren();
   }
 
+  showDefeat(
+    message: string,
+    actions?: Partial<VictoryActions>,
+    summary?: GameModeSummary,
+    durationMs = 2600
+  ): void {
+    window.clearTimeout(this.defeatTimeout);
+    this.hidePause();
+    this.defeatPanel.classList.remove("hidden");
+    const stats = buildVictoryStats(summary, summary?.coinsCollected ?? this.coinState.count, null)
+      .filter((stat) => stat.label !== "Capturas" && stat.label !== "Players")
+      .slice(0, 5);
+
+    this.defeatPanel.innerHTML = `
+      <div class="runtime-defeat-content">
+        <div class="runtime-overlay-heading">
+          <strong>${escapeHtml(message)}</strong>
+          <span>Respawn em instantes</span>
+        </div>
+        <div class="runtime-victory-summary compact">
+          ${stats
+            .map(
+              (stat) => `
+            <span>
+              <small>${escapeHtml(stat.label)}</small>
+              <strong>${escapeHtml(stat.value)}</strong>
+            </span>
+          `
+            )
+            .join("")}
+        </div>
+        <div class="runtime-defeat-actions">
+          ${
+            actions?.onRestart
+              ? `
+            <button class="top-action primary" type="button" data-defeat-action="restart">
+              <i data-lucide="rotate-ccw"></i>
+              <span>Reiniciar</span>
+            </button>
+          `
+              : ""
+          }
+          ${
+            actions?.onEdit
+              ? `
+            <button class="top-action" type="button" data-defeat-action="edit">
+              <i data-lucide="pencil"></i>
+              <span>Editar</span>
+            </button>
+          `
+              : ""
+          }
+          ${
+            actions?.onMenu
+              ? `
+            <button class="top-action" type="button" data-defeat-action="menu">
+              <i data-lucide="house"></i>
+              <span>Menu</span>
+            </button>
+          `
+              : ""
+          }
+          <button class="top-action" type="button" data-defeat-action="close">
+            <i data-lucide="x"></i>
+            <span>Fechar</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.defeatPanel
+      .querySelector<HTMLButtonElement>('[data-defeat-action="restart"]')
+      ?.addEventListener("click", () => actions?.onRestart?.());
+    this.defeatPanel
+      .querySelector<HTMLButtonElement>('[data-defeat-action="edit"]')
+      ?.addEventListener("click", () => actions?.onEdit?.());
+    this.defeatPanel
+      .querySelector<HTMLButtonElement>('[data-defeat-action="menu"]')
+      ?.addEventListener("click", () => actions?.onMenu?.());
+    this.defeatPanel
+      .querySelector<HTMLButtonElement>('[data-defeat-action="close"]')
+      ?.addEventListener("click", () => this.hideDefeat());
+    createIcons({ icons });
+
+    if (durationMs > 0) {
+      this.defeatTimeout = window.setTimeout(() => this.hideDefeat(), durationMs);
+    }
+  }
+
+  hideDefeat(): void {
+    window.clearTimeout(this.defeatTimeout);
+    this.defeatPanel.classList.add("hidden");
+    this.defeatPanel.replaceChildren();
+  }
+
   dispose(): void {
     window.clearTimeout(this.messageTimeout);
+    window.clearTimeout(this.defeatTimeout);
     this.hideDialogue();
     this.root.remove();
   }
@@ -789,47 +959,59 @@ export class RuntimeHud {
       typeof this.coinState.total === "number"
         ? `${this.coinState.count}/${this.coinState.total}`
         : String(this.coinState.count);
+    const rows: string[] = [];
+    const showCoins =
+      this.coinState.count > 0 ||
+      (typeof this.coinState.total === "number" && this.coinState.total > 0);
 
-    this.coinCounter.innerHTML = `
-      <div class="runtime-stats-grid">
+    if (showCoins) {
+      rows.push(`
         <span>
           <small>Moedas</small>
           <strong>${escapeHtml(coinText)}</strong>
         </span>
-        ${
-          scoreText
-            ? `
+      `);
+    }
+
+    if (scoreText && ((status?.score ?? 0) > 0 || typeof status?.targetScore === "number")) {
+      rows.push(`
           <span>
             <small>Score</small>
             <strong>${escapeHtml(scoreText)}</strong>
           </span>
-        `
-            : ""
-        }
-        ${
-          status?.teamLabel
-            ? `
+      `);
+    }
+
+    if (status?.teamLabel) {
+      rows.push(`
           <span>
             <small>Time</small>
             <strong>${escapeHtml(status.teamLabel)}</strong>
           </span>
-        `
-            : ""
-        }
-        ${
-          typeof status?.roundTime === "number"
-            ? `
+      `);
+    }
+
+    if (this.sessionTimeSeconds !== null) {
+      rows.push(`
           <span>
             <small>Tempo</small>
+            <strong>${formatTime(this.sessionTimeSeconds)}</strong>
+          </span>
+      `);
+    }
+
+    if (typeof status?.roundTime === "number") {
+      rows.push(`
+          <span>
+            <small>Rodada</small>
             <strong>${formatTime(status.roundTime)}</strong>
           </span>
-        `
-            : ""
-        }
-      </div>
-      ${
-        status && status.teamScores.length > 0
-          ? `
+      `);
+    }
+
+    const teamScores =
+      status && status.teamScores.length > 0
+        ? `
         <div class="runtime-mode-teams">
           ${status.teamScores
             .map(
@@ -840,8 +1022,20 @@ export class RuntimeHud {
             .join("")}
         </div>
       `
-          : ""
-      }
+        : "";
+
+    this.coinCounter.classList.toggle("hidden", rows.length === 0 && teamScores.length === 0);
+
+    if (rows.length === 0 && teamScores.length === 0) {
+      this.coinCounter.replaceChildren();
+      return;
+    }
+
+    this.coinCounter.innerHTML = `
+      <div class="runtime-stats-grid">
+        ${rows.join("")}
+      </div>
+      ${teamScores}
     `;
   }
 }
@@ -865,6 +1059,9 @@ function buildVictoryStats(
 ): Array<{ label: string; value: string }> {
   const stats = [
     { label: "Score", value: String(summary?.score ?? 0) },
+    ...(summary?.elapsedTimeSeconds !== undefined
+      ? [{ label: "Tempo", value: formatTime(summary.elapsedTimeSeconds) }]
+      : []),
     { label: "Moedas", value: String(summary?.coinsCollected ?? coinCount) },
     { label: "Kills", value: String(summary?.enemiesDefeated ?? 0) },
     { label: "Deaths", value: String(summary?.deaths ?? 0) },

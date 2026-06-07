@@ -5,7 +5,7 @@ import { createMapObject3D, disposeObject3D, stampMapObject3D } from "./ObjectFa
 import { FeedbackSystem } from "./FeedbackSystem";
 import { PlayerController } from "./PlayerController";
 import { PhysicsSystem } from "./PhysicsSystem";
-import { RuntimeHud } from "./RuntimeHud";
+import { RuntimeHud, type RuntimeSessionHudStatus } from "./RuntimeHud";
 import { RuntimeMechanics } from "./RuntimeMechanics";
 import {
   canSyncWorldState,
@@ -36,6 +36,7 @@ type GameRuntimeOptions = {
   onBackToMenu?: () => void;
   onMapCompleted?: (summary: { map: GameMap; coinsCollected: number }) => void;
   sessionAdapter?: GameSessionAdapter;
+  isTestMode?: boolean;
 };
 
 export class GameRuntime {
@@ -66,6 +67,8 @@ export class GameRuntime {
   private networkSyncAccumulator = 0;
   private latestSharedWorldState: SharedWorldState | null = null;
   private chatMessages: ChatMessage[] = [];
+  private sessionElapsedTime = 0;
+  private sessionTimerRunning = false;
 
   constructor(
     private readonly container: HTMLElement,
@@ -128,7 +131,12 @@ export class GameRuntime {
     this.applyVisualSettings();
     this.hud.hidePause();
     this.hud.hideVictory();
+    this.hud.hideDefeat();
     this.hud.setMapName(this.activeMap.name);
+    this.sessionElapsedTime = 0;
+    this.sessionTimerRunning = true;
+    this.hud.setSessionTime(0);
+    this.hud.setSessionStatus(this.getSessionHudStatus());
     this.hud.setActions({
       onContinue: () => {
         this.audioSystem.play("uiClick");
@@ -213,6 +221,7 @@ export class GameRuntime {
             }
           : undefined,
         onComplete: (coinsCollected) => {
+          this.sessionTimerRunning = false;
           if (this.activeMap) {
             this.options.onMapCompleted?.({
               map: structuredClone(this.activeMap),
@@ -220,6 +229,7 @@ export class GameRuntime {
             });
           }
         },
+        getElapsedTime: () => this.sessionElapsedTime,
       }
     );
 
@@ -738,6 +748,11 @@ export class GameRuntime {
     const delta = this.clock.getDelta();
 
     if (!this.paused) {
+      if (this.sessionTimerRunning) {
+        this.sessionElapsedTime += delta;
+        this.hud.setSessionTime(this.sessionElapsedTime);
+      }
+
       this.cameraController.update();
       this.playerController.setViewYaw(this.cameraController.getYaw());
       this.playerController.update(delta);
@@ -779,6 +794,11 @@ export class GameRuntime {
   private restart(): void {
     this.paused = false;
     this.hud.hidePause();
+    this.hud.hideVictory();
+    this.hud.hideDefeat();
+    this.sessionElapsedTime = 0;
+    this.sessionTimerRunning = true;
+    this.hud.setSessionTime(0);
     this.feedbackSystem.clear();
     this.mechanics?.restart();
     if (this.latestSharedWorldState) {
@@ -833,6 +853,17 @@ export class GameRuntime {
       return;
     }
 
+    if (
+      event.key.toLowerCase() === "r" &&
+      !isEditableTarget(event.target) &&
+      !this.hud.isChatFocused()
+    ) {
+      event.preventDefault();
+      this.audioSystem.play("uiClick");
+      this.restart();
+      return;
+    }
+
     if (event.key !== "Escape") {
       return;
     }
@@ -846,6 +877,33 @@ export class GameRuntime {
 
     this.togglePause();
   };
+
+  private getSessionHudStatus(): RuntimeSessionHudStatus {
+    const controls = ["WASD mover", "Space pular", "Mouse camera", "E interagir"];
+
+    if (this.sessionAdapter && !this.sessionAdapter.isLocal()) {
+      const detail = getMultiplayerSessionDetail(this.activeMap);
+      return {
+        label: "Multiplayer",
+        detail,
+        controls: [...controls, "Enter chat"],
+      };
+    }
+
+    if (this.options.isTestMode) {
+      return {
+        label: "Testando mapa",
+        detail: "R reinicia - Esc pausa",
+        controls: [...controls, "R reiniciar"],
+      };
+    }
+
+    return {
+      label: "Solo",
+      detail: "Jogo local",
+      controls: [...controls, "Esc pausa"],
+    };
+  }
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -855,6 +913,20 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target instanceof HTMLSelectElement ||
     (target instanceof HTMLElement && target.isContentEditable)
   );
+}
+
+function getMultiplayerSessionDetail(map: GameMap | null): string {
+  const mode = map?.gameModeSettings?.mode;
+
+  if (mode === "teamBattle" || mode === "capturePoint") {
+    return "PvP por times";
+  }
+
+  if (mode === "combatArena") {
+    return map?.objects.some((object) => object.type === "enemy") ? "Coop combate" : "PvP arena";
+  }
+
+  return "Sala online";
 }
 
 function cloneSharedWorldState(state: SharedWorldState): SharedWorldState {

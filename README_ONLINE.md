@@ -1,6 +1,12 @@
 # MiniBlox Online e Multiplayer MVP
 
-Este documento cobre o backend online, catalogo de mapas e multiplayer MVP do MiniBlox Alpha 0.1.5.
+Este documento cobre o backend online, catalogo de mapas e multiplayer MVP do MiniBlox Alpha 0.1.6.
+
+## Alpha 0.1.6
+
+Esta etapa poliu o loop jogavel do runtime: HUD com modo de sessao, timer, objetivos fallback, resumo de vitoria/derrota e feedback de respawn/test mode. No multiplayer, isso aparece em salas existentes sem alterar backend, WebSocket, mensagens, validacoes server-side ou schema de mapas.
+
+Tambem foi estabilizado o visual de personagem/arma: jogadores remotos usam o mesmo animator simples do player local, armas ficam presas ao socket da mao e ataques remotos reaproveitam `playerAttackVisual` sem adicionar mensagem nova ao protocolo.
 
 ## Alpha 0.1.5
 

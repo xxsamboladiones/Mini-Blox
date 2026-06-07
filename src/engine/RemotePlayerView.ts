@@ -1,21 +1,28 @@
 import * as THREE from "three";
 import type { PlayerNetState } from "../shared/types/MultiplayerSchema.js";
 import type { WeaponAttackType } from "../shared/types/ItemSchema.js";
-import { disposeObject3D } from "./ObjectFactory.js";
+import { PlayerAnimator } from "./PlayerAnimator.js";
 import { createWeaponVisual } from "./WeaponVisualFactory.js";
+
+type RemoteAvatarParts = {
+  root: THREE.Group;
+  body: THREE.Mesh;
+  head: THREE.Mesh;
+  leftArm: THREE.Mesh;
+  rightArm: THREE.Mesh;
+  leftLeg: THREE.Mesh;
+  rightLeg: THREE.Mesh;
+  weaponSlot: THREE.Group;
+};
 
 export class RemotePlayerView {
   private mesh: THREE.Group;
   private targetPosition: THREE.Vector3;
   private targetRotationY: number;
   private nameLabel: THREE.Sprite;
-  private rightArm: THREE.Mesh | null = null;
+  private readonly avatar: RemoteAvatarParts;
+  private readonly animator: PlayerAnimator;
   private equippedWeaponId: string | null = null;
-  private weaponVisual: THREE.Object3D | null = null;
-  private damagePulse = 0;
-  private respawnPulse = 0;
-  private attackPulse = 0;
-  private attackType: WeaponAttackType = "slash";
 
   constructor(
     private readonly playerId: string,
@@ -23,13 +30,24 @@ export class RemotePlayerView {
     private readonly teamId: string | null,
     private readonly clientId: string
   ) {
-    this.mesh = this.createAvatar();
+    this.avatar = this.createAvatar();
+    this.mesh = this.avatar.root;
     this.targetPosition = new THREE.Vector3(0, 0, 0);
     this.targetRotationY = 0;
     this.nameLabel = this.createNameLabel();
+    this.animator = new PlayerAnimator({
+      root: this.mesh,
+      body: this.avatar.body,
+      head: this.avatar.head,
+      leftArm: this.avatar.leftArm,
+      rightArm: this.avatar.rightArm,
+      leftLeg: this.avatar.leftLeg,
+      rightLeg: this.avatar.rightLeg,
+      weaponSlot: this.avatar.weaponSlot,
+    });
   }
 
-  private createAvatar(): THREE.Group {
+  private createAvatar(): RemoteAvatarParts {
     const group = new THREE.Group();
 
     const color = this.getPlayerColor();
@@ -54,7 +72,9 @@ export class RemotePlayerView {
 
     const rightArm = new THREE.Mesh(armGeometry, armMaterial);
     rightArm.position.set(0.35, 1, 0);
-    this.rightArm = rightArm;
+    const weaponSlot = new THREE.Group();
+    weaponSlot.position.set(0, -0.42, -0.09);
+    rightArm.add(weaponSlot);
     group.add(rightArm);
 
     const legGeometry = new THREE.BoxGeometry(0.2, 0.75, 0.2);
@@ -67,7 +87,7 @@ export class RemotePlayerView {
     rightLeg.position.set(0.15, 0.25, 0);
     group.add(rightLeg);
 
-    return group;
+    return { root: group, body, head, leftArm, rightArm, leftLeg, rightLeg, weaponSlot };
   }
 
   private createNameLabel(): THREE.Sprite {
@@ -124,7 +144,9 @@ export class RemotePlayerView {
   }
 
   update(deltaTime: number): void {
-    const lerpFactor = 10 * deltaTime;
+    const safeDelta = Math.min(Math.max(deltaTime, 0), 0.05);
+    const previousPosition = this.mesh.position.clone();
+    const lerpFactor = Math.min(1, 10 * safeDelta);
 
     this.mesh.position.lerp(this.targetPosition, lerpFactor);
     this.mesh.rotation.y = THREE.MathUtils.lerp(
@@ -132,13 +154,21 @@ export class RemotePlayerView {
       this.targetRotationY,
       lerpFactor
     );
-    this.damagePulse = THREE.MathUtils.damp(this.damagePulse, 0, 8, deltaTime);
-    this.respawnPulse = THREE.MathUtils.damp(this.respawnPulse, 0, 5, deltaTime);
-    this.attackPulse = THREE.MathUtils.damp(this.attackPulse, 0, 8, deltaTime);
-    this.animateRightArm(deltaTime);
-    const pulse =
-      Math.sin(this.damagePulse * Math.PI) * 0.18 + Math.sin(this.respawnPulse * Math.PI) * 0.12;
-    this.mesh.scale.setScalar(1 + Math.max(0, pulse));
+    const horizontalStep = Math.hypot(
+      this.mesh.position.x - previousPosition.x,
+      this.mesh.position.z - previousPosition.z
+    );
+    const verticalVelocity =
+      (this.mesh.position.y - previousPosition.y) / Math.max(safeDelta, 0.001);
+    const isAirborne = Math.abs(this.targetPosition.y - this.mesh.position.y) > 0.08;
+    this.animator.update({
+      deltaSeconds: safeDelta,
+      isMoving: horizontalStep / Math.max(safeDelta, 0.001) > 0.08,
+      isGrounded: !isAirborne,
+      verticalVelocity,
+      equippedWeaponId: this.equippedWeaponId,
+      isDefeated: !this.mesh.visible,
+    });
 
     this.nameLabel.position.copy(this.mesh.position);
     this.nameLabel.position.y += 2.2;
@@ -158,34 +188,26 @@ export class RemotePlayerView {
 
     this.equippedWeaponId = weaponId;
 
-    if (this.weaponVisual && this.rightArm) {
-      this.rightArm.remove(this.weaponVisual);
-      disposeObject3D(this.weaponVisual);
-      this.weaponVisual = null;
-    }
+    this.animator.attachWeapon(null);
 
-    if (!weaponId || !this.rightArm) {
+    if (!weaponId) {
       return;
     }
 
     const visual = createWeaponVisual(weaponId);
-    visual.position.set(0, -0.48, -0.12);
-    visual.rotation.set(-0.08, 0, 0);
-    this.rightArm.add(visual);
-    this.weaponVisual = visual;
+    this.animator.attachWeapon(visual, weaponId);
   }
 
   playAttackFeedback(type: WeaponAttackType = "slash"): void {
-    this.attackType = type;
-    this.attackPulse = 1;
+    this.animator.playAttack(type, this.equippedWeaponId);
   }
 
   playDamageFeedback(): void {
-    this.damagePulse = 1;
+    this.animator.playDamageFeedback();
   }
 
   playRespawnFeedback(): void {
-    this.respawnPulse = 1;
+    this.animator.playRespawnFeedback();
     this.mesh.visible = true;
   }
 
@@ -200,6 +222,7 @@ export class RemotePlayerView {
   }
 
   dispose(): void {
+    this.animator.dispose();
     this.mesh.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.geometry.dispose();
@@ -210,63 +233,12 @@ export class RemotePlayerView {
     });
 
     if (this.nameLabel.material instanceof THREE.Material) {
+      this.nameLabel.material.map?.dispose();
       this.nameLabel.material.dispose();
     }
   }
 
   getPlayerId(): string {
     return this.playerId;
-  }
-
-  private animateRightArm(deltaTime: number): void {
-    if (!this.rightArm) {
-      return;
-    }
-
-    this.rightArm.rotation.x = THREE.MathUtils.damp(this.rightArm.rotation.x, 0, 10, deltaTime);
-    this.rightArm.rotation.y = THREE.MathUtils.damp(this.rightArm.rotation.y, 0, 10, deltaTime);
-    this.rightArm.rotation.z = THREE.MathUtils.damp(this.rightArm.rotation.z, 0.08, 10, deltaTime);
-
-    if (this.attackPulse <= 0.01) {
-      return;
-    }
-
-    const attack = Math.sin(this.attackPulse * Math.PI);
-    const target = getAttackArmPose(this.attackType, attack);
-    this.rightArm.rotation.x = THREE.MathUtils.damp(
-      this.rightArm.rotation.x,
-      target.x,
-      18,
-      deltaTime
-    );
-    this.rightArm.rotation.y = THREE.MathUtils.damp(
-      this.rightArm.rotation.y,
-      target.y,
-      18,
-      deltaTime
-    );
-    this.rightArm.rotation.z = THREE.MathUtils.damp(
-      this.rightArm.rotation.z,
-      target.z,
-      18,
-      deltaTime
-    );
-  }
-}
-
-function getAttackArmPose(
-  type: WeaponAttackType,
-  attack: number
-): { x: number; y: number; z: number } {
-  switch (type) {
-    case "overhead":
-      return { x: -2 + attack * 0.8, y: 0.05, z: -0.1 - attack * 0.18 };
-    case "stab":
-      return { x: -1 - attack * 0.24, y: -0.12, z: -0.15 - attack * 0.16 };
-    case "shoot":
-      return { x: -1.28, y: -0.06 + attack * 0.08, z: -0.08 };
-    case "slash":
-    default:
-      return { x: -1.1 - attack * 0.6, y: -0.2 + attack * 0.22, z: -0.32 - attack * 0.18 };
   }
 }

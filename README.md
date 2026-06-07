@@ -1,4 +1,4 @@
-# MiniBlox Alpha 0.1.5
+# MiniBlox Alpha 0.1.6
 
 MiniBlox is a TypeScript sandbox map editor and lightweight 3D game runtime for the browser.
 
@@ -15,9 +15,27 @@ The current alpha focuses on a playable creator loop: build maps, test them in t
 - Multiplayer rooms over WebSocket
 - Remote avatars, shared world events, synchronized enemies and basic PvP
 - Chat/lobby social flow with room list and host migration
-- HUD with multiplayer state, chat, objectives, score, health and weapons
+- HUD with multiplayer state, chat, objectives, session timer, score, health and weapons
+- Character and weapon visuals with stable attachment, attack and respawn poses
 - Official templates for basic, platform, puzzle, collect, combat, PvP and coop examples
 - Basic logic/objective/game-mode panels
+
+## Alpha 0.1.6 Character & Weapon Animation Fix
+
+- Added a small `PlayerAnimator` for idle, movement, airborne, attack and defeated poses without changing movement or combat rules
+- Added shared weapon attachment configs so sword, hammer, dagger and blaster stay anchored to the hand socket locally and remotely
+- Weapon attack visuals now use per-attack poses for slash, overhead, stab and shoot, then return cleanly to the base pose
+- Restart, respawn, defeat and weapon swapping reset pose/weapon state instead of leaving stale attack rotations or duplicated weapon meshes
+- Remote player views reuse the same animator and existing `playerAttackVisual`/`equippedWeaponId` data; no backend, protocol or schema changes
+
+## Alpha 0.1.6 Playable Loop e Test Mode
+
+- Runtime HUD now shows session mode, session timer, useful coin/score/team stats, health, weapon state and current objectives with less empty noise
+- Maps without explicit objectives get a non-persistent fallback objective based on finish objects, coins, enemies, description or exploration
+- Victory and defeat feedback now include clearer summaries with score, coins, kills, deaths, objectives and elapsed time when available
+- Restart from HUD/pause/R resets player, health, pickups, enemies, doors/buttons, projectiles, objective state and session timer through the existing runtime restart path
+- Editor test mode is labeled as `Testando mapa` and surfaces basic controls without changing editor history, save/publish or template schemas
+- No intentional gameplay balance, backend, multiplayer protocol or schema changes
 
 ## Alpha 0.1.5 Template Quality Pass
 
@@ -104,6 +122,7 @@ Frontend:
 ```bash
 npm run typecheck
 npm run build
+npm run check
 node scripts/verify-render.mjs
 node scripts/validate-templates.mjs
 ```
@@ -112,6 +131,7 @@ Backend:
 
 ```bash
 cd server
+npm run typecheck
 npm run check
 npm run build
 node scripts/smoke-server.mjs
@@ -121,6 +141,7 @@ Multiplayer smoke:
 
 ```bash
 node server/scripts/smoke-multiplayer.mjs
+node smoke-multiplayer.mjs
 ```
 
 ## Known Limits
@@ -131,7 +152,7 @@ node server/scripts/smoke-multiplayer.mjs
 - Rooms are in memory and are removed by cleanup.
 - Chat has length/rate limits, but no advanced moderation.
 - Online catalog storage is local JSON on the backend.
-- Editor collaboration, login, ranking and matchmaking are not part of Alpha 0.1.0.
+- Editor collaboration, login, ranking and matchmaking are not part of Alpha 0.1.6.
 
 ## More Docs
 

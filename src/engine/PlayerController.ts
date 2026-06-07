@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { disposeObject3D } from "./ObjectFactory";
+import { PlayerAnimator } from "./PlayerAnimator";
 import { createWeaponVisual } from "./WeaponVisualFactory";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { LocalProfileStorage, type AvatarColors } from "../storage/LocalProfileStorage";
@@ -13,6 +14,7 @@ type AvatarParts = {
   rightArm: THREE.Mesh;
   leftLeg: THREE.Mesh;
   rightLeg: THREE.Mesh;
+  weaponSlot: THREE.Group;
 };
 
 export class PlayerController {
@@ -25,15 +27,10 @@ export class PlayerController {
   private active = false;
   private grounded = false;
   private jumpRequested = false;
-  private walkCycle = 0;
   private externalCameraControl = false;
   private viewYaw: number | null = null;
-  private jumpStretch = 0;
-  private landSquash = 0;
-  private respawnPulse = 0;
-  private attackPulse = 0;
-  private attackType: WeaponAttackType = "slash";
-  private weaponVisual: THREE.Object3D | null = null;
+  private readonly animator: PlayerAnimator;
+  private equippedWeaponId: string | null = null;
   private maxHealth = DEFAULT_MAX_HEALTH;
   private health = DEFAULT_MAX_HEALTH;
   private dead = false;
@@ -72,6 +69,16 @@ export class PlayerController {
         child.receiveShadow = true;
       }
     });
+    this.animator = new PlayerAnimator({
+      root: this.player,
+      body: this.avatar.body,
+      head: this.avatar.head,
+      leftArm: this.avatar.leftArm,
+      rightArm: this.avatar.rightArm,
+      leftLeg: this.avatar.leftLeg,
+      rightLeg: this.avatar.rightLeg,
+      weaponSlot: this.avatar.weaponSlot,
+    });
   }
 
   setPhysicsSystem(physicsSystem: PhysicsSystem | null): void {
@@ -107,11 +114,8 @@ export class PlayerController {
 
     this.keys.clear();
     this.jumpRequested = false;
-    this.jumpStretch = 0;
-    this.landSquash = 0;
-    this.respawnPulse = 0;
-    this.attackPulse = 0;
     this.player.scale.set(1, 1, 1);
+    this.animator.resetPose();
     this.resetHealth();
     this.setPosition(spawnPoint);
     this.resetVelocity();
@@ -134,12 +138,13 @@ export class PlayerController {
     this.jumpRequested = false;
     this.resetVelocity();
     this.player.scale.set(1, 1, 1);
-    this.attackPulse = 0;
+    this.animator.resetPose();
     this.active = false;
   }
 
   dispose(): void {
     this.stop();
+    this.animator.dispose();
     disposeObject3D(this.player);
   }
 
@@ -150,6 +155,14 @@ export class PlayerController {
 
     if (this.dead) {
       this.resetVelocity();
+      this.animator.update({
+        deltaSeconds,
+        isMoving: false,
+        isGrounded: this.grounded,
+        verticalVelocity: this.velocity.y,
+        equippedWeaponId: this.equippedWeaponId,
+        isDefeated: true,
+      });
       return;
     }
 
@@ -158,8 +171,6 @@ export class PlayerController {
     const moving = direction.lengthSq() > 0;
     const speed =
       this.keys.has("shiftleft") || this.keys.has("shiftright") ? RUN_SPEED : WALK_SPEED;
-    const wasGrounded = this.grounded;
-
     if (moving) {
       direction.normalize();
       this.velocity.x = direction.x * speed;
@@ -167,17 +178,15 @@ export class PlayerController {
       if (!this.externalCameraControl) {
         this.faceDirection(direction, delta);
       }
-      this.walkCycle += delta * speed * 3.5;
     } else {
       this.velocity.x = THREE.MathUtils.damp(this.velocity.x, 0, 18, delta);
       this.velocity.z = THREE.MathUtils.damp(this.velocity.z, 0, 18, delta);
-      this.walkCycle = THREE.MathUtils.damp(this.walkCycle, 0, 8, delta);
     }
 
     if (this.jumpRequested && this.grounded) {
       this.velocity.y = JUMP_SPEED;
       this.grounded = false;
-      this.jumpStretch = 1;
+      this.animator.playJumpFeedback();
     }
 
     this.jumpRequested = false;
@@ -200,17 +209,21 @@ export class PlayerController {
       this.grounded = false;
     }
 
-    if (!wasGrounded && this.grounded) {
-      this.landSquash = Math.max(this.landSquash, 1);
-    }
-
-    this.animateAvatar(moving, delta);
-
     if (this.externalCameraControl && this.viewYaw !== null) {
       this.player.rotation.y = dampAngle(this.player.rotation.y, this.viewYaw, 14, delta);
     } else {
       this.focusCamera(0.12);
     }
+
+    this.animator.update({
+      deltaSeconds: delta,
+      isMoving: moving || Math.hypot(this.velocity.x, this.velocity.z) > 0.08,
+      isGrounded: this.grounded,
+      verticalVelocity: this.velocity.y,
+      equippedWeaponId: this.equippedWeaponId,
+      lookYaw: getCameraYaw(this.camera),
+      rootYaw: this.player.rotation.y,
+    });
   }
 
   getPosition(): Vector3 {
@@ -242,8 +255,14 @@ export class PlayerController {
       return this.health;
     }
 
+    const previousHealth = this.health;
     this.health = Math.max(0, this.health - amount);
     this.dead = this.health <= 0;
+
+    if (this.health < previousHealth) {
+      this.animator.playDamageFeedback();
+    }
+
     return this.health;
   }
 
@@ -319,35 +338,31 @@ export class PlayerController {
   }
 
   playJumpPadFeedback(): void {
-    this.jumpStretch = 1.15;
+    this.animator.playJumpFeedback(1.15);
   }
 
   playRespawnFeedback(): void {
-    this.respawnPulse = 1;
-    this.landSquash = 0.8;
+    this.animator.playRespawnFeedback();
+  }
+
+  playDamageFeedback(): void {
+    this.animator.playDamageFeedback();
   }
 
   setEquippedWeapon(weaponId: string | null): void {
-    if (this.weaponVisual) {
-      this.avatar.rightArm.remove(this.weaponVisual);
-      disposeObject3D(this.weaponVisual);
-      this.weaponVisual = null;
-    }
+    this.equippedWeaponId = weaponId;
+    this.animator.attachWeapon(null);
 
     if (!weaponId) {
       return;
     }
 
     const visual = createWeaponVisual(weaponId);
-    visual.position.set(0, -0.48, -0.13);
-    visual.rotation.set(-0.08, 0, 0);
-    this.avatar.rightArm.add(visual);
-    this.weaponVisual = visual;
+    this.animator.attachWeapon(visual, weaponId);
   }
 
   playAttackFeedback(type: WeaponAttackType = "slash"): void {
-    this.attackType = type;
-    this.attackPulse = 1;
+    this.animator.playAttack(type, this.equippedWeaponId);
   }
 
   private getMovementDirection(): THREE.Vector3 {
@@ -385,162 +400,6 @@ export class PlayerController {
   private faceDirection(direction: THREE.Vector3, deltaSeconds: number): void {
     const targetYaw = Math.atan2(direction.x, direction.z) + Math.PI;
     this.player.rotation.y = dampAngle(this.player.rotation.y, targetYaw, 14, deltaSeconds);
-  }
-
-  private animateAvatar(isMoving: boolean, deltaSeconds: number): void {
-    const swing = isMoving ? Math.sin(this.walkCycle) * 0.46 : 0;
-    const counterSwing = isMoving ? Math.cos(this.walkCycle) * 0.06 : 0;
-    const idle = isMoving ? 0 : Math.sin(performance.now() * 0.002) * 0.025;
-
-    if (!this.grounded) {
-      this.avatar.leftArm.rotation.x = THREE.MathUtils.damp(
-        this.avatar.leftArm.rotation.x,
-        -0.35,
-        12,
-        deltaSeconds
-      );
-      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
-        this.avatar.rightArm.rotation.x,
-        -0.35,
-        12,
-        deltaSeconds
-      );
-      this.avatar.leftLeg.rotation.x = THREE.MathUtils.damp(
-        this.avatar.leftLeg.rotation.x,
-        0.12,
-        12,
-        deltaSeconds
-      );
-      this.avatar.rightLeg.rotation.x = THREE.MathUtils.damp(
-        this.avatar.rightLeg.rotation.x,
-        -0.12,
-        12,
-        deltaSeconds
-      );
-      this.avatar.body.rotation.x = THREE.MathUtils.damp(
-        this.avatar.body.rotation.x,
-        -0.06,
-        10,
-        deltaSeconds
-      );
-    } else {
-      this.avatar.leftArm.rotation.x = THREE.MathUtils.damp(
-        this.avatar.leftArm.rotation.x,
-        -swing + idle,
-        12,
-        deltaSeconds
-      );
-      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
-        this.avatar.rightArm.rotation.x,
-        swing + idle,
-        12,
-        deltaSeconds
-      );
-      this.avatar.leftLeg.rotation.x = THREE.MathUtils.damp(
-        this.avatar.leftLeg.rotation.x,
-        swing,
-        12,
-        deltaSeconds
-      );
-      this.avatar.rightLeg.rotation.x = THREE.MathUtils.damp(
-        this.avatar.rightLeg.rotation.x,
-        -swing,
-        12,
-        deltaSeconds
-      );
-      this.avatar.body.rotation.x = THREE.MathUtils.damp(
-        this.avatar.body.rotation.x,
-        0,
-        10,
-        deltaSeconds
-      );
-    }
-
-    this.avatar.leftArm.rotation.z = THREE.MathUtils.damp(
-      this.avatar.leftArm.rotation.z,
-      -0.08 - counterSwing,
-      10,
-      deltaSeconds
-    );
-    this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(
-      this.avatar.rightArm.rotation.z,
-      0.08 - counterSwing,
-      10,
-      deltaSeconds
-    );
-    this.avatar.rightArm.rotation.y = THREE.MathUtils.damp(
-      this.avatar.rightArm.rotation.y,
-      0,
-      10,
-      deltaSeconds
-    );
-    this.avatar.head.position.y = THREE.MathUtils.damp(
-      this.avatar.head.position.y,
-      1.55 + Math.abs(swing) * 0.025,
-      10,
-      deltaSeconds
-    );
-
-    if (this.attackPulse > 0.01) {
-      const attack = Math.sin(this.attackPulse * Math.PI);
-      const target = getAttackArmPose(this.attackType, attack);
-      this.avatar.rightArm.rotation.x = THREE.MathUtils.damp(
-        this.avatar.rightArm.rotation.x,
-        target.x,
-        20,
-        deltaSeconds
-      );
-      this.avatar.rightArm.rotation.y = THREE.MathUtils.damp(
-        this.avatar.rightArm.rotation.y,
-        target.y,
-        18,
-        deltaSeconds
-      );
-      this.avatar.rightArm.rotation.z = THREE.MathUtils.damp(
-        this.avatar.rightArm.rotation.z,
-        target.z,
-        18,
-        deltaSeconds
-      );
-    }
-
-    const cameraForward = new THREE.Vector3();
-    this.camera.getWorldDirection(cameraForward);
-    cameraForward.y = 0;
-
-    if (cameraForward.lengthSq() > 0) {
-      cameraForward.normalize();
-      const cameraYaw = Math.atan2(cameraForward.x, cameraForward.z) + Math.PI;
-      const relativeYaw = THREE.MathUtils.clamp(
-        normalizeAngle(cameraYaw - this.player.rotation.y),
-        -0.45,
-        0.45
-      );
-      this.avatar.head.rotation.y = dampAngle(
-        this.avatar.head.rotation.y,
-        relativeYaw,
-        8,
-        deltaSeconds
-      );
-    }
-
-    this.applyBodyFeedback(deltaSeconds);
-  }
-
-  private applyBodyFeedback(deltaSeconds: number): void {
-    this.jumpStretch = THREE.MathUtils.damp(this.jumpStretch, 0, 7, deltaSeconds);
-    this.landSquash = THREE.MathUtils.damp(this.landSquash, 0, 10, deltaSeconds);
-    this.respawnPulse = THREE.MathUtils.damp(this.respawnPulse, 0, 5, deltaSeconds);
-    this.attackPulse = THREE.MathUtils.damp(this.attackPulse, 0, 8, deltaSeconds);
-
-    const stretch = this.jumpStretch;
-    const squash = this.landSquash;
-    const pulse = Math.sin(this.respawnPulse * Math.PI) * 0.12;
-    this.player.scale.set(
-      1 + squash * 0.08 + pulse,
-      1 + stretch * 0.16 - squash * 0.14 + pulse * 0.35,
-      1 + squash * 0.08 + pulse
-    );
   }
 
   private focusCamera(alpha: number): void {
@@ -635,7 +494,9 @@ function createAvatar(colors: AvatarColors): AvatarParts {
   rightArm.position.set(0.54, 1.04, 0);
   const rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.24), skin);
   rightHand.position.y = -0.42;
-  rightArm.add(rightHand);
+  const weaponSlot = new THREE.Group();
+  weaponSlot.position.set(0, -0.42, -0.11);
+  rightArm.add(rightHand, weaponSlot);
 
   const leftLeg = createLeg(pants, shoe);
   leftLeg.position.x = -0.19;
@@ -643,7 +504,7 @@ function createAvatar(colors: AvatarColors): AvatarParts {
   const rightLeg = createLeg(pants, shoe);
   rightLeg.position.x = 0.19;
 
-  return { body, head, leftArm, rightArm, leftLeg, rightLeg };
+  return { body, head, leftArm, rightArm, leftLeg, rightLeg, weaponSlot };
 }
 
 function createLeg(pants: THREE.Material, shoe: THREE.Material): THREE.Mesh {
@@ -657,41 +518,21 @@ function createLeg(pants: THREE.Material, shoe: THREE.Material): THREE.Mesh {
   return leg;
 }
 
-function getAttackArmPose(
-  type: WeaponAttackType,
-  attack: number
-): { x: number; y: number; z: number } {
-  switch (type) {
-    case "overhead":
-      return {
-        x: -2.05 + attack * 0.85,
-        y: 0.05,
-        z: -0.1 - attack * 0.18,
-      };
-    case "stab":
-      return {
-        x: -1.08 - attack * 0.22,
-        y: -0.12,
-        z: -0.18 - attack * 0.16,
-      };
-    case "shoot":
-      return {
-        x: -1.34,
-        y: -0.06 + attack * 0.08,
-        z: -0.08,
-      };
-    case "slash":
-    default:
-      return {
-        x: -1.15 - attack * 0.65,
-        y: -0.2 + attack * 0.22,
-        z: -0.35 - attack * 0.18,
-      };
-  }
-}
-
 function dampAngle(current: number, target: number, lambda: number, deltaSeconds: number): number {
   return current + normalizeAngle(target - current) * (1 - Math.exp(-lambda * deltaSeconds));
+}
+
+function getCameraYaw(camera: THREE.Camera): number {
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+
+  if (forward.lengthSq() === 0) {
+    return 0;
+  }
+
+  forward.normalize();
+  return Math.atan2(forward.x, forward.z) + Math.PI;
 }
 
 function normalizeAngle(angle: number): number {

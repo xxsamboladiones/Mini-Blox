@@ -43,6 +43,7 @@ export class EditorTestModeController {
       const runtime = new GameRuntime(this.options.mountElement, {
         onBackToMenu: () => this.stop(),
         onEditMap: () => this.stop(),
+        isTestMode: true,
       });
       this.runtime = runtime;
       await runtime.loadMap(map);

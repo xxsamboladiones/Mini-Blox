@@ -230,11 +230,122 @@ export class ObjectiveRuntime {
 }
 
 function getObjectives(map: GameMap): MapObjective[] {
-  return (map.objectives ?? []).filter(
+  const explicitObjectives = (map.objectives ?? []).filter(
     (objective) =>
       typeof objective.id === "string" &&
       typeof objective.title === "string" &&
       typeof objective.type === "string"
+  );
+
+  return explicitObjectives.length > 0 ? explicitObjectives : getFallbackObjectives(map);
+}
+
+function getFallbackObjectives(map: GameMap): MapObjective[] {
+  const coinCount = map.objects.filter((object) => object.type === "coin").length;
+  const enemyCount = map.objects.filter((object) => object.type === "enemy").length;
+  const finishObject = map.objects.find((object) => object.type === "finish");
+  const winCondition = map.gameModeSettings?.winCondition;
+  const mode = map.gameModeSettings?.mode;
+
+  if (winCondition?.type === "collectCoins" && coinCount > 0) {
+    return [
+      createCollectCoinsFallback(
+        getPositiveTarget(winCondition.targetAmount, coinCount),
+        "Colete as moedas"
+      ),
+    ];
+  }
+
+  if (winCondition?.type === "defeatEnemies" && enemyCount > 0) {
+    return [
+      createDefeatEnemiesFallback(
+        getPositiveTarget(winCondition.targetAmount, enemyCount),
+        "Derrote os inimigos"
+      ),
+    ];
+  }
+
+  if (winCondition?.type === "finish" && finishObject) {
+    return [createReachFinishFallback(finishObject.id)];
+  }
+
+  if (mode === "coinCollect" && coinCount > 0) {
+    return [createCollectCoinsFallback(coinCount, "Colete as moedas")];
+  }
+
+  if ((mode === "combatArena" || mode === "teamBattle") && enemyCount > 0) {
+    return [createDefeatEnemiesFallback(enemyCount, "Limpe a arena")];
+  }
+
+  if ((mode === "obby" || mode === "objectiveRun") && finishObject) {
+    return [createReachFinishFallback(finishObject.id)];
+  }
+
+  if (finishObject) {
+    return [createReachFinishFallback(finishObject.id)];
+  }
+
+  if (coinCount > 0) {
+    return [createCollectCoinsFallback(coinCount, "Colete as moedas")];
+  }
+
+  if (enemyCount > 0) {
+    return [createDefeatEnemiesFallback(enemyCount, "Derrote os inimigos")];
+  }
+
+  const description = map.description?.trim();
+  return [
+    {
+      id: "fallback-explore",
+      title: "Explore o mapa",
+      description: description || "Teste controles, caminhos e interacoes.",
+      type: "customLogic",
+      required: false,
+      visible: true,
+    },
+  ];
+}
+
+function createReachFinishFallback(targetObjectId: string): MapObjective {
+  return {
+    id: "fallback-finish",
+    title: "Alcance o objetivo final",
+    description: "Siga ate a chegada do mapa.",
+    type: "reachObject",
+    targetObjectId,
+    required: false,
+    visible: true,
+  };
+}
+
+function createCollectCoinsFallback(targetAmount: number, title: string): MapObjective {
+  return {
+    id: "fallback-coins",
+    title,
+    description: "Colete as moedas visiveis do mapa.",
+    type: "collectCoins",
+    targetAmount,
+    required: false,
+    visible: true,
+  };
+}
+
+function createDefeatEnemiesFallback(targetAmount: number, title: string): MapObjective {
+  return {
+    id: "fallback-enemies",
+    title,
+    description: "Use sua arma e mantenha distancia.",
+    type: "defeatEnemies",
+    targetAmount,
+    required: false,
+    visible: true,
+  };
+}
+
+function getPositiveTarget(value: number | undefined, fallback: number): number {
+  return Math.max(
+    1,
+    Math.floor(typeof value === "number" && Number.isFinite(value) ? value : fallback)
   );
 }
 

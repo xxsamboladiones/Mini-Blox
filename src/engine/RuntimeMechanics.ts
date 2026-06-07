@@ -98,6 +98,7 @@ type RuntimeMechanicsOptions = {
   onWorldEvent?: (event: WorldEvent) => void;
   multiplayer?: MultiplayerRuntimeOptions;
   onComplete?: (coinsCollected: number) => void;
+  getElapsedTime?: () => number;
 };
 
 type MultiplayerRuntimeOptions = {
@@ -626,6 +627,7 @@ export class RuntimeMechanics {
     this.isGameFinished = false;
     this.currentRespawnPoint = { ...this.map.spawnPoint };
     this.hud.hideVictory();
+    this.hud.hideDefeat();
     this.hud.hideDialogue();
     this.hud.setCoins(0, this.getTotalCoinObjects());
     this.player.resetHealth();
@@ -867,6 +869,7 @@ export class RuntimeMechanics {
 
     if (message) {
       this.hud.showMessage(message);
+      this.player.playDamageFeedback();
       this.audio.play("damage");
       this.feedback.spawn(
         "damage",
@@ -888,6 +891,8 @@ export class RuntimeMechanics {
     this.player.setHealth(0, this.player.getMaxHealth());
     this.hud.setHealth(0, this.player.getMaxHealth());
     this.hud.showMessage(message);
+    this.hud.showDefeat(message, undefined, this.getSummaryWithElapsed(), 2600);
+    this.player.playDamageFeedback();
     this.audio.play("death");
     this.feedback.spawn("death", this.player.getPosition());
     this.deathCooldown = Math.max(0.4, this.gameModeRuntime.getRespawnDelay());
@@ -904,6 +909,7 @@ export class RuntimeMechanics {
     this.player.resetVelocity();
     this.player.playRespawnFeedback();
     this.deathCooldown = 0;
+    this.hud.hideDefeat();
     this.audio.play("checkpoint");
     this.feedback.spawn("checkpoint", position, "Respawn");
     this.hud.showMessage("Voce voltou para a arena.");
@@ -993,6 +999,7 @@ export class RuntimeMechanics {
     if (currentHealth <= 0) {
       if (this.isMultiplayerEnabled()) {
         this.hud.showMessage("Voce foi derrotado. Respawn em instantes.");
+        this.hud.showDefeat("Voce foi derrotado", undefined, this.getSummaryWithElapsed(), 2600);
         this.audio.play("death");
         this.feedback.spawn("death", position ?? this.player.getPosition());
         this.gameModeRuntime.onPlayerDeath();
@@ -1139,12 +1146,33 @@ export class RuntimeMechanics {
     this.options.onComplete?.(this.coinCount);
     this.audio.play("victory");
     this.feedback.spawn("victory");
-    const actions: VictoryActions = {
+    this.hud.showVictory(
+      message,
+      this.coinCount,
+      this.getRuntimeActions(),
+      this.getSummaryWithElapsed(summary)
+    );
+  }
+
+  private getRuntimeActions(): VictoryActions {
+    return {
       onRestart: this.options.onRestart,
       onEdit: this.options.onEdit,
       onMenu: this.options.onMenu,
     };
-    this.hud.showVictory(message, this.coinCount, actions, summary);
+  }
+
+  private getSummaryWithElapsed(summary = this.gameModeRuntime.getSummary()): GameModeSummary {
+    const elapsedTimeSeconds = this.options.getElapsedTime?.();
+
+    if (typeof elapsedTimeSeconds !== "number" || !Number.isFinite(elapsedTimeSeconds)) {
+      return summary;
+    }
+
+    return {
+      ...summary,
+      elapsedTimeSeconds,
+    };
   }
 
   setObjectEnabled(objectId: string, enabled: boolean): boolean {
@@ -1495,6 +1523,7 @@ export class RuntimeMechanics {
     if (options.playFeedback !== false) {
       this.audio.play("button");
       this.feedback.spawn("button", mapObject.position);
+      this.hud.showMessage(doorId ? "Botao acionado: porta liberada" : "Botao acionado", 1400);
     }
 
     if (options.dispatchRuntimeEvents !== false) {
@@ -1827,14 +1856,7 @@ export class RuntimeMechanics {
   ): void {
     const mesh = createWeaponProjectileVisual(weapon.id);
     const id = `projectile-${Date.now()}-${this.projectileSequence++}`;
-    const projectile = createProjectile(
-      id,
-      mesh,
-      origin,
-      direction,
-      weapon,
-      local
-    );
+    const projectile = createProjectile(id, mesh, origin, direction, weapon, local);
 
     if (!projectile) {
       disposeObject3D(mesh);
@@ -2378,6 +2400,7 @@ export class RuntimeMechanics {
     this.feedback.spawn("death", position);
     this.gameModeRuntime.onPlayerDeath();
     this.respawnPlayer();
+    this.hud.showDefeat(message, this.getRuntimeActions(), this.getSummaryWithElapsed(), 3200);
   }
 
   private respawnPlayer(): void {
