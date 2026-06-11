@@ -33,7 +33,7 @@ Every new object type should be visible in the object panel, editable in the pro
 - `ObjectFactory.ts` builds the visual representation for map objects.
 - `GameModeRuntime.ts`, `ObjectiveRuntime.ts`, `LogicRuntime.ts`, `RuntimeHud.ts`, `AudioSystem.ts` and `FeedbackSystem.ts` consume system state and events.
 
-The runtime-system extraction is incremental. `RuntimePickupSystem` owns coins, keys, item pickups and spawners. `RuntimeDoorButtonSystem` owns opened doors, activated buttons and required-key checks. `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads and teleporters, including their cooldowns and collider updates. The Tycoon mode follows the same direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
+The runtime-system extraction is incremental. `RuntimePickupSystem` owns coins, keys, item pickups and spawners. `RuntimeDoorButtonSystem` owns opened doors, activated buttons and required-key checks. `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads and teleporters, including their cooldowns and collider updates. `RuntimeHazardCheckpointSystem` owns checkpoints, damage zones and message zones while bridging the global death cooldown that still belongs to player lifecycle. The Tycoon mode follows the same direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
 
 ## Backend
 

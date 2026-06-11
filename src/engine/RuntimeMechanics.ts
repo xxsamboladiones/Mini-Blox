@@ -19,11 +19,7 @@ import {
   shouldEnemyAttackPlayer,
 } from "./mechanics/EnemyMechanics";
 import {
-  getDamageZoneAmount,
-  getDamageZoneCooldownSeconds,
-  getDamageZoneMode,
   isDamageZoneObject,
-  shouldApplyDamageZone,
 } from "./mechanics/DamageZoneMechanics";
 import { TycoonSystem } from "./mechanics/TycoonSystem";
 import {
@@ -43,6 +39,7 @@ import {
   type DoorCloseOptions,
   type DoorOpenOptions,
 } from "./runtime/systems/RuntimeDoorButtonSystem";
+import { RuntimeHazardCheckpointSystem } from "./runtime/systems/RuntimeHazardCheckpointSystem";
 import { RuntimeMovementObjectSystem } from "./runtime/systems/RuntimeMovementObjectSystem";
 import type { GameMap } from "../shared/types/MapSchema";
 import type {
@@ -139,9 +136,6 @@ export class RuntimeMechanics {
   private currentRespawnPoint: Vector3;
   private readonly voidDeathEnabled: boolean;
   private readonly voidDeathY: number;
-  private readonly activatedCheckpointIds = new Set<string>();
-  private readonly messageZoneTriggeredIds = new Set<string>();
-  private readonly messageZoneInsideIds = new Set<string>();
   private readonly logicInsideObjectIds = new Set<string>();
   private readonly logicDisabledObjectIds = new Set<string>();
   private readonly defeatedEnemyIds = new Set<string>();
@@ -160,6 +154,7 @@ export class RuntimeMechanics {
   private isGameFinished = false;
   private readonly pickupSystem: RuntimePickupSystem;
   private readonly doorButtonSystem: RuntimeDoorButtonSystem;
+  private readonly hazardCheckpointSystem: RuntimeHazardCheckpointSystem;
   private readonly movementObjectSystem: RuntimeMovementObjectSystem;
   private readonly logicRuntime: LogicRuntime;
   private readonly objectiveRuntime: ObjectiveRuntime;
@@ -218,6 +213,24 @@ export class RuntimeMechanics {
       onButtonActivated: (objectId) => this.objectiveRuntime.onButtonActivated(objectId),
       onLogicEvent: (event) => this.logicRuntime.dispatch(event),
     });
+    this.hazardCheckpointSystem = new RuntimeHazardCheckpointSystem({
+      map: this.map,
+      objectViews: this.objectViews,
+      hud: this.hud,
+      audio: this.audio,
+      feedback: this.feedback,
+      getPlayerBounds: () => this.player.getBounds(),
+      getDeathCooldown: () => this.deathCooldown,
+      setDamageCooldown: (cooldownSeconds) => {
+        this.deathCooldown = cooldownSeconds;
+      },
+      isPlayerDead: () => this.player.isDead(),
+      setRespawnPoint: (position) => {
+        this.currentRespawnPoint = { ...position };
+      },
+      damagePlayer: (amount, message, position) => this.damagePlayer(amount, message, position),
+      killPlayer: (message, position) => this.killPlayer(message, position),
+    });
     this.movementObjectSystem = new RuntimeMovementObjectSystem({
       map: this.map,
       objectViews: this.objectViews,
@@ -232,6 +245,7 @@ export class RuntimeMechanics {
       applyPlayerImpulseY: (force) => this.player.applyImpulseY(force),
       playJumpPadFeedback: () => this.player.playJumpPadFeedback(),
     });
+    this.runtimeSystems.register(this.hazardCheckpointSystem);
     this.runtimeSystems.register(this.movementObjectSystem);
     this.runtimeSystems.register(this.pickupSystem, {
       interactionPriority: RUNTIME_INTERACTION_PRIORITIES.pickup,
@@ -384,10 +398,12 @@ export class RuntimeMechanics {
         continue;
       }
 
-      if (mapObject.type === "checkpoint") {
-        this.updateCheckpoint(mapObject, playerBounds);
-      } else if (isDamageZoneObject(mapObject)) {
-        this.updateDamageZone(mapObject, playerBounds);
+      if (
+        mapObject.type === "checkpoint" ||
+        isDamageZoneObject(mapObject) ||
+        mapObject.type === "messageZone"
+      ) {
+        this.hazardCheckpointSystem.updateObject(mapObject, playerBounds);
       } else if (mapObject.type === "coin" || mapObject.type === "key") {
         this.pickupSystem.updateObject(mapObject, playerBounds);
       } else if (mapObject.type === "button" || mapObject.type === "door") {
@@ -398,8 +414,6 @@ export class RuntimeMechanics {
         mapObject.type === "teleporter"
       ) {
         this.movementObjectSystem.updateObject(mapObject, playerBounds, deltaSeconds);
-      } else if (mapObject.type === "messageZone") {
-        this.updateMessageZone(mapObject, playerBounds);
       } else if (mapObject.type === "finish" || mapObject.type === "goal") {
         this.updateFinish(mapObject, playerBounds);
       }
@@ -578,9 +592,6 @@ export class RuntimeMechanics {
   }
 
   restart(): void {
-    this.activatedCheckpointIds.clear();
-    this.messageZoneTriggeredIds.clear();
-    this.messageZoneInsideIds.clear();
     this.logicInsideObjectIds.clear();
     this.logicDisabledObjectIds.clear();
     this.defeatedEnemyIds.clear();
@@ -952,34 +963,7 @@ export class RuntimeMechanics {
   }
 
   setCheckpointFromObject(objectId: string): boolean {
-    const target = this.map.objects.find((mapObject) => mapObject.id === objectId);
-
-    if (!target) {
-      return false;
-    }
-
-    this.currentRespawnPoint = { ...target.position };
-    this.activatedCheckpointIds.add(target.id);
-
-    if (target.type === "checkpoint") {
-      const view = this.objectViews.get(target.id);
-      const activatedColor = getString(target.properties?.activatedColor, "#22c55e");
-
-      if (view) {
-        applyObjectAppearanceToThree(view, {
-          ...target,
-          properties: {
-            ...target.properties,
-            color: activatedColor,
-          },
-        });
-      }
-    }
-
-    this.hud.showMessage("Checkpoint ativado");
-    this.audio.play("checkpoint");
-    this.feedback.spawn("checkpoint", target.position);
-    return true;
+    return this.hazardCheckpointSystem.setCheckpointFromObject(objectId);
   }
 
   finishMap(message = "Voce venceu!"): void {
@@ -1073,76 +1057,6 @@ export class RuntimeMechanics {
     }
 
     return true;
-  }
-
-  private updateCheckpoint(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if (
-      this.activatedCheckpointIds.has(mapObject.id) ||
-      !this.intersects(mapObject, playerBounds)
-    ) {
-      return;
-    }
-
-    this.activatedCheckpointIds.add(mapObject.id);
-    this.currentRespawnPoint = { ...mapObject.position };
-    const activatedColor = getString(mapObject.properties?.activatedColor, "#22c55e");
-    const view = this.objectViews.get(mapObject.id);
-
-    if (view) {
-      applyObjectAppearanceToThree(view, {
-        ...mapObject,
-        properties: {
-          ...mapObject.properties,
-          color: activatedColor,
-        },
-      });
-    }
-
-    this.hud.showMessage("Checkpoint ativado");
-    this.audio.play("checkpoint");
-    this.feedback.spawn("checkpoint", mapObject.position);
-  }
-
-  private updateDamageZone(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if (!shouldApplyDamageZone(this.deathCooldown, this.intersects(mapObject, playerBounds))) {
-      return;
-    }
-
-    const mode = getDamageZoneMode(mapObject);
-
-    if (mode === "damage") {
-      const amount = getDamageZoneAmount(mapObject);
-      this.damagePlayer(amount, "Cuidado! Voce sofreu dano", mapObject.position);
-      this.deathCooldown = this.player.isDead()
-        ? this.deathCooldown
-        : getDamageZoneCooldownSeconds();
-      return;
-    }
-
-    this.killPlayer("Voce morreu", mapObject.position);
-  }
-
-  private updateMessageZone(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    const inside = this.intersects(mapObject, playerBounds);
-
-    if (!inside) {
-      this.messageZoneInsideIds.delete(mapObject.id);
-      return;
-    }
-
-    if (this.messageZoneInsideIds.has(mapObject.id)) {
-      return;
-    }
-
-    this.messageZoneInsideIds.add(mapObject.id);
-
-    if (mapObject.properties?.oneTime !== false && this.messageZoneTriggeredIds.has(mapObject.id)) {
-      return;
-    }
-
-    this.messageZoneTriggeredIds.add(mapObject.id);
-    this.audio.play("message");
-    this.hud.showMessage(getString(mapObject.properties?.message, "Bem-vindo ao mapa!"), 2600);
   }
 
   private updateLogicObjectEntryEvents(playerBounds: THREE.Box3): void {

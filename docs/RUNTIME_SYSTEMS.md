@@ -36,19 +36,21 @@ export interface RuntimeSystem {
 - `RuntimePickupSystem` owns coins, keys, item pickups, item spawners, pickup inventory HUD state and pickup world events.
 - `RuntimeDoorButtonSystem` owns opened doors, activated buttons, required-key checks, door/button visuals and door/button world events.
 - `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads, teleporters, their cooldown/state maps and collider updates.
+- `RuntimeHazardCheckpointSystem` owns checkpoints, damage zones, message zones, checkpoint/message state and hazard cooldown bridging.
 - `RuntimeTycoonSystem` adapts the existing `TycoonSystem` to the common lifecycle.
 - `RuntimeCombatSystem` remains a focused helper system owned by `RuntimeMechanics`.
 
 Tycoon now uses the manager for update, reset, dispose, interaction hints, object interaction and `tycoonPurchase`/`tycoonUpgrade` world events. Direct Tycoon queries still remain where `LogicRuntime`, `ObjectiveRuntime`, `GameModeRuntime` and shared world-state snapshots need specialized APIs.
 
-Movement objects, pickups and door/buttons are registered before Tycoon:
+Hazards/checkpoints, movement objects, pickups and door/buttons are registered before Tycoon:
 
-1. `RuntimeMovementObjectSystem`, with default lifecycle priority and no interaction/world-event hooks.
-2. `RuntimePickupSystem`, with pickup interaction/world-event priority.
-3. `RuntimeDoorButtonSystem`, with door/button interaction/world-event priority.
-4. `RuntimeTycoonSystem`, with Tycoon interaction/world-event priority.
+1. `RuntimeHazardCheckpointSystem`, with default lifecycle priority and no interaction/world-event hooks.
+2. `RuntimeMovementObjectSystem`, with default lifecycle priority and no interaction/world-event hooks.
+3. `RuntimePickupSystem`, with pickup interaction/world-event priority.
+4. `RuntimeDoorButtonSystem`, with door/button interaction/world-event priority.
+5. `RuntimeTycoonSystem`, with Tycoon interaction/world-event priority.
 
-Static map-object touch checks for coins, keys, buttons, doors, disappearing blocks, jump pads and teleporters are still delegated from the existing `RuntimeMechanics` object loop through `updateObject(...)`. This preserves the older map iteration order while moving ownership of the state and behavior into focused systems.
+Static map-object touch checks for checkpoints, damage zones, message zones, coins, keys, buttons, doors, disappearing blocks, jump pads and teleporters are still delegated from the existing `RuntimeMechanics` object loop through `updateObject(...)`. This preserves the older map iteration order while moving ownership of the state and behavior into focused systems.
 
 ## System Dependencies
 
@@ -69,6 +71,12 @@ Static map-object touch checks for coins, keys, buttons, doors, disappearing blo
 - `GameMap`, `objectViews`, `PhysicsSystem`, HUD, audio and feedback services;
 - player bounds for touch-triggered objects;
 - callbacks to set player position, reset velocity, apply jump-pad impulse and play jump-pad feedback.
+
+`RuntimeHazardCheckpointSystem` depends on:
+
+- `GameMap`, `objectViews`, HUD, audio and feedback services;
+- player bounds for touch-triggered checkpoints, damage zones and message zones;
+- callbacks to set respawn point, damage/kill the player, read player death state and bridge the shared death cooldown still owned by `RuntimeMechanics`.
 
 `RuntimeMechanics` still acts as the bridge for cross-system callbacks so systems do not import each other directly.
 
@@ -98,7 +106,7 @@ For now, `RuntimeMechanics` still owns cross-cutting runtime wiring:
 - wiring for `LogicRuntime`, `ObjectiveRuntime` and `GameModeRuntime`;
 - multiplayer bridge methods and shared state application;
 - combat/projectile flow and equipped weapon state;
-- hazard, checkpoint, message zone and enemy flows that have not yet been extracted;
+- void death, finish/goal and enemy flows that have not yet been extracted;
 - map-object iteration that delegates touch checks into the extracted systems.
 
 Future refactors should move those domains one at a time, protected by tests and smokes.
