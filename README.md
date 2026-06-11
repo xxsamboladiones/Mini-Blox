@@ -150,8 +150,10 @@ Frontend:
 
 ```bash
 npm run typecheck
+npm run test
 npm run build
 npm run check
+npm run check:all
 node scripts/verify-render.mjs
 node scripts/validate-templates.mjs
 ```
@@ -161,8 +163,10 @@ Backend:
 ```bash
 cd server
 npm run typecheck
+npm run test
 npm run check
 npm run build
+npm run check:all
 node scripts/smoke-server.mjs
 ```
 
@@ -188,3 +192,5 @@ node smoke-multiplayer.mjs
 See [README_ONLINE.md](README_ONLINE.md) for online catalog, room flow, protocol notes and multiplayer test steps.
 
 See [docs/TYCOON.md](docs/TYCOON.md) for Tycoon object setup, runtime behavior, validation rules and current multiplayer limits.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TESTING.md](docs/TESTING.md), [docs/ADDING_OBJECT_TYPES.md](docs/ADDING_OBJECT_TYPES.md) and [docs/ADDING_GAME_MODES.md](docs/ADDING_GAME_MODES.md) for development rules, test harness usage and extension checklists.

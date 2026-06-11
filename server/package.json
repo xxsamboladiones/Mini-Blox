@@ -7,7 +7,10 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "check": "npm run typecheck",
+    "check:all": "npm run typecheck && npm run test && npm run check && npm run build",
     "start": "node dist/index.js",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:reset": "tsx src/db/reset.ts"
@@ -25,6 +28,7 @@
     "@types/node": "^22.10.2",
     "@types/ws": "^8.5.13",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.8"
   }
 }
