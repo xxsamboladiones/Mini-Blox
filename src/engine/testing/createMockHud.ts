@@ -20,6 +20,7 @@ export type MockRuntimeHud = RuntimeHud & {
   health: Array<{ current: number; max: number }>;
   weapons: Array<RuntimeWeaponHudInfo | string | null>;
   inventories: HudInventoryItem[][];
+  keys: string[][];
   objectives: HudObjectiveState[][];
   gameModeStatuses: Array<GameModeHudStatus | null>;
   tycoonStatuses: Array<TycoonHudStatus | null>;
@@ -34,6 +35,7 @@ export function createMockHud(): MockRuntimeHud {
   const health: Array<{ current: number; max: number }> = [];
   const weapons: Array<RuntimeWeaponHudInfo | string | null> = [];
   const inventories: HudInventoryItem[][] = [];
+  const keys: string[][] = [];
   const objectives: HudObjectiveState[][] = [];
   const gameModeStatuses: Array<GameModeHudStatus | null> = [];
   const tycoonStatuses: Array<TycoonHudStatus | null> = [];
@@ -46,6 +48,7 @@ export function createMockHud(): MockRuntimeHud {
     health,
     weapons,
     inventories,
+    keys,
     objectives,
     gameModeStatuses,
     tycoonStatuses,
@@ -66,6 +69,9 @@ export function createMockHud(): MockRuntimeHud {
     },
     setInventory: (items: HudInventoryItem[]) => {
       inventories.push(structuredClone(items));
+    },
+    setKeys: (items: string[]) => {
+      keys.push([...items]);
     },
     setObjectives: (items: HudObjectiveState[]) => {
       objectives.push(structuredClone(items));

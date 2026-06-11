@@ -33,10 +33,36 @@ export interface RuntimeSystem {
 
 ## Current Systems
 
+- `RuntimePickupSystem` owns coins, keys, item pickups, item spawners, pickup inventory HUD state and pickup world events.
+- `RuntimeDoorButtonSystem` owns opened doors, activated buttons, required-key checks, door/button visuals and door/button world events.
 - `RuntimeTycoonSystem` adapts the existing `TycoonSystem` to the common lifecycle.
-- `RuntimeCombatSystem` and `RuntimeInventorySystem` remain focused helper systems owned by `RuntimeMechanics`.
+- `RuntimeCombatSystem` remains a focused helper system owned by `RuntimeMechanics`.
 
 Tycoon now uses the manager for update, reset, dispose, interaction hints, object interaction and `tycoonPurchase`/`tycoonUpgrade` world events. Direct Tycoon queries still remain where `LogicRuntime`, `ObjectiveRuntime`, `GameModeRuntime` and shared world-state snapshots need specialized APIs.
+
+Pickups and door/buttons are registered before Tycoon:
+
+1. `RuntimePickupSystem`, with pickup interaction/world-event priority.
+2. `RuntimeDoorButtonSystem`, with door/button interaction/world-event priority.
+3. `RuntimeTycoonSystem`, with Tycoon interaction/world-event priority.
+
+Static map-object touch checks for coins, keys, buttons and doors are still delegated from the existing `RuntimeMechanics` object loop through `updateObject(...)`. This preserves the older map iteration order while moving ownership of the state and behavior into the focused systems.
+
+## System Dependencies
+
+`RuntimePickupSystem` depends on:
+
+- `GameMap`, `world`, `objectViews`, HUD, audio and feedback services;
+- player bounds for spawned pickup overlap checks;
+- callbacks for healing, weapon equip, objective/game-mode coin progress, key objectives, logic events and multiplayer heal requests.
+
+`RuntimeDoorButtonSystem` depends on:
+
+- `GameMap`, `objectViews`, `PhysicsSystem`, HUD, audio and feedback services;
+- `RuntimePickupSystem` for `hasKey` and key labels;
+- callbacks for objective progress, logic events and world-event emission.
+
+`RuntimeMechanics` still acts as the bridge for cross-system callbacks so systems do not import each other directly.
 
 ## Adding A Runtime System
 
@@ -63,6 +89,7 @@ For now, `RuntimeMechanics` still owns cross-cutting runtime wiring:
 - high-level restart/finish/menu/edit actions;
 - wiring for `LogicRuntime`, `ObjectiveRuntime` and `GameModeRuntime`;
 - multiplayer bridge methods and shared state application;
-- older pickup, door/button, hazard, checkpoint, moving object and enemy flows that have not yet been extracted.
+- combat/projectile flow and equipped weapon state;
+- hazard, checkpoint, moving object, disappearing block, jump pad, teleporter, message zone and enemy flows that have not yet been extracted.
 
 Future refactors should move those domains one at a time, protected by tests and smokes.
