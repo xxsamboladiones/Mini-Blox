@@ -106,10 +106,7 @@ export const AuthService = {
   },
 };
 
-async function authenticate(
-  path: string,
-  body: Record<string, string>
-): Promise<AuthSession> {
+async function authenticate(path: string, body: Record<string, string>): Promise<AuthSession> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -15,7 +15,7 @@ node scripts/validate-templates.mjs
 node scripts/verify-render.mjs
 ```
 
-Root Vitest is configured to test `src/**` and exclude `server/**`. Current tests cover `TycoonSystem`, `RuntimeSystemManager`, `RuntimePickupSystem`, `RuntimeDoorButtonSystem` and editor map validation.
+Root Vitest is configured to test `src/**` and exclude `server/**`. Current tests cover `TycoonSystem`, `RuntimeSystemManager`, `RuntimePickupSystem`, `RuntimeDoorButtonSystem`, `RuntimeMovementObjectSystem` and editor map validation.
 
 ## Backend
 
@@ -89,6 +89,7 @@ Use temporary `DATABASE_URL=file:...` values when running repeated smoke tests t
 - New runtime systems should also have `RuntimeSystemManager` or adapter coverage for lifecycle, interaction priority and world-event handling.
 - Pickup-like systems should test static object collection, spawned runtime objects, shared world events and restart cleanup.
 - Door/button-like systems should test linked object changes, required-key bridges, repeated interaction rules, world events and reset restoration.
+- Movement-object systems should test position interpolation, collider updates/removal, cooldowns, player motion callbacks and reset restoration.
 - New object types should have validation tests for valid templates and broken references.
 - Backend route tests should use temporary SQLite and should not depend on existing local data.
 - Regressions found by browser playtesting should get a small automated test when the behavior can be isolated.

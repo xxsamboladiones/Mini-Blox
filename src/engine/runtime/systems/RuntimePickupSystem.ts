@@ -13,10 +13,7 @@ import type { MapObject, Vector3 } from "../../../shared/types/ObjectSchema";
 import type { ItemPickupObject } from "../../../shared/types/ItemSchema";
 import type { AudioSystem } from "../../AudioSystem";
 import type { FeedbackSystem } from "../../FeedbackSystem";
-import {
-  createMapObject3D,
-  disposeObject3D,
-} from "../../ObjectFactory";
+import { createMapObject3D, disposeObject3D } from "../../ObjectFactory";
 import type { RuntimeHud } from "../../RuntimeHud";
 import { RuntimeInventorySystem } from "../RuntimeInventorySystem";
 import type { RuntimeSystem } from "../core/RuntimeSystem";
@@ -219,6 +216,10 @@ export class RuntimePickupSystem implements RuntimeSystem {
     }
 
     const coinAmount = Math.floor(amount);
+    if (coinAmount <= 0) {
+      return;
+    }
+
     this.coinCount = Math.max(0, this.coinCount + coinAmount);
     this.options.hud.setCoins(this.coinCount, this.getTotalCoinObjects());
     this.options.audio.play("coin");
@@ -226,7 +227,9 @@ export class RuntimePickupSystem implements RuntimeSystem {
   }
 
   setWeaponInventoryItem(itemId: string): void {
-    this.inventorySystem.setSingleItem(normalizeWeaponId(itemId) ? getWeaponItemId(itemId) ?? itemId : itemId);
+    this.inventorySystem.setSingleItem(
+      normalizeWeaponId(itemId) ? (getWeaponItemId(itemId) ?? itemId) : itemId
+    );
     this.updateInventoryHud();
   }
 
@@ -278,10 +281,7 @@ export class RuntimePickupSystem implements RuntimeSystem {
   }
 
   private updateKey(mapObject: MapObject, playerBounds: THREE.Box3): boolean {
-    if (
-      this.collectedKeyObjectIds.has(mapObject.id) ||
-      !this.intersects(mapObject, playerBounds)
-    ) {
+    if (this.collectedKeyObjectIds.has(mapObject.id) || !this.intersects(mapObject, playerBounds)) {
       return false;
     }
 
@@ -407,9 +407,7 @@ export class RuntimePickupSystem implements RuntimeSystem {
     state.activePickupIds.add(pickup.id);
     this.options.world.add(view);
     state.cooldown =
-      state.activePickupIds.size < getMaxSpawnedItems(state.spawner)
-        ? 0
-        : Number.POSITIVE_INFINITY;
+      state.activePickupIds.size < getMaxSpawnedItems(state.spawner) ? 0 : Number.POSITIVE_INFINITY;
   }
 
   private collectItemPickup(pickup: ItemPickupObject): void {

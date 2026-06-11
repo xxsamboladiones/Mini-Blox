@@ -323,7 +323,8 @@ export function getCollisionRole(mapObject: MapObject): CollisionRole {
   }
 
   if (mapObject.type === "tycoonUnlockable") {
-    return mapObject.properties?.lockedCollision === true || mapObject.properties?.startsLocked === false
+    return mapObject.properties?.lockedCollision === true ||
+      mapObject.properties?.startsLocked === false
       ? "solid"
       : "none";
   }

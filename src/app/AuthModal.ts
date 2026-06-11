@@ -67,7 +67,9 @@ export class AuthModal {
 
     document.body.appendChild(this.backdrop);
     this.backdrop.addEventListener("click", this.handleBackdropClick);
-    this.backdrop.querySelector<HTMLFormElement>("[data-auth-form]")?.addEventListener("submit", this.handleSubmit);
+    this.backdrop
+      .querySelector<HTMLFormElement>("[data-auth-form]")
+      ?.addEventListener("submit", this.handleSubmit);
     this.backdrop
       .querySelector<HTMLElement>("[data-auth-action='close']")
       ?.addEventListener("click", () => this.close());

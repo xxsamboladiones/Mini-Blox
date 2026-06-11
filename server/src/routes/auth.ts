@@ -82,9 +82,7 @@ export async function loginRoute(req: Request, res: Response): Promise<void> {
     }
 
     const user = userRepository.findByUsername(username.value);
-    const passwordMatches = user
-      ? await bcrypt.compare(password.value, user.passwordHash)
-      : false;
+    const passwordMatches = user ? await bcrypt.compare(password.value, user.passwordHash) : false;
 
     if (!user || !passwordMatches) {
       logger.warn("auth login rejected", { username: username.value });
@@ -173,10 +171,7 @@ function normalizePassword(value: unknown): ValidationResult {
   return { valid: true, value };
 }
 
-function normalizeDisplayName(
-  value: unknown,
-  fallback: string
-): ValidationResult {
+function normalizeDisplayName(value: unknown, fallback: string): ValidationResult {
   const displayName =
     typeof value === "string" && value.trim().length > 0
       ? value.trim().replace(/\s+/g, " ")

@@ -121,7 +121,8 @@ export class ObjectivesPanel {
       objective.type === "defeatEnemies" ||
       objective.type === "collectTycoonCash"
     ) {
-      const fallback = objective.type === "defeatEnemies" ? 1 : objective.type === "collectTycoonCash" ? 100 : 5;
+      const fallback =
+        objective.type === "defeatEnemies" ? 1 : objective.type === "collectTycoonCash" ? 100 : 5;
       return `
         <label class="field">
           <span>Quantidade</span>

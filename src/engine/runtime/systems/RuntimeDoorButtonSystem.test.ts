@@ -4,7 +4,11 @@ import { createMapObject3D } from "../../ObjectFactory";
 import { createMockAudioSystem } from "../../testing/createMockAudioSystem";
 import { createMockFeedbackSystem } from "../../testing/createMockFeedbackSystem";
 import { createMockHud } from "../../testing/createMockHud";
-import { createDoorButtonTestMap, createFreeplayTestMap, createRuntimeTestObject } from "../../testing/createRuntimeTestMap";
+import {
+  createDoorButtonTestMap,
+  createFreeplayTestMap,
+  createRuntimeTestObject,
+} from "../../testing/createRuntimeTestMap";
 import { createPlayerBounds } from "../../testing/simulateRuntimeTicks";
 import { createMockPhysicsSystem } from "../../testing/createMockPhysicsSystem";
 import { RuntimeDoorButtonSystem } from "./RuntimeDoorButtonSystem";
@@ -21,7 +25,10 @@ describe("RuntimeDoorButtonSystem", () => {
 
     expect(fixture.system.isDoorOpenById("door_a")).toBe(true);
     expect(fixture.physics.hasCollider("door_1")).toBe(false);
-    expect(fixture.worldEvents.map((event) => event.type)).toEqual(["doorOpened", "buttonActivated"]);
+    expect(fixture.worldEvents.map((event) => event.type)).toEqual([
+      "doorOpened",
+      "buttonActivated",
+    ]);
   });
 
   it("botao oneTime nao reativa", () => {

@@ -16,6 +16,10 @@ export default defineConfig({
             return "vendor-ui";
           }
 
+          if (normalizedId.includes("/src/shared/MapTemplates")) {
+            return "template-generators";
+          }
+
           if (
             normalizedId.includes("/src/shared/") ||
             normalizedId.includes("/src/storage/LocalProfileStorage") ||

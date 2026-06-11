@@ -157,7 +157,12 @@ function normalizeObjectProperties(object: MapObject): MapObjectProperties {
     properties.requiresPurchase = getBoolean(properties.requiresPurchase, false);
     properties.purchaseId = getString(properties.purchaseId, "");
     properties.startsEnabled = getBoolean(properties.startsEnabled, true);
-    properties.maxStoredAmount = getClampedNumber(properties.maxStoredAmount, 500, 0, 1_000_000_000);
+    properties.maxStoredAmount = getClampedNumber(
+      properties.maxStoredAmount,
+      500,
+      0,
+      1_000_000_000
+    );
     properties.upgradeGroupId = getString(properties.upgradeGroupId, "");
   } else if (object.type === "tycoonCollector") {
     properties.collectorId = getString(properties.collectorId, object.id);

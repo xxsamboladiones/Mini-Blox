@@ -38,9 +38,7 @@ export function normalizeWeaponId(weaponId: string | null | undefined): string |
   return WEAPON_ALIASES[weaponId.trim()] ?? null;
 }
 
-export function getServerWeaponRule(
-  weaponId: string | null | undefined
-): ServerWeaponRule | null {
+export function getServerWeaponRule(weaponId: string | null | undefined): ServerWeaponRule | null {
   const normalized = normalizeWeaponId(weaponId);
   return normalized ? (WEAPON_RULES[normalized] ?? null) : null;
 }

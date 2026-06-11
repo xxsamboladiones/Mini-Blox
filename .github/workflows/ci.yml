@@ -30,6 +30,9 @@ jobs:
       - name: Unit tests
         run: npm run test
 
+      - name: Critical dependency audit
+        run: npm audit --audit-level=critical
+
       - name: Check
         run: npm run check
 
@@ -64,6 +67,9 @@ jobs:
 
       - name: Unit and integration tests
         run: npm run test
+
+      - name: Critical dependency audit
+        run: npm audit --audit-level=critical
 
       - name: Check
         run: npm run check

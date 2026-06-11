@@ -1,4 +1,4 @@
-# MiniBlox Alpha 0.1.6
+# MiniBlox Alpha 0.2.0-alpha.1
 
 MiniBlox is a TypeScript sandbox map editor and lightweight 3D game runtime for the browser.
 
@@ -22,6 +22,27 @@ The current alpha focuses on a playable creator loop: build maps, test them in t
 - Server rate limits, structured JSON logs and WebSocket heartbeat cleanup
 - Official templates for basic, platform, puzzle, collect, combat, Tycoon, PvP and coop examples
 - Basic logic/objective/game-mode panels
+
+## Alpha 0.2.0-alpha.1 Runtime Extraction
+
+- Added the `RuntimeSystemManager` lifecycle for small runtime systems with ordered update, interaction and world-event delegation
+- Extracted Tycoon, pickup/inventory/spawner and door/button responsibilities out of `RuntimeMechanics`
+- Added guardrails for runtime-system registration and lookup so duplicate system IDs fail early
+- Kept `RuntimeMechanics` as the runtime orchestrator while movement objects, hazards/checkpoints and enemies remain future extraction targets
+
+## Alpha 0.1.9 Performance, CI Smokes & Runtime Systems
+
+- Added Vite chunk splitting and lazy loading for editor, play screen and online map list flows
+- Split template catalog metadata from heavy template generation so the main menu can render without loading full map generators
+- Added GitHub Actions CI plus smoke workflow coverage for backend, multiplayer and render checks
+- Added runtime-system architecture docs and performance notes for future feature work
+
+## Alpha 0.1.8 Quality Gate
+
+- Added Vitest coverage for frontend runtime systems, Tycoon behavior, validation and backend auth/repository flows
+- Added runtime test harness mocks for HUD, audio, feedback, physics and runtime test maps
+- Documented architecture, testing, object-type extension and game-mode extension rules
+- Added `check:all` commands to run typecheck, tests, validation, build and render smoke from one command
 
 ## Alpha 0.1.7 Tycoon Mode
 
@@ -64,7 +85,7 @@ The current alpha focuses on a playable creator loop: build maps, test them in t
 - All 28 built-in templates were audited as official playable examples
 - Template tags now use a consistent lowercase taxonomy for basic, platform, puzzle, collect, combat, multiplayer, local, exploration, stress and showcase categories
 - Five curated showcase templates are marked for quick starts: sandbox, obby, coin collect, multiplayer PvP and multiplayer coop enemies
-- `MAP_TEMPLATES` now exposes template tags so UI/catalog surfaces can reason about the same metadata as generated maps
+- Template metadata exposes tags so UI/catalog surfaces can reason about the same metadata as generated maps without loading full generators
 - `node scripts/validate-templates.mjs` now checks catalog metadata, required tags, generated map tag parity, transform bounds, enemy/damage limits and multiplayer template requirements
 - No intentional gameplay, backend, multiplayer protocol or schema changes
 
@@ -185,7 +206,7 @@ node smoke-multiplayer.mjs
 - Rooms are in memory and are removed by cleanup.
 - Postgres is planned behind the repository interface, but SQLite is the implemented adapter in this alpha.
 - Chat has length/rate limits, but no advanced moderation.
-- Editor collaboration, ranking and matchmaking are not part of Alpha 0.1.6.
+- Editor collaboration, ranking and matchmaking are not part of Alpha 0.2.0-alpha.1.
 
 ## More Docs
 

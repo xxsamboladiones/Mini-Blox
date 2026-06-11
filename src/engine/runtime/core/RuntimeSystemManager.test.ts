@@ -27,6 +27,25 @@ describe("RuntimeSystemManager", () => {
     ]);
   });
 
+  it("recusa registrar dois sistemas com o mesmo id", () => {
+    const manager = new RuntimeSystemManager();
+    manager.register(createSystem("pickups", []));
+
+    expect(() => manager.register(createSystem("pickups", []))).toThrow(
+      /Runtime system already registered: pickups/
+    );
+  });
+
+  it("retorna sistema registrado por id", () => {
+    const manager = new RuntimeSystemManager();
+    const pickups = createSystem("pickups", []);
+
+    manager.register(pickups);
+
+    expect(manager.getSystem("pickups")).toBe(pickups);
+    expect(manager.getSystem("missing")).toBeNull();
+  });
+
   it("chama dispose em ordem inversa", () => {
     const calls: string[] = [];
     const manager = new RuntimeSystemManager();
@@ -102,8 +121,7 @@ function createSystem(
     update: (deltaSeconds) => calls.push(`${id}:update:${deltaSeconds}`),
     reset: () => calls.push(`${id}:reset`),
     dispose: () => calls.push(`${id}:dispose`),
-    getInteractionHint:
-      overrides.hint === undefined ? undefined : () => overrides.hint ?? null,
+    getInteractionHint: overrides.hint === undefined ? undefined : () => overrides.hint ?? null,
     interactWithObject: overrides.interact,
     applyWorldEvent: overrides.applyWorldEvent,
     ...overrides,

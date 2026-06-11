@@ -238,7 +238,9 @@ export class LogicRuntime {
     }
 
     if (trigger.type === "onTycoonClaimed") {
-      return event.type === "onTycoonClaimed" && matchesOptionalId(trigger.tycoonId, event.tycoonId);
+      return (
+        event.type === "onTycoonClaimed" && matchesOptionalId(trigger.tycoonId, event.tycoonId)
+      );
     }
 
     if (trigger.type === "onTycoonCashCollected") {
@@ -266,7 +268,9 @@ export class LogicRuntime {
     }
 
     if (trigger.type === "onTycoonCompleted") {
-      return event.type === "onTycoonCompleted" && matchesOptionalId(trigger.tycoonId, event.tycoonId);
+      return (
+        event.type === "onTycoonCompleted" && matchesOptionalId(trigger.tycoonId, event.tycoonId)
+      );
     }
 
     if (trigger.type === "onGameModeWon") {
@@ -331,7 +335,9 @@ export class LogicRuntime {
 
     if (condition.type === "tycoonClaimed") {
       const claimedTycoonId = this.context.getClaimedTycoonId();
-      return Boolean(claimedTycoonId && (!condition.tycoonId || condition.tycoonId === claimedTycoonId));
+      return Boolean(
+        claimedTycoonId && (!condition.tycoonId || condition.tycoonId === claimedTycoonId)
+      );
     }
 
     return !this.executedOnceRuleIds.has(rule.id);

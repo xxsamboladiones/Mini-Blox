@@ -40,6 +40,9 @@ jobs:
         run: npm run build
         working-directory: server
 
+      - name: Remove old smoke databases
+        run: rm -f server/data/ci-*.sqlite
+
       - name: Start backend for HTTP smoke
         run: |
           cd server
@@ -62,9 +65,12 @@ jobs:
       - name: Multiplayer smoke
         run: DATABASE_URL=file:./server/data/ci-multiplayer.sqlite node server/scripts/smoke-multiplayer.mjs
 
-      - name: Start frontend for render smoke
+      - name: Build frontend
+        run: npm run build
+
+      - name: Start frontend preview for render smoke
         run: |
-          npm run dev -- --host 127.0.0.1 > vite-smoke.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 5173 > vite-smoke.log 2>&1 &
           echo $! > vite.pid
 
       - name: Wait for frontend
@@ -82,3 +88,21 @@ jobs:
           if [ -f vite.pid ]; then
             kill "$(cat vite.pid)" || true
           fi
+
+      - name: Print smoke logs on failure
+        if: failure()
+        run: |
+          if [ -f server-smoke.log ]; then
+            echo "::group::server-smoke.log"
+            cat server-smoke.log
+            echo "::endgroup::"
+          fi
+          if [ -f vite-smoke.log ]; then
+            echo "::group::vite-smoke.log"
+            cat vite-smoke.log
+            echo "::endgroup::"
+          fi
+
+      - name: Clean smoke databases
+        if: always()
+        run: rm -f server/data/ci-*.sqlite

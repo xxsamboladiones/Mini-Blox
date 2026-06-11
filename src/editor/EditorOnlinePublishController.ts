@@ -65,10 +65,7 @@ export class EditorOnlinePublishController {
     };
   }
 
-  private async updateExisting(
-    map: GameMap,
-    onlineId: string
-  ): Promise<EditorOnlinePublishResult> {
+  private async updateExisting(map: GameMap, onlineId: string): Promise<EditorOnlinePublishResult> {
     const summary = await OnlineMapService.updateOnlineMap(onlineId, map);
 
     if (!summary) {

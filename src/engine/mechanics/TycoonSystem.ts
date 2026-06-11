@@ -79,7 +79,10 @@ export class TycoonSystem {
   }
 
   reset(): void {
-    this.playerCash = Math.max(0, Math.floor(getNumber(this.map.gameModeSettings?.tycoonSettings?.startingCash, 0)));
+    this.playerCash = Math.max(
+      0,
+      Math.floor(getNumber(this.map.gameModeSettings?.tycoonSettings?.startingCash, 0))
+    );
     this.pendingCashByCollectorId.clear();
     this.collectorCooldowns.clear();
     this.purchasedIds.clear();
@@ -406,7 +409,10 @@ export class TycoonSystem {
       return false;
     }
 
-    return this.claimObjects.length === 1 && getBoolean(this.claimObjects[0]?.properties?.autoClaimInSolo, true);
+    return (
+      this.claimObjects.length === 1 &&
+      getBoolean(this.claimObjects[0]?.properties?.autoClaimInSolo, true)
+    );
   }
 
   private updateOwnerClaims(playerBounds: THREE.Box3, playerPosition: Vector3): void {
@@ -443,7 +449,10 @@ export class TycoonSystem {
   }
 
   private updateGenerators(deltaSeconds: number): void {
-    const rateScale = Math.max(0.1, getNumber(this.map.gameModeSettings?.tycoonSettings?.generatorTickRateScale, 1));
+    const rateScale = Math.max(
+      0.1,
+      getNumber(this.map.gameModeSettings?.tycoonSettings?.generatorTickRateScale, 1)
+    );
 
     for (const state of this.generators.values()) {
       if (!this.isGeneratorActive(state)) {
@@ -461,7 +470,13 @@ export class TycoonSystem {
   }
 
   private addGeneratedCash(generator: MapObject): void {
-    const income = Math.max(0, Math.floor(getNumber(generator.properties?.incomePerTick, 5) * this.getGeneratorIncomeMultiplier(generator)));
+    const income = Math.max(
+      0,
+      Math.floor(
+        getNumber(generator.properties?.incomePerTick, 5) *
+          this.getGeneratorIncomeMultiplier(generator)
+      )
+    );
     if (income <= 0) {
       return;
     }
@@ -520,7 +535,7 @@ export class TycoonSystem {
     this.options.onCashCollected?.(this.playerCash, pending);
     this.options.onLogicEvent?.({
       type: "onTycoonCashCollected",
-      tycoonId: collector ? getTycoonId(collector) : this.claimedTycoonId ?? undefined,
+      tycoonId: collector ? getTycoonId(collector) : (this.claimedTycoonId ?? undefined),
       amount: pending,
     });
     this.publishProgress();
@@ -595,7 +610,9 @@ export class TycoonSystem {
     if (!this.arePrerequisitesMet(object)) {
       const missingPrerequisite = this.getMissingPrerequisite(object);
       this.hud.showMessage(
-        missingPrerequisite ? `Requer ${missingPrerequisite}.` : "Compra bloqueada por pre-requisito.",
+        missingPrerequisite
+          ? `Requer ${missingPrerequisite}.`
+          : "Compra bloqueada por pre-requisito.",
         1600
       );
       return false;
@@ -661,7 +678,7 @@ export class TycoonSystem {
       this.options.onLogicEvent?.({
         type: "onTycoonPurchaseCompleted",
         purchaseId,
-        tycoonId: sourceObject ? getTycoonId(sourceObject) : this.claimedTycoonId ?? undefined,
+        tycoonId: sourceObject ? getTycoonId(sourceObject) : (this.claimedTycoonId ?? undefined),
       });
     }
 
@@ -677,7 +694,10 @@ export class TycoonSystem {
     if (options.showFeedback !== false && !wasPurchased) {
       this.audio.play("button");
       this.feedback.spawn("button", sourceObject?.position, "Comprado");
-      this.hud.showMessage(getString(sourceObject?.properties?.purchasedMessage, "Comprado!"), 1800);
+      this.hud.showMessage(
+        getString(sourceObject?.properties?.purchasedMessage, "Comprado!"),
+        1800
+      );
     }
 
     this.publishProgress();
@@ -756,15 +776,13 @@ export class TycoonSystem {
     const purchased = this.purchasedIds.has(purchaseId);
     const maxedUpgrade =
       object.type === "tycoonUpgrade" &&
-      (this.upgradeLevels.get(purchaseId) ?? 0) >= Math.max(1, Math.floor(getNumber(object.properties?.maxLevel, 1)));
+      (this.upgradeLevels.get(purchaseId) ?? 0) >=
+        Math.max(1, Math.floor(getNumber(object.properties?.maxLevel, 1)));
     const hiddenAfterPurchase = object.properties?.hideAfterPurchase !== false;
     const gated =
-      this.gatedPurchaseSurfaceIds.has(object.id) ||
-      this.gatedPurchaseSurfaceIds.has(purchaseId);
+      this.gatedPurchaseSurfaceIds.has(object.id) || this.gatedPurchaseSurfaceIds.has(purchaseId);
     const available =
-      !gated ||
-      this.unlockedObjectIds.has(object.id) ||
-      this.unlockedObjectIds.has(purchaseId);
+      !gated || this.unlockedObjectIds.has(object.id) || this.unlockedObjectIds.has(purchaseId);
     const visible = available && !((purchased || maxedUpgrade) && hiddenAfterPurchase);
     this.setObjectRuntimeState(object, visible, false);
   }
@@ -883,7 +901,10 @@ export class TycoonSystem {
   }
 
   private getEffectiveGeneratorInterval(generator: MapObject): number {
-    return Math.max(0.1, getGeneratorInterval(generator) * this.getGeneratorIntervalMultiplier(generator));
+    return Math.max(
+      0.1,
+      getGeneratorInterval(generator) * this.getGeneratorIntervalMultiplier(generator)
+    );
   }
 
   private getGeneratorIncomeMultiplier(generator: MapObject): number {
@@ -902,7 +923,10 @@ export class TycoonSystem {
         continue;
       }
 
-      multiplier *= Math.pow(Math.max(0, getNumber(upgrade.properties?.incomeMultiplier, 1)), level);
+      multiplier *= Math.pow(
+        Math.max(0, getNumber(upgrade.properties?.incomeMultiplier, 1)),
+        level
+      );
     }
 
     return multiplier;
@@ -924,7 +948,10 @@ export class TycoonSystem {
         continue;
       }
 
-      multiplier *= Math.pow(Math.max(0.05, getNumber(upgrade.properties?.intervalMultiplier, 1)), level);
+      multiplier *= Math.pow(
+        Math.max(0.05, getNumber(upgrade.properties?.intervalMultiplier, 1)),
+        level
+      );
     }
 
     return multiplier;

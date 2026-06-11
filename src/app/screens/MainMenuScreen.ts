@@ -4,7 +4,7 @@ import { LocalProfileStorage, type AvatarColors } from "../../storage/LocalProfi
 import { MapStorage } from "../../storage/MapStorage";
 import { AuthModal } from "../AuthModal";
 import { AuthService } from "../../services/AuthService";
-import { MAP_TEMPLATES, type MapTemplateId } from "../../shared/MapTemplates";
+import { MAP_TEMPLATE_METADATA, type MapTemplateId } from "../../shared/MapTemplateMetadata";
 import type { MainMenuActions, Screen } from "../AppState";
 
 export class MainMenuScreen implements Screen {
@@ -101,7 +101,7 @@ export class MainMenuScreen implements Screen {
               <span>Escolha uma base e edite livremente.</span>
             </div>
             <div class="template-grid">
-              ${MAP_TEMPLATES.map(
+              ${MAP_TEMPLATE_METADATA.map(
                 (template) => `
                 <button class="template-card" type="button" data-action="template" data-template="${template.id}">
                   <i data-lucide="${template.icon}"></i>

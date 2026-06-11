@@ -84,7 +84,9 @@ export async function createHttpTestServer(): Promise<HttpTestServer> {
   };
 }
 
-function listen(listenFn: (port: number, hostname: string, callback: () => void) => Server): Promise<Server> {
+function listen(
+  listenFn: (port: number, hostname: string, callback: () => void) => Server
+): Promise<Server> {
   return new Promise((resolve) => {
     const server = listenFn(0, "127.0.0.1", () => resolve(server));
   });

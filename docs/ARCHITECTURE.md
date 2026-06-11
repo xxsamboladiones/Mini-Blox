@@ -7,7 +7,7 @@ MiniBlox is split into four main layers: shared schema/catalog code, the editor,
 `src/shared` owns portable data contracts and content definitions:
 
 - `types/*` defines `GameMap`, `MapObject`, objectives, logic rules, multiplayer messages and item schemas.
-- `ObjectCatalog.ts`, `ItemCatalog.ts` and `MapTemplates.ts` define objects, items and official starter maps.
+- `ObjectCatalog.ts`, `ItemCatalog.ts`, `MapTemplateMetadata.ts` and `MapTemplates.ts` define objects, items, lightweight template catalog data and official starter-map generators.
 - `normalizeGameMap.ts` is the compatibility boundary for older maps. Any new `GameMap` field needs an explicit default or migration path here.
 - `WeaponRules.ts` and `shared/weapon-rules.json` are the single source for combat weapon constants used by client and server.
 
@@ -33,7 +33,7 @@ Every new object type should be visible in the object panel, editable in the pro
 - `ObjectFactory.ts` builds the visual representation for map objects.
 - `GameModeRuntime.ts`, `ObjectiveRuntime.ts`, `LogicRuntime.ts`, `RuntimeHud.ts`, `AudioSystem.ts` and `FeedbackSystem.ts` consume system state and events.
 
-The runtime-system extraction is incremental. `RuntimePickupSystem` owns coins, keys, item pickups and spawners. `RuntimeDoorButtonSystem` owns opened doors, activated buttons and required-key checks. The Tycoon mode follows the same direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
+The runtime-system extraction is incremental. `RuntimePickupSystem` owns coins, keys, item pickups and spawners. `RuntimeDoorButtonSystem` owns opened doors, activated buttons and required-key checks. `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads and teleporters, including their cooldowns and collider updates. The Tycoon mode follows the same direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
 
 ## Backend
 

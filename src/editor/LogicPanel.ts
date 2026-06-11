@@ -288,7 +288,12 @@ export class LogicPanel {
         ${this.renderTextInput("Tycoon ID opcional", rule.trigger.tycoonId ?? "", "data-trigger-tycoon", rule.id)}
         ${
           rule.trigger.type === "onTycoonCashCollected"
-            ? this.renderAmountInput("Valor minimo", rule.trigger.amount ?? 1, "data-trigger-amount", rule.id)
+            ? this.renderAmountInput(
+                "Valor minimo",
+                rule.trigger.amount ?? 1,
+                "data-trigger-amount",
+                rule.id
+              )
             : ""
         }
       `;
@@ -1632,7 +1637,10 @@ export class LogicPanel {
         this.updateRule(select.dataset.ruleId, (rule) => {
           const action = rule.actions[getIndex(select)];
 
-          if (action?.type === "enableTycoonGenerator" || action?.type === "disableTycoonGenerator") {
+          if (
+            action?.type === "enableTycoonGenerator" ||
+            action?.type === "disableTycoonGenerator"
+          ) {
             action.generatorId = select.value;
           }
         });
@@ -2039,8 +2047,7 @@ export class LogicPanel {
       .filter((object) => object.type === "tycoonUpgrade")
       .map((object) => ({
         id:
-          typeof object.properties?.upgradeId === "string" &&
-          object.properties.upgradeId.length > 0
+          typeof object.properties?.upgradeId === "string" && object.properties.upgradeId.length > 0
             ? object.properties.upgradeId
             : object.id,
         label: object.name ?? object.id,
@@ -2611,7 +2618,9 @@ function getPreferredUpgradeId(objects: MapObject[]): string {
 function getPreferredGeneratorId(objects: MapObject[]): string {
   const object = objects.find((candidate) => candidate.type === "tycoonGenerator");
   const generatorId = object?.properties?.generatorId;
-  return typeof generatorId === "string" && generatorId.length > 0 ? generatorId : (object?.id ?? "");
+  return typeof generatorId === "string" && generatorId.length > 0
+    ? generatorId
+    : (object?.id ?? "");
 }
 
 function getDoorId(object: MapObject): string {
@@ -2622,12 +2631,14 @@ function getDoorId(object: MapObject): string {
 
 function getTycoonPurchaseId(object: MapObject): string {
   if (object.type === "tycoonUpgrade") {
-    return typeof object.properties?.upgradeId === "string" && object.properties.upgradeId.length > 0
+    return typeof object.properties?.upgradeId === "string" &&
+      object.properties.upgradeId.length > 0
       ? object.properties.upgradeId
       : object.id;
   }
 
-  return typeof object.properties?.purchaseId === "string" && object.properties.purchaseId.length > 0
+  return typeof object.properties?.purchaseId === "string" &&
+    object.properties.purchaseId.length > 0
     ? object.properties.purchaseId
     : object.id;
 }

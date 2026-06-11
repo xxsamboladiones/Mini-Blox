@@ -29,24 +29,26 @@ export interface RuntimeSystem {
 }
 ```
 
-`RuntimeSystemManager` calls `start`, `update` and `reset` in registration order. `dispose` runs in reverse order. Interaction and world-event hooks are resolved by priority, then registration order.
+`RuntimeSystemManager` calls `start`, `update` and `reset` in registration order. `dispose` runs in reverse order. Interaction and world-event hooks are resolved by priority, then registration order. System IDs must be unique; duplicate registration throws immediately, and `getSystem(id)` exists for targeted tests/debugging.
 
 ## Current Systems
 
 - `RuntimePickupSystem` owns coins, keys, item pickups, item spawners, pickup inventory HUD state and pickup world events.
 - `RuntimeDoorButtonSystem` owns opened doors, activated buttons, required-key checks, door/button visuals and door/button world events.
+- `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads, teleporters, their cooldown/state maps and collider updates.
 - `RuntimeTycoonSystem` adapts the existing `TycoonSystem` to the common lifecycle.
 - `RuntimeCombatSystem` remains a focused helper system owned by `RuntimeMechanics`.
 
 Tycoon now uses the manager for update, reset, dispose, interaction hints, object interaction and `tycoonPurchase`/`tycoonUpgrade` world events. Direct Tycoon queries still remain where `LogicRuntime`, `ObjectiveRuntime`, `GameModeRuntime` and shared world-state snapshots need specialized APIs.
 
-Pickups and door/buttons are registered before Tycoon:
+Movement objects, pickups and door/buttons are registered before Tycoon:
 
-1. `RuntimePickupSystem`, with pickup interaction/world-event priority.
-2. `RuntimeDoorButtonSystem`, with door/button interaction/world-event priority.
-3. `RuntimeTycoonSystem`, with Tycoon interaction/world-event priority.
+1. `RuntimeMovementObjectSystem`, with default lifecycle priority and no interaction/world-event hooks.
+2. `RuntimePickupSystem`, with pickup interaction/world-event priority.
+3. `RuntimeDoorButtonSystem`, with door/button interaction/world-event priority.
+4. `RuntimeTycoonSystem`, with Tycoon interaction/world-event priority.
 
-Static map-object touch checks for coins, keys, buttons and doors are still delegated from the existing `RuntimeMechanics` object loop through `updateObject(...)`. This preserves the older map iteration order while moving ownership of the state and behavior into the focused systems.
+Static map-object touch checks for coins, keys, buttons, doors, disappearing blocks, jump pads and teleporters are still delegated from the existing `RuntimeMechanics` object loop through `updateObject(...)`. This preserves the older map iteration order while moving ownership of the state and behavior into focused systems.
 
 ## System Dependencies
 
@@ -61,6 +63,12 @@ Static map-object touch checks for coins, keys, buttons and doors are still dele
 - `GameMap`, `objectViews`, `PhysicsSystem`, HUD, audio and feedback services;
 - `RuntimePickupSystem` for `hasKey` and key labels;
 - callbacks for objective progress, logic events and world-event emission.
+
+`RuntimeMovementObjectSystem` depends on:
+
+- `GameMap`, `objectViews`, `PhysicsSystem`, HUD, audio and feedback services;
+- player bounds for touch-triggered objects;
+- callbacks to set player position, reset velocity, apply jump-pad impulse and play jump-pad feedback.
 
 `RuntimeMechanics` still acts as the bridge for cross-system callbacks so systems do not import each other directly.
 
@@ -90,6 +98,7 @@ For now, `RuntimeMechanics` still owns cross-cutting runtime wiring:
 - wiring for `LogicRuntime`, `ObjectiveRuntime` and `GameModeRuntime`;
 - multiplayer bridge methods and shared state application;
 - combat/projectile flow and equipped weapon state;
-- hazard, checkpoint, moving object, disappearing block, jump pad, teleporter, message zone and enemy flows that have not yet been extracted.
+- hazard, checkpoint, message zone and enemy flows that have not yet been extracted;
+- map-object iteration that delegates touch checks into the extracted systems.
 
 Future refactors should move those domains one at a time, protected by tests and smokes.

@@ -1,4 +1,5 @@
 import { createMapObject } from "./ObjectCatalog";
+import type { MapTemplateId } from "./MapTemplateMetadata";
 import {
   createEmptyGameMap,
   type AmbientMusic,
@@ -18,6 +19,9 @@ import type {
 import type { ItemSpawnerSpawnType } from "./types/ItemSchema";
 import type { LogicAction, LogicCondition, LogicRule, LogicTrigger } from "./types/ScriptSchema";
 
+export { MAP_TEMPLATE_METADATA as MAP_TEMPLATES } from "./MapTemplateMetadata";
+export type { MapTemplateDefinition, MapTemplateId } from "./MapTemplateMetadata";
+
 type TemplateStyle =
   | "sandbox"
   | "obby"
@@ -36,7 +40,7 @@ type TemplateStyle =
   | "stress";
 
 type TemplateConfig = {
-  id: string;
+  id: MapTemplateId;
   name: string;
   description: string;
   icon: string;
@@ -861,24 +865,6 @@ const TEMPLATE_CONFIGS = [
   },
 ] as const satisfies readonly TemplateConfig[];
 
-export type MapTemplateId = (typeof TEMPLATE_CONFIGS)[number]["id"];
-
-export type MapTemplateDefinition = {
-  id: MapTemplateId;
-  name: string;
-  description: string;
-  icon: string;
-  tags: string[];
-};
-
-export const MAP_TEMPLATES: MapTemplateDefinition[] = TEMPLATE_CONFIGS.map((template) => ({
-  id: template.id,
-  name: template.name,
-  description: template.description,
-  icon: template.icon,
-  tags: [...template.tags],
-}));
-
 const TEMPLATE_BY_ID = TEMPLATE_CONFIGS.reduce(
   (record, template) => {
     record[template.id] = template;
@@ -1073,158 +1059,210 @@ function createBasicTycoonMap(config: TemplateConfig): GameMap {
   const gen3Id = "generator_pro";
 
   addSpawn(builder, { x: -9, y: 1, z: 0 });
-  createPlatform(builder, { x: 0, y: 0, z: 0 }, {
-    id: "tycoon_floor",
-    name: "Base da Fabrica Tycoon",
-    scale: { x: 26, y: 0.35, z: 18 },
-    properties: { color: "#86efac", collision: true },
-  });
-  createPlatform(builder, { x: 7.5, y: 0.05, z: 0 }, {
-    id: "tycoon_final_lane",
-    name: "Corredor do item final",
-    scale: { x: 8, y: 0.25, z: 4 },
-    properties: { color: "#bbf7d0", collision: true },
-  });
+  createPlatform(
+    builder,
+    { x: 0, y: 0, z: 0 },
+    {
+      id: "tycoon_floor",
+      name: "Base da Fabrica Tycoon",
+      scale: { x: 26, y: 0.35, z: 18 },
+      properties: { color: "#86efac", collision: true },
+    }
+  );
+  createPlatform(
+    builder,
+    { x: 7.5, y: 0.05, z: 0 },
+    {
+      id: "tycoon_final_lane",
+      name: "Corredor do item final",
+      scale: { x: 8, y: 0.25, z: 4 },
+      properties: { color: "#bbf7d0", collision: true },
+    }
+  );
 
-  builder.add("tycoonOwnerClaim", { x: -7, y: 0.35, z: 0 }, {
-    id: "claim_factory_1",
-    name: "Claim da Fabrica",
-    properties: { tycoonId, claimLabel: "Mini Fabrica", autoClaimInSolo: true },
-  });
-  builder.add("tycoonCollector", { x: -3.2, y: 0.35, z: 0 }, {
-    id: "collector_factory_1",
-    name: "Coletor Principal",
-    properties: {
-      tycoonId,
-      collectorId,
-      collectRadius: 2.2,
-      capacity: 1200,
-      autoCollect: true,
-      collectCooldown: 0.45,
-    },
-  });
+  builder.add(
+    "tycoonOwnerClaim",
+    { x: -7, y: 0.35, z: 0 },
+    {
+      id: "claim_factory_1",
+      name: "Claim da Fabrica",
+      properties: { tycoonId, claimLabel: "Mini Fabrica", autoClaimInSolo: true },
+    }
+  );
+  builder.add(
+    "tycoonCollector",
+    { x: -3.2, y: 0.35, z: 0 },
+    {
+      id: "collector_factory_1",
+      name: "Coletor Principal",
+      properties: {
+        tycoonId,
+        collectorId,
+        collectRadius: 2.2,
+        capacity: 1200,
+        autoCollect: true,
+        collectCooldown: 0.45,
+      },
+    }
+  );
 
-  builder.add("tycoonGenerator", { x: -5.4, y: 0.9, z: -4.2 }, {
-    id: "generator_basic",
-    name: "Gerador Inicial",
-    properties: {
-      tycoonId,
-      generatorId: gen1Id,
-      incomePerTick: 6,
-      tickInterval: 1.6,
-      targetCollectorId: collectorId,
-      startsEnabled: true,
-      maxStoredAmount: 600,
-      upgradeGroupId: "main_generators",
-    },
-  });
-  builder.add("tycoonGenerator", { x: -1.4, y: 0.9, z: -4.2 }, {
-    id: "generator_dual",
-    name: "Gerador Duplo",
-    properties: {
-      tycoonId,
-      generatorId: gen2Id,
-      incomePerTick: 12,
-      tickInterval: 1.4,
-      targetCollectorId: collectorId,
-      requiresPurchase: true,
-      purchaseId: "buy_gen_2",
-      startsEnabled: true,
-      maxStoredAmount: 800,
-      upgradeGroupId: "main_generators",
-    },
-  });
-  builder.add("tycoonGenerator", { x: 2.6, y: 0.9, z: -4.2 }, {
-    id: "generator_pro",
-    name: "Gerador Pro",
-    properties: {
-      tycoonId,
-      generatorId: gen3Id,
-      incomePerTick: 26,
-      tickInterval: 1.2,
-      targetCollectorId: collectorId,
-      requiresPurchase: true,
-      purchaseId: "buy_gen_3",
-      startsEnabled: true,
-      maxStoredAmount: 1400,
-      upgradeGroupId: "main_generators",
-    },
-  });
+  builder.add(
+    "tycoonGenerator",
+    { x: -5.4, y: 0.9, z: -4.2 },
+    {
+      id: "generator_basic",
+      name: "Gerador Inicial",
+      properties: {
+        tycoonId,
+        generatorId: gen1Id,
+        incomePerTick: 6,
+        tickInterval: 1.6,
+        targetCollectorId: collectorId,
+        startsEnabled: true,
+        maxStoredAmount: 600,
+        upgradeGroupId: "main_generators",
+      },
+    }
+  );
+  builder.add(
+    "tycoonGenerator",
+    { x: -1.4, y: 0.9, z: -4.2 },
+    {
+      id: "generator_dual",
+      name: "Gerador Duplo",
+      properties: {
+        tycoonId,
+        generatorId: gen2Id,
+        incomePerTick: 12,
+        tickInterval: 1.4,
+        targetCollectorId: collectorId,
+        requiresPurchase: true,
+        purchaseId: "buy_gen_2",
+        startsEnabled: true,
+        maxStoredAmount: 800,
+        upgradeGroupId: "main_generators",
+      },
+    }
+  );
+  builder.add(
+    "tycoonGenerator",
+    { x: 2.6, y: 0.9, z: -4.2 },
+    {
+      id: "generator_pro",
+      name: "Gerador Pro",
+      properties: {
+        tycoonId,
+        generatorId: gen3Id,
+        incomePerTick: 26,
+        tickInterval: 1.2,
+        targetCollectorId: collectorId,
+        requiresPurchase: true,
+        purchaseId: "buy_gen_3",
+        startsEnabled: true,
+        maxStoredAmount: 1400,
+        upgradeGroupId: "main_generators",
+      },
+    }
+  );
 
-  builder.add("tycoonBuyButton", { x: -4.9, y: 0.28, z: 4 }, {
-    id: "button_buy_gen_2",
-    name: "Comprar Gerador Duplo",
-    properties: {
-      tycoonId,
-      purchaseId: "buy_gen_2",
-      cost: 25,
-      unlockObjectIds: ["generator_dual"],
-      purchasedMessage: "Gerador duplo comprado!",
-    },
-  });
-  builder.add("tycoonBuyButton", { x: -2.5, y: 0.28, z: 4 }, {
-    id: "button_buy_walls",
-    name: "Comprar Paredes",
-    properties: {
-      tycoonId,
-      purchaseId: "buy_walls",
-      cost: 45,
-      requiredPurchaseIds: ["buy_gen_2"],
-      unlockGroupId: "factory_walls",
-      purchasedMessage: "Paredes liberadas!",
-    },
-  });
-  builder.add("tycoonUpgrade", { x: 0, y: 0.3, z: 4 }, {
-    id: "upgrade_income",
-    name: "Upgrade de Renda",
-    properties: {
-      tycoonId,
-      upgradeId: "upgrade_income",
-      cost: 80,
-      requiredPurchaseIds: ["buy_gen_2"],
-      targetGeneratorIds: [gen1Id, gen2Id, gen3Id],
-      incomeMultiplier: 1.75,
-      intervalMultiplier: 0.85,
-      collectorCapacityBonus: 500,
-      maxLevel: 1,
-      purchasedMessage: "Renda aumentada!",
-    },
-  });
-  builder.add("tycoonBuyButton", { x: 2.5, y: 0.28, z: 4 }, {
-    id: "button_buy_gen_3",
-    name: "Comprar Gerador Pro",
-    properties: {
-      tycoonId,
-      purchaseId: "buy_gen_3",
-      cost: 120,
-      requiredPurchaseIds: ["upgrade_income"],
-      unlockObjectIds: ["generator_pro"],
-      purchasedMessage: "Gerador pro comprado!",
-    },
-  });
-  builder.add("tycoonBuyButton", { x: 5, y: 0.28, z: 4 }, {
-    id: "button_final_barrier",
-    name: "Abrir Barreira Final",
-    properties: {
-      tycoonId,
-      purchaseId: "final_barrier",
-      cost: 180,
-      requiredPurchaseIds: ["buy_gen_3"],
-      purchasedMessage: "Barreira final aberta!",
-    },
-  });
-  builder.add("tycoonBuyButton", { x: 7.5, y: 0.28, z: 0 }, {
-    id: "button_final_trophy",
-    name: "Comprar Trofeu Final",
-    properties: {
-      tycoonId,
-      purchaseId: "final_trophy",
-      cost: 240,
-      requiredPurchaseIds: ["final_barrier"],
-      unlockObjectIds: ["final_trophy_display"],
-      purchasedMessage: "Tycoon completo!",
-    },
-  });
+  builder.add(
+    "tycoonBuyButton",
+    { x: -4.9, y: 0.28, z: 4 },
+    {
+      id: "button_buy_gen_2",
+      name: "Comprar Gerador Duplo",
+      properties: {
+        tycoonId,
+        purchaseId: "buy_gen_2",
+        cost: 25,
+        unlockObjectIds: ["generator_dual"],
+        purchasedMessage: "Gerador duplo comprado!",
+      },
+    }
+  );
+  builder.add(
+    "tycoonBuyButton",
+    { x: -2.5, y: 0.28, z: 4 },
+    {
+      id: "button_buy_walls",
+      name: "Comprar Paredes",
+      properties: {
+        tycoonId,
+        purchaseId: "buy_walls",
+        cost: 45,
+        requiredPurchaseIds: ["buy_gen_2"],
+        unlockGroupId: "factory_walls",
+        purchasedMessage: "Paredes liberadas!",
+      },
+    }
+  );
+  builder.add(
+    "tycoonUpgrade",
+    { x: 0, y: 0.3, z: 4 },
+    {
+      id: "upgrade_income",
+      name: "Upgrade de Renda",
+      properties: {
+        tycoonId,
+        upgradeId: "upgrade_income",
+        cost: 80,
+        requiredPurchaseIds: ["buy_gen_2"],
+        targetGeneratorIds: [gen1Id, gen2Id, gen3Id],
+        incomeMultiplier: 1.75,
+        intervalMultiplier: 0.85,
+        collectorCapacityBonus: 500,
+        maxLevel: 1,
+        purchasedMessage: "Renda aumentada!",
+      },
+    }
+  );
+  builder.add(
+    "tycoonBuyButton",
+    { x: 2.5, y: 0.28, z: 4 },
+    {
+      id: "button_buy_gen_3",
+      name: "Comprar Gerador Pro",
+      properties: {
+        tycoonId,
+        purchaseId: "buy_gen_3",
+        cost: 120,
+        requiredPurchaseIds: ["upgrade_income"],
+        unlockObjectIds: ["generator_pro"],
+        purchasedMessage: "Gerador pro comprado!",
+      },
+    }
+  );
+  builder.add(
+    "tycoonBuyButton",
+    { x: 5, y: 0.28, z: 4 },
+    {
+      id: "button_final_barrier",
+      name: "Abrir Barreira Final",
+      properties: {
+        tycoonId,
+        purchaseId: "final_barrier",
+        cost: 180,
+        requiredPurchaseIds: ["buy_gen_3"],
+        purchasedMessage: "Barreira final aberta!",
+      },
+    }
+  );
+  builder.add(
+    "tycoonBuyButton",
+    { x: 7.5, y: 0.28, z: 0 },
+    {
+      id: "button_final_trophy",
+      name: "Comprar Trofeu Final",
+      properties: {
+        tycoonId,
+        purchaseId: "final_trophy",
+        cost: 240,
+        requiredPurchaseIds: ["final_barrier"],
+        unlockObjectIds: ["final_trophy_display"],
+        purchasedMessage: "Tycoon completo!",
+      },
+    }
+  );
 
   const wallPositions: Array<[string, Vector3, Vector3]> = [
     ["north", { x: -0.5, y: 1.05, z: -7.9 }, { x: 12, y: 2.1, z: 0.35 }],
@@ -1250,66 +1288,90 @@ function createBasicTycoonMap(config: TemplateConfig): GameMap {
     });
   }
 
-  builder.add("tycoonBarrier", { x: 6.2, y: 1.35, z: 0 }, {
-    id: "final_barrier",
-    name: "Barreira Final",
-    scale: { x: 0.35, y: 2.4, z: 4.2 },
-    properties: {
-      tycoonId,
-      purchaseId: "final_barrier",
-      startsLocked: true,
-      lockedCollision: true,
-      lockedColor: "#ef4444",
-      unlockedColor: "#22c55e",
-      material: "glass",
-      opacity: 0.55,
-    },
-  });
-  builder.add("tycoonUnlockable", { x: 9.5, y: 0.95, z: 0 }, {
-    id: "final_trophy_display",
-    name: "Trofeu Final",
-    scale: { x: 1.3, y: 1.6, z: 1.3 },
-    properties: {
-      tycoonId,
-      purchaseId: "final_trophy",
-      startsLocked: true,
-      lockedCollision: false,
-      color: "#facc15",
-      material: "metal",
-      collision: false,
-    },
-  });
-  createFinish(builder, { x: 11.4, y: 0.8, z: 0 }, {
-    id: "tycoon_finish",
-    name: "Portal de Conclusao",
-    properties: { message: "Tycoon completo!", requiresAllCoins: false, collision: false },
-  });
+  builder.add(
+    "tycoonBarrier",
+    { x: 6.2, y: 1.35, z: 0 },
+    {
+      id: "final_barrier",
+      name: "Barreira Final",
+      scale: { x: 0.35, y: 2.4, z: 4.2 },
+      properties: {
+        tycoonId,
+        purchaseId: "final_barrier",
+        startsLocked: true,
+        lockedCollision: true,
+        lockedColor: "#ef4444",
+        unlockedColor: "#22c55e",
+        material: "glass",
+        opacity: 0.55,
+      },
+    }
+  );
+  builder.add(
+    "tycoonUnlockable",
+    { x: 9.5, y: 0.95, z: 0 },
+    {
+      id: "final_trophy_display",
+      name: "Trofeu Final",
+      scale: { x: 1.3, y: 1.6, z: 1.3 },
+      properties: {
+        tycoonId,
+        purchaseId: "final_trophy",
+        startsLocked: true,
+        lockedCollision: false,
+        color: "#facc15",
+        material: "metal",
+        collision: false,
+      },
+    }
+  );
+  createFinish(
+    builder,
+    { x: 11.4, y: 0.8, z: 0 },
+    {
+      id: "tycoon_finish",
+      name: "Portal de Conclusao",
+      properties: { message: "Tycoon completo!", requiresAllCoins: false, collision: false },
+    }
+  );
 
-  builder.add("messageZone", { x: -7.5, y: 1, z: -2.8 }, {
-    id: "tycoon_tip_start",
-    name: "Dica Inicial Tycoon",
-    properties: {
-      message: "Colete dinheiro no coletor e compre os botoes da fabrica.",
-      oneTime: true,
-      collision: false,
-    },
-  });
-  builder.add("messageZone", { x: 5.6, y: 1, z: 1.8 }, {
-    id: "tycoon_tip_final",
-    name: "Dica Final Tycoon",
-    properties: {
-      message: "Abra a barreira final e compre o trofeu para completar o Tycoon.",
-      oneTime: true,
-      collision: false,
-    },
-  });
+  builder.add(
+    "messageZone",
+    { x: -7.5, y: 1, z: -2.8 },
+    {
+      id: "tycoon_tip_start",
+      name: "Dica Inicial Tycoon",
+      properties: {
+        message: "Colete dinheiro no coletor e compre os botoes da fabrica.",
+        oneTime: true,
+        collision: false,
+      },
+    }
+  );
+  builder.add(
+    "messageZone",
+    { x: 5.6, y: 1, z: 1.8 },
+    {
+      id: "tycoon_tip_final",
+      name: "Dica Final Tycoon",
+      properties: {
+        message: "Abra a barreira final e compre o trofeu para completar o Tycoon.",
+        oneTime: true,
+        collision: false,
+      },
+    }
+  );
 
   for (let index = 0; index < 6; index += 1) {
-    createCrate(builder, { x: -9 + index * 3.2, y: 0.45, z: index % 2 === 0 ? -6.2 : 6.2 }, {
-      name: `Caixa decorativa Tycoon ${index + 1}`,
-      scale: scalar(0.65),
-      properties: { collision: false, color: "#a16207" },
-    });
+    createCrate(
+      builder,
+      { x: -9 + index * 3.2, y: 0.45, z: index % 2 === 0 ? -6.2 : 6.2 },
+      {
+        name: `Caixa decorativa Tycoon ${index + 1}`,
+        scale: scalar(0.65),
+        properties: { collision: false, color: "#a16207" },
+      }
+    );
   }
 
   createLamp(builder, { x: -9.5, y: 0, z: -6.8 }, "Luz da entrada Tycoon", true);
@@ -1640,7 +1702,14 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
       startingCash: 0,
       sharedCash: false,
       requireAllPurchasesToWin: true,
-      winPurchaseIds: ["buy_gen_2", "buy_walls", "upgrade_income", "buy_gen_3", "final_barrier", "final_trophy"],
+      winPurchaseIds: [
+        "buy_gen_2",
+        "buy_walls",
+        "upgrade_income",
+        "buy_gen_3",
+        "final_barrier",
+        "final_trophy",
+      ],
       allowStealing: false,
       autoClaimInSolo: true,
       generatorTickRateScale: 1,
@@ -1734,13 +1803,7 @@ function getDefaultTeamsForTemplate(templateId: string): TeamDefinition[] {
 }
 
 function isDesignedGuidedTemplate(templateId: string): boolean {
-  return [
-    "forest",
-    "desert",
-    "testCity",
-    "adventureIsland",
-    "stressTest",
-  ].includes(templateId);
+  return ["forest", "desert", "testCity", "adventureIsland", "stressTest"].includes(templateId);
 }
 
 type CleanObbyVariant = "basic" | "neon" | "mega";
@@ -1783,27 +1846,35 @@ function createCleanObbyTemplateMap(config: TemplateConfig, variant: CleanObbyVa
     let platform: MapObject;
 
     if (index === Math.floor(sectionCount * 0.58)) {
-      platform = createMovingPlatform(builder, { ...position, y: position.y + 0.05 }, {
-        name: "Trecho movel curto e seguro",
-        scale: { x: 6, y: 0.35, z: 4.5 },
-        properties: {
-          color: builder.palette.accent,
-          startOffset: { x: -1.1, y: 0, z: 0 },
-          endOffset: { x: 1.1, y: 0, z: 0 },
-          speed: 0.85,
-          loop: true,
-        },
-      });
+      platform = createMovingPlatform(
+        builder,
+        { ...position, y: position.y + 0.05 },
+        {
+          name: "Trecho movel curto e seguro",
+          scale: { x: 6, y: 0.35, z: 4.5 },
+          properties: {
+            color: builder.palette.accent,
+            startOffset: { x: -1.1, y: 0, z: 0 },
+            endOffset: { x: 1.1, y: 0, z: 0 },
+            speed: 0.85,
+            loop: true,
+          },
+        }
+      );
     } else if (index === Math.floor(sectionCount * 0.72)) {
-      platform = createDisappearingBlock(builder, { ...position, y: position.y + 0.04 }, {
-        name: "Bloco que some com margem",
-        scale: { x: 6.5, y: 0.42, z: 4.8 },
-        properties: {
-          color: builder.palette.secondary,
-          delayBeforeDisappear: 1.6,
-          respawnDelay: 2.2,
-        },
-      });
+      platform = createDisappearingBlock(
+        builder,
+        { ...position, y: position.y + 0.04 },
+        {
+          name: "Bloco que some com margem",
+          scale: { x: 6.5, y: 0.42, z: 4.8 },
+          properties: {
+            color: builder.palette.secondary,
+            delayBeforeDisappear: 1.6,
+            respawnDelay: 2.2,
+          },
+        }
+      );
     } else {
       platform = createCleanPlatform(builder, position, `Plataforma segura ${index + 1}`, 7, 5.2, {
         color,
@@ -1820,16 +1891,20 @@ function createCleanObbyTemplateMap(config: TemplateConfig, variant: CleanObbyVa
       };
 
       if (index >= 2) {
-        createDamageZone(builder, { ...gapCenter, y: 0.03 }, {
-          name: `Zona de queda do vao ${index}`,
-          scale: { x: 5.2, y: 0.22, z: 2.4 },
-          properties: {
-            color: builder.palette.hazard,
-            mode: "kill",
-            collision: false,
-            opacity: isNeon ? 0.55 : 0.42,
-          },
-        });
+        createDamageZone(
+          builder,
+          { ...gapCenter, y: 0.03 },
+          {
+            name: `Zona de queda do vao ${index}`,
+            scale: { x: 5.2, y: 0.22, z: 2.4 },
+            properties: {
+              color: builder.palette.hazard,
+              mode: "kill",
+              collision: false,
+              opacity: isNeon ? 0.55 : 0.42,
+            },
+          }
+        );
       }
 
       if (index % 2 === 0) {
@@ -1844,26 +1919,34 @@ function createCleanObbyTemplateMap(config: TemplateConfig, variant: CleanObbyVa
     }
 
     if (index > 0 && index % 2 === 0) {
-      createCheckpoint(builder, {
-        x: platform.position.x - 2.1,
-        y: platform.position.y + 0.55,
-        z: platform.position.z + 1.2,
-      }, `Checkpoint obby ${index}`);
+      createCheckpoint(
+        builder,
+        {
+          x: platform.position.x - 2.1,
+          y: platform.position.y + 0.55,
+          z: platform.position.z + 1.2,
+        },
+        `Checkpoint obby ${index}`
+      );
     }
 
     if (index === Math.floor(sectionCount * 0.35)) {
-      createJumpPad(builder, {
-        x: platform.position.x + 2.1,
-        y: platform.position.y + 0.55,
-        z: platform.position.z - 0.6,
-      }, {
-        name: "Jump pad de salto curto",
-        properties: {
-          color: "#22c55e",
-          force: isMega ? 10.5 : 9.5,
-          cooldown: 0.35,
+      createJumpPad(
+        builder,
+        {
+          x: platform.position.x + 2.1,
+          y: platform.position.y + 0.55,
+          z: platform.position.z - 0.6,
         },
-      });
+        {
+          name: "Jump pad de salto curto",
+          properties: {
+            color: "#22c55e",
+            force: isMega ? 10.5 : 9.5,
+            cooldown: 0.35,
+          },
+        }
+      );
     }
   }
 
@@ -1893,17 +1976,21 @@ function createCleanObbyTemplateMap(config: TemplateConfig, variant: CleanObbyVa
       { x: last.position.x - 3, y: last.position.y + 0.6, z: last.position.z - 1.8 },
       "Fim do obby logo a frente."
     );
-    const final = createFinish(builder, {
-      x: last.position.x,
-      y: last.position.y + 0.65,
-      z: last.position.z - 1.4,
-    }, {
-      name: `Final - ${config.name}`,
-      properties: {
-        message: `${config.name} concluido!`,
-        requiresAllCoins: false,
+    const final = createFinish(
+      builder,
+      {
+        x: last.position.x,
+        y: last.position.y + 0.65,
+        z: last.position.z - 1.4,
       },
-    });
+      {
+        name: `Final - ${config.name}`,
+        properties: {
+          message: `${config.name} concluido!`,
+          requiresAllCoins: false,
+        },
+      }
+    );
     addFinishRule(builder, final, `${config.name}: finaliza ao tocar no portal.`);
   }
 
@@ -1937,61 +2024,122 @@ function createCleanDoorButtonMap(config: TemplateConfig): GameMap {
   createCleanBridge(builder, rooms[1], rooms[2], "Corredor para porta laranja", 5);
   createCleanBridge(builder, rooms[2], rooms[3], "Corredor para porta verde", 5);
 
-  const doorA = createCleanDoor(builder, { x: 0, y: 1.65, z: -1 }, "door_button_a", "Porta azul do primeiro botao", "#2563eb");
-  const doorB = createCleanDoor(builder, { x: 0, y: 1.65, z: -13 }, "door_button_b", "Porta laranja do segundo botao", "#f97316");
-  const doorC = createCleanDoor(builder, { x: 0, y: 1.65, z: -25 }, "door_key_green", "Porta verde da chave", "#22c55e", "door_green_key");
-  const buttonA = createButton(builder, { x: -4.6, y: 0.62, z: 3.2 }, {
-    name: "Botao abre porta azul",
-    properties: {
-      color: "#2563eb",
-      targetDoorId: getDoorId(doorA),
-      buttonTargetId: getDoorId(doorA),
-      oneTime: true,
-    },
-  });
-  const buttonB = createButton(builder, { x: 4.6, y: 0.62, z: -8.8 }, {
-    name: "Botao abre porta laranja",
-    properties: {
-      color: "#f97316",
-      targetDoorId: getDoorId(doorB),
-      buttonTargetId: getDoorId(doorB),
-      oneTime: true,
-    },
-  });
-  const key = createKey(builder, { x: -3.2, y: 0.82, z: -18.6 }, {
-    name: "Chave verde antes da porta",
-    properties: {
-      color: "#22c55e",
-      keyId: "door_green_key",
-      label: "Chave Verde",
-    },
-  });
+  const doorA = createCleanDoor(
+    builder,
+    { x: 0, y: 1.65, z: -1 },
+    "door_button_a",
+    "Porta azul do primeiro botao",
+    "#2563eb"
+  );
+  const doorB = createCleanDoor(
+    builder,
+    { x: 0, y: 1.65, z: -13 },
+    "door_button_b",
+    "Porta laranja do segundo botao",
+    "#f97316"
+  );
+  const doorC = createCleanDoor(
+    builder,
+    { x: 0, y: 1.65, z: -25 },
+    "door_key_green",
+    "Porta verde da chave",
+    "#22c55e",
+    "door_green_key"
+  );
+  const buttonA = createButton(
+    builder,
+    { x: -4.6, y: 0.62, z: 3.2 },
+    {
+      name: "Botao abre porta azul",
+      properties: {
+        color: "#2563eb",
+        targetDoorId: getDoorId(doorA),
+        buttonTargetId: getDoorId(doorA),
+        oneTime: true,
+      },
+    }
+  );
+  const buttonB = createButton(
+    builder,
+    { x: 4.6, y: 0.62, z: -8.8 },
+    {
+      name: "Botao abre porta laranja",
+      properties: {
+        color: "#f97316",
+        targetDoorId: getDoorId(doorB),
+        buttonTargetId: getDoorId(doorB),
+        oneTime: true,
+      },
+    }
+  );
+  const key = createKey(
+    builder,
+    { x: -3.2, y: 0.82, z: -18.6 },
+    {
+      name: "Chave verde antes da porta",
+      properties: {
+        color: "#22c55e",
+        keyId: "door_green_key",
+        label: "Chave Verde",
+      },
+    }
+  );
 
-  createCoinLine(builder, { x: -3, y: 0.85, z: 4 }, { x: 3, y: 0.85, z: 4 }, 4, "Moeda sala inicial");
-  createCoinLine(builder, { x: -3, y: 0.85, z: -7 }, { x: 3, y: 0.85, z: -7 }, 4, "Moeda sala do botao");
+  createCoinLine(
+    builder,
+    { x: -3, y: 0.85, z: 4 },
+    { x: 3, y: 0.85, z: 4 },
+    4,
+    "Moeda sala inicial"
+  );
+  createCoinLine(
+    builder,
+    { x: -3, y: 0.85, z: -7 },
+    { x: 3, y: 0.85, z: -7 },
+    4,
+    "Moeda sala do botao"
+  );
   createCheckpoint(builder, { x: 5.4, y: 0.75, z: -18.8 }, "Checkpoint antes da porta verde");
   createSign(builder, { x: -6.2, y: 0.6, z: 6.5 }, "Aperte o botao azul ao lado da porta.");
   createSign(builder, { x: 5.8, y: 0.6, z: -6.6 }, "Cada sala resolve a porta seguinte.");
   createSign(builder, { x: -5.5, y: 0.6, z: -21.4 }, "Pegue a chave antes da porta verde.");
-  createMessageZone(builder, { x: 0, y: 1.2, z: 2 }, "Puzzle limpo: botoes e chave estao sempre antes da porta.", {
-    name: "Mensagem porta e botao",
-    scale: { x: 8, y: 1.4, z: 2 },
-  });
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.2, z: 2 },
+    "Puzzle limpo: botoes e chave estao sempre antes da porta.",
+    {
+      name: "Mensagem porta e botao",
+      scale: { x: 8, y: 1.4, z: 2 },
+    }
+  );
 
-  const final = createFinish(builder, { x: 0, y: 0.85, z: -33.2 }, {
-    name: "Final do puzzle de portas",
-    properties: { message: "Portas resolvidas sem parede falsa!", requiresAllCoins: false },
-  });
+  const final = createFinish(
+    builder,
+    { x: 0, y: 0.85, z: -33.2 },
+    {
+      name: "Final do puzzle de portas",
+      properties: { message: "Portas resolvidas sem parede falsa!", requiresAllCoins: false },
+    }
+  );
 
-  builder.addLogic("Botao azul abre porta azul", { type: "onButtonActivated", objectId: buttonA.id }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(doorA) },
-  ]);
-  builder.addLogic("Botao laranja abre porta laranja", { type: "onButtonActivated", objectId: buttonB.id }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(doorB) },
-  ]);
-  builder.addLogic("Chave verde abre a porta verde", { type: "onKeyCollected", keyId: getKeyObjectId(key) }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(doorC) },
-  ]);
+  builder.addLogic(
+    "Botao azul abre porta azul",
+    { type: "onButtonActivated", objectId: buttonA.id },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(doorA) }]
+  );
+  builder.addLogic(
+    "Botao laranja abre porta laranja",
+    { type: "onButtonActivated", objectId: buttonB.id },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(doorB) }]
+  );
+  builder.addLogic(
+    "Chave verde abre a porta verde",
+    { type: "onKeyCollected", keyId: getKeyObjectId(key) },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(doorC) }]
+  );
   addFinishRule(builder, final, "Porta e botao: finaliza o puzzle.");
 
   return builder.map;
@@ -2013,67 +2161,104 @@ function createCleanCheckpointChallengeMap(config: TemplateConfig): GameMap {
       color: index % 2 === 0 ? builder.palette.platform : builder.palette.secondary,
     });
 
-    createCheckpoint(builder, {
-      x: platform.x - 2.3,
-      y: platform.y + 0.55,
-      z: platform.z + 1.4,
-    }, `Checkpoint seguro ${index + 1}`);
+    createCheckpoint(
+      builder,
+      {
+        x: platform.x - 2.3,
+        y: platform.y + 0.55,
+        z: platform.z + 1.4,
+      },
+      `Checkpoint seguro ${index + 1}`
+    );
 
     if (index > 1) {
       const previous = platforms[index - 1];
-      createDamageZone(builder, {
-        x: (previous.x + platform.x) / 2,
-        y: 0.03,
-        z: (previous.z + platform.z) / 2,
-      }, {
-        name: `Zona de morte abaixo do vao ${index}`,
-        scale: { x: 6, y: 0.22, z: 2.5 },
-        properties: {
-          color: builder.palette.hazard,
-          mode: "kill",
-          collision: false,
-          opacity: 0.44,
+      createDamageZone(
+        builder,
+        {
+          x: (previous.x + platform.x) / 2,
+          y: 0.03,
+          z: (previous.z + platform.z) / 2,
         },
-      });
+        {
+          name: `Zona de morte abaixo do vao ${index}`,
+          scale: { x: 6, y: 0.22, z: 2.5 },
+          properties: {
+            color: builder.palette.hazard,
+            mode: "kill",
+            collision: false,
+            opacity: 0.44,
+          },
+        }
+      );
     }
   });
 
   createCoinLine(builder, { x: 0, y: 0.9, z: -5 }, { x: 2, y: 0.95, z: -15 }, 4, "Moeda risco 1");
   createCoinLine(builder, { x: 2, y: 0.95, z: -15 }, { x: -2, y: 1, z: -25 }, 4, "Moeda risco 2");
   createCoinLine(builder, { x: -2, y: 1, z: -25 }, { x: 0, y: 1.05, z: -35 }, 4, "Moeda risco 3");
-  createJumpPad(builder, { x: 2.3, y: 0.82, z: -15.8 }, {
-    name: "Jump pad opcional curto",
-    properties: { color: "#22c55e", force: 9, cooldown: 0.35 },
-  });
-  createMovingPlatform(builder, { x: -0.8, y: 0.42, z: -30 }, {
-    name: "Plataforma movel lateral curta",
-    scale: { x: 4.5, y: 0.35, z: 3 },
-    properties: {
-      color: builder.palette.accent,
-      startOffset: { x: -0.8, y: 0, z: 0 },
-      endOffset: { x: 0.8, y: 0, z: 0 },
-      speed: 0.75,
-      loop: true,
-    },
-  });
-  createDisappearingBlock(builder, { x: 2.4, y: 0.43, z: -29.5 }, {
-    name: "Bloco que some opcional",
-    scale: { x: 3.2, y: 0.38, z: 2.5 },
-    properties: { color: "#f59e0b", delayBeforeDisappear: 1.5, respawnDelay: 2.4 },
-  });
+  createJumpPad(
+    builder,
+    { x: 2.3, y: 0.82, z: -15.8 },
+    {
+      name: "Jump pad opcional curto",
+      properties: { color: "#22c55e", force: 9, cooldown: 0.35 },
+    }
+  );
+  createMovingPlatform(
+    builder,
+    { x: -0.8, y: 0.42, z: -30 },
+    {
+      name: "Plataforma movel lateral curta",
+      scale: { x: 4.5, y: 0.35, z: 3 },
+      properties: {
+        color: builder.palette.accent,
+        startOffset: { x: -0.8, y: 0, z: 0 },
+        endOffset: { x: 0.8, y: 0, z: 0 },
+        speed: 0.75,
+        loop: true,
+      },
+    }
+  );
+  createDisappearingBlock(
+    builder,
+    { x: 2.4, y: 0.43, z: -29.5 },
+    {
+      name: "Bloco que some opcional",
+      scale: { x: 3.2, y: 0.38, z: 2.5 },
+      properties: { color: "#f59e0b", delayBeforeDisappear: 1.5, respawnDelay: 2.4 },
+    }
+  );
 
   createSign(builder, { x: -3.4, y: 0.7, z: 6.7 }, "Checkpoints antes dos perigos.");
-  createSign(builder, { x: 4.2, y: 0.75, z: -15.2 }, "Zonas vermelhas ficam nos vaos, nao nas plataformas.");
-  createSign(builder, { x: -4.2, y: 0.78, z: -34.2 }, "Toque no final depois do ultimo checkpoint.");
-  createMessageZone(builder, { x: 0, y: 1.2, z: 2.4 }, "Desafio revisado: pule com margem e use checkpoints.", {
-    name: "Mensagem checkpoint",
-    scale: { x: 8, y: 1.4, z: 2 },
-  });
+  createSign(
+    builder,
+    { x: 4.2, y: 0.75, z: -15.2 },
+    "Zonas vermelhas ficam nos vaos, nao nas plataformas."
+  );
+  createSign(
+    builder,
+    { x: -4.2, y: 0.78, z: -34.2 },
+    "Toque no final depois do ultimo checkpoint."
+  );
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.2, z: 2.4 },
+    "Desafio revisado: pule com margem e use checkpoints.",
+    {
+      name: "Mensagem checkpoint",
+      scale: { x: 8, y: 1.4, z: 2 },
+    }
+  );
 
-  const final = createFinish(builder, { x: 0, y: 1, z: -36.7 }, {
-    name: "Final do desafio de checkpoint",
-    properties: { message: "Desafio concluido com checkpoints justos!", requiresAllCoins: false },
-  });
+  const final = createFinish(
+    builder,
+    { x: 0, y: 1, z: -36.7 },
+    {
+      name: "Final do desafio de checkpoint",
+      properties: { message: "Desafio concluido com checkpoints justos!", requiresAllCoins: false },
+    }
+  );
   addFinishRule(builder, final, "Checkpoint: finaliza desafio.");
 
   return builder.map;
@@ -2108,102 +2293,174 @@ function createCleanMechanicsMap(config: TemplateConfig): GameMap {
   createCleanBridge(builder, stations[5], stations[7], "Ponte teleporte final", 4);
   createCleanBridge(builder, stations[6], stations[7], "Ponte especiais final", 4);
 
-  createCoinLine(builder, { x: -16, y: 0.85, z: -5 }, { x: -10, y: 0.85, z: -5 }, 7, "Moeda estacao");
+  createCoinLine(
+    builder,
+    { x: -16, y: 0.85, z: -5 },
+    { x: -10, y: 0.85, z: -5 },
+    7,
+    "Moeda estacao"
+  );
   createCheckpoint(builder, { x: 0, y: 0.75, z: 4.2 }, "Checkpoint entrada laboratorio");
   createCheckpoint(builder, { x: 0, y: 0.75, z: -42.5 }, "Checkpoint final laboratorio");
 
-  const door = createCleanDoor(builder, { x: 13, y: 1.65, z: -8.2 }, "mechanics_button_door", "Porta de teste do botao", "#8b5cf6");
-  const button = createButton(builder, { x: 9.3, y: 0.62, z: -4.2 }, {
-    name: "Botao de teste",
-    properties: {
-      color: "#f97316",
-      targetDoorId: getDoorId(door),
-      buttonTargetId: getDoorId(door),
-      oneTime: true,
-    },
-  });
-  const keyDoor = createCleanDoor(builder, { x: -13, y: 1.65, z: -21.2 }, "mechanics_key_door", "Porta de teste da chave", "#22c55e", "mechanics_key");
-  const key = createKey(builder, { x: -16.2, y: 0.82, z: -17.6 }, {
-    name: "Chave de teste",
-    properties: { color: "#22c55e", keyId: "mechanics_key", label: "Chave de Teste" },
-  });
+  const door = createCleanDoor(
+    builder,
+    { x: 13, y: 1.65, z: -8.2 },
+    "mechanics_button_door",
+    "Porta de teste do botao",
+    "#8b5cf6"
+  );
+  const button = createButton(
+    builder,
+    { x: 9.3, y: 0.62, z: -4.2 },
+    {
+      name: "Botao de teste",
+      properties: {
+        color: "#f97316",
+        targetDoorId: getDoorId(door),
+        buttonTargetId: getDoorId(door),
+        oneTime: true,
+      },
+    }
+  );
+  const keyDoor = createCleanDoor(
+    builder,
+    { x: -13, y: 1.65, z: -21.2 },
+    "mechanics_key_door",
+    "Porta de teste da chave",
+    "#22c55e",
+    "mechanics_key"
+  );
+  const key = createKey(
+    builder,
+    { x: -16.2, y: 0.82, z: -17.6 },
+    {
+      name: "Chave de teste",
+      properties: { color: "#22c55e", keyId: "mechanics_key", label: "Chave de Teste" },
+    }
+  );
 
-  createJumpPad(builder, { x: 13, y: 0.75, z: -17.8 }, {
-    name: "Jump pad de laboratorio",
-    properties: { color: "#22c55e", force: 10, cooldown: 0.35 },
-  });
-  createDamageZone(builder, { x: 9.2, y: 0.03, z: -21.5 }, {
-    name: "Zona de dano demonstrativa lateral",
-    scale: { x: 3.2, y: 0.22, z: 2.4 },
-    properties: {
-      color: builder.palette.hazard,
-      mode: "kill",
-      collision: false,
-      opacity: 0.45,
-    },
-  });
+  createJumpPad(
+    builder,
+    { x: 13, y: 0.75, z: -17.8 },
+    {
+      name: "Jump pad de laboratorio",
+      properties: { color: "#22c55e", force: 10, cooldown: 0.35 },
+    }
+  );
+  createDamageZone(
+    builder,
+    { x: 9.2, y: 0.03, z: -21.5 },
+    {
+      name: "Zona de dano demonstrativa lateral",
+      scale: { x: 3.2, y: 0.22, z: 2.4 },
+      properties: {
+        color: builder.palette.hazard,
+        mode: "kill",
+        collision: false,
+        opacity: 0.45,
+      },
+    }
+  );
 
-  const teleporterA = createTeleporter(builder, { x: -16, y: 0.78, z: -31 }, {
-    name: "Teleporte A",
-    properties: {
-      color: builder.palette.accent,
-      teleporterId: "mechanics_teleporter_a",
-      targetTeleporterId: "mechanics_teleporter_b",
-      cooldown: 1,
-    },
-  });
-  const teleporterB = createTeleporter(builder, { x: -10, y: 0.78, z: -31 }, {
-    name: "Teleporte B",
-    properties: {
-      color: builder.palette.accent,
-      teleporterId: "mechanics_teleporter_b",
-      targetTeleporterId: "mechanics_teleporter_a",
-      cooldown: 1,
-    },
-  });
-  createMovingPlatform(builder, { x: 10.8, y: 0.48, z: -31 }, {
-    name: "Plataforma movel de teste",
-    scale: { x: 4.2, y: 0.35, z: 2.8 },
-    properties: {
-      color: builder.palette.accent,
-      startOffset: { x: -1, y: 0, z: 0 },
-      endOffset: { x: 1, y: 0, z: 0 },
-      speed: 0.75,
-      loop: true,
-    },
-  });
-  createDisappearingBlock(builder, { x: 15.2, y: 0.48, z: -31 }, {
-    name: "Bloco que some de teste",
-    scale: { x: 3.4, y: 0.42, z: 2.8 },
-    properties: { color: "#f59e0b", delayBeforeDisappear: 1.5, respawnDelay: 2.5 },
-  });
+  const teleporterA = createTeleporter(
+    builder,
+    { x: -16, y: 0.78, z: -31 },
+    {
+      name: "Teleporte A",
+      properties: {
+        color: builder.palette.accent,
+        teleporterId: "mechanics_teleporter_a",
+        targetTeleporterId: "mechanics_teleporter_b",
+        cooldown: 1,
+      },
+    }
+  );
+  const teleporterB = createTeleporter(
+    builder,
+    { x: -10, y: 0.78, z: -31 },
+    {
+      name: "Teleporte B",
+      properties: {
+        color: builder.palette.accent,
+        teleporterId: "mechanics_teleporter_b",
+        targetTeleporterId: "mechanics_teleporter_a",
+        cooldown: 1,
+      },
+    }
+  );
+  createMovingPlatform(
+    builder,
+    { x: 10.8, y: 0.48, z: -31 },
+    {
+      name: "Plataforma movel de teste",
+      scale: { x: 4.2, y: 0.35, z: 2.8 },
+      properties: {
+        color: builder.palette.accent,
+        startOffset: { x: -1, y: 0, z: 0 },
+        endOffset: { x: 1, y: 0, z: 0 },
+        speed: 0.75,
+        loop: true,
+      },
+    }
+  );
+  createDisappearingBlock(
+    builder,
+    { x: 15.2, y: 0.48, z: -31 },
+    {
+      name: "Bloco que some de teste",
+      scale: { x: 3.4, y: 0.42, z: 2.8 },
+      properties: { color: "#f59e0b", delayBeforeDisappear: 1.5, respawnDelay: 2.5 },
+    }
+  );
 
   createSign(builder, { x: -4.4, y: 0.7, z: 7.4 }, "Cada ilha testa uma mecanica.");
   createSign(builder, { x: 7.4, y: 0.7, z: -5 }, "Botao e chave ficam ao lado da porta alvo.");
   createSign(builder, { x: -17.2, y: 0.7, z: -31 }, "Teleporte tem par reciproco visivel.");
   createSign(builder, { x: 4.4, y: 0.7, z: -44 }, "Volte ou finalize quando terminar os testes.");
-  createMessageZone(builder, { x: 0, y: 1.2, z: 3.4 }, "Mapa de mecanicas reorganizado em estacoes curtas.", {
-    name: "Mensagem mapa de mecanicas",
-    scale: { x: 8, y: 1.4, z: 2 },
-  });
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.2, z: 3.4 },
+    "Mapa de mecanicas reorganizado em estacoes curtas.",
+    {
+      name: "Mensagem mapa de mecanicas",
+      scale: { x: 8, y: 1.4, z: 2 },
+    }
+  );
 
-  builder.addLogic("Botao de teste abre porta", { type: "onButtonActivated", objectId: button.id }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(door) },
-  ]);
-  builder.addLogic("Chave de teste abre porta", { type: "onKeyCollected", keyId: getKeyObjectId(key) }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(keyDoor) },
-  ]);
-  builder.addLogic("Teleporte A mostra dica", { type: "onPlayerEnterObject", objectId: teleporterA.id }, [{ type: "once" }], [
-    { type: "showMessage", message: "Teleporte A leva ao par B." },
-  ]);
-  builder.addLogic("Teleporte B mostra dica", { type: "onPlayerEnterObject", objectId: teleporterB.id }, [{ type: "once" }], [
-    { type: "showMessage", message: "Teleporte B volta ao par A." },
-  ]);
+  builder.addLogic(
+    "Botao de teste abre porta",
+    { type: "onButtonActivated", objectId: button.id },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(door) }]
+  );
+  builder.addLogic(
+    "Chave de teste abre porta",
+    { type: "onKeyCollected", keyId: getKeyObjectId(key) },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(keyDoor) }]
+  );
+  builder.addLogic(
+    "Teleporte A mostra dica",
+    { type: "onPlayerEnterObject", objectId: teleporterA.id },
+    [{ type: "once" }],
+    [{ type: "showMessage", message: "Teleporte A leva ao par B." }]
+  );
+  builder.addLogic(
+    "Teleporte B mostra dica",
+    { type: "onPlayerEnterObject", objectId: teleporterB.id },
+    [{ type: "once" }],
+    [{ type: "showMessage", message: "Teleporte B volta ao par A." }]
+  );
 
-  const final = createFinish(builder, { x: 0, y: 0.85, z: -46 }, {
-    name: "Final do laboratorio",
-    properties: { message: "Mecanicas testadas em mapa limpo!", requiresAllCoins: false },
-  });
+  const final = createFinish(
+    builder,
+    { x: 0, y: 0.85, z: -46 },
+    {
+      name: "Final do laboratorio",
+      properties: { message: "Mecanicas testadas em mapa limpo!", requiresAllCoins: false },
+    }
+  );
   addFinishRule(builder, final, "Mecanicas: finaliza laboratorio.");
 
   return builder.map;
@@ -2225,73 +2482,138 @@ function createCleanGuideMissionMap(config: TemplateConfig): GameMap {
   createCleanPlatform(builder, { x: 0, y: 0.2, z: -32 }, "Saida da missao", 15, 10, {
     color: builder.palette.secondary,
   });
-  createCleanBridge(builder, { x: 0, y: 0.2, z: 4 }, { x: 0, y: 0.2, z: -8 }, "Ponte para chave", 4.5);
-  createCleanBridge(builder, { x: 0, y: 0.2, z: -8 }, { x: 0, y: 0.2, z: -20 }, "Ponte para combate", 4.5);
-  createCleanBridge(builder, { x: 0, y: 0.2, z: -20 }, { x: 0, y: 0.2, z: -32 }, "Ponte para saida", 4.5);
+  createCleanBridge(
+    builder,
+    { x: 0, y: 0.2, z: 4 },
+    { x: 0, y: 0.2, z: -8 },
+    "Ponte para chave",
+    4.5
+  );
+  createCleanBridge(
+    builder,
+    { x: 0, y: 0.2, z: -8 },
+    { x: 0, y: 0.2, z: -20 },
+    "Ponte para combate",
+    4.5
+  );
+  createCleanBridge(
+    builder,
+    { x: 0, y: 0.2, z: -20 },
+    { x: 0, y: 0.2, z: -32 },
+    "Ponte para saida",
+    4.5
+  );
 
-  const guide = createNpc(builder, { x: 0, y: 0.75, z: 3.3 }, {
-    name: "Guia da missao",
-    scale: { x: 1.15, y: 1.15, z: 1.15 },
-    properties: {
-      color: "#4ecdc4",
-      npcName: "Guia",
-      dialog: "Estou bem na sua frente. Mire em mim e pressione E para iniciar a missao.",
-      dialogue: [
-        "Boa! O E funcionou.",
-        "Agora pegue a chave, atravesse a porta e derrote os inimigos.",
-      ],
-      interactionRange: 7,
-      showQuestHint: true,
-      collision: false,
-    },
-  });
+  const guide = createNpc(
+    builder,
+    { x: 0, y: 0.75, z: 3.3 },
+    {
+      name: "Guia da missao",
+      scale: { x: 1.15, y: 1.15, z: 1.15 },
+      properties: {
+        color: "#4ecdc4",
+        npcName: "Guia",
+        dialog: "Estou bem na sua frente. Mire em mim e pressione E para iniciar a missao.",
+        dialogue: [
+          "Boa! O E funcionou.",
+          "Agora pegue a chave, atravesse a porta e derrote os inimigos.",
+        ],
+        interactionRange: 7,
+        showQuestHint: true,
+        collision: false,
+      },
+    }
+  );
   createSign(builder, { x: -6.8, y: 0.65, z: 8 }, "Clique no jogo, mire no Guia e pressione E.");
   createSign(builder, { x: 5.8, y: 0.65, z: -8 }, "A chave fica antes da porta.");
   createSign(builder, { x: -5.8, y: 0.65, z: -20 }, "Derrote os inimigos e siga para a saida.");
 
-  const key = createKey(builder, { x: -3.5, y: 0.82, z: -7.8 }, {
-    name: "Chave da missao",
-    properties: { color: "#22c55e", keyId: "guide_gate_key", label: "Chave da Missao" },
-  });
-  const door = createCleanDoor(builder, { x: 0, y: 1.65, z: -14 }, "guide_gate", "Porta da missao", "#22c55e", "guide_gate_key");
-  const button = createButton(builder, { x: 3.8, y: 0.62, z: -8.2 }, {
-    name: "Botao de dica da porta",
-    properties: {
-      color: "#f97316",
-      targetDoorId: getDoorId(door),
-      buttonTargetId: getDoorId(door),
-      oneTime: true,
-    },
-  });
-  createCoinLine(builder, { x: -5, y: 0.85, z: -4 }, { x: 5, y: 0.85, z: -4 }, 6, "Moeda da trilha guia");
-  createCoinLine(builder, { x: -4, y: 0.85, z: -20 }, { x: 4, y: 0.85, z: -20 }, 6, "Moeda da clareira guia");
+  const key = createKey(
+    builder,
+    { x: -3.5, y: 0.82, z: -7.8 },
+    {
+      name: "Chave da missao",
+      properties: { color: "#22c55e", keyId: "guide_gate_key", label: "Chave da Missao" },
+    }
+  );
+  const door = createCleanDoor(
+    builder,
+    { x: 0, y: 1.65, z: -14 },
+    "guide_gate",
+    "Porta da missao",
+    "#22c55e",
+    "guide_gate_key"
+  );
+  const button = createButton(
+    builder,
+    { x: 3.8, y: 0.62, z: -8.2 },
+    {
+      name: "Botao de dica da porta",
+      properties: {
+        color: "#f97316",
+        targetDoorId: getDoorId(door),
+        buttonTargetId: getDoorId(door),
+        oneTime: true,
+      },
+    }
+  );
+  createCoinLine(
+    builder,
+    { x: -5, y: 0.85, z: -4 },
+    { x: 5, y: 0.85, z: -4 },
+    6,
+    "Moeda da trilha guia"
+  );
+  createCoinLine(
+    builder,
+    { x: -4, y: 0.85, z: -20 },
+    { x: 4, y: 0.85, z: -20 },
+    6,
+    "Moeda da clareira guia"
+  );
   createCheckpoint(builder, { x: 4.8, y: 0.75, z: -8 }, "Checkpoint da chave");
   createCheckpoint(builder, { x: 4.8, y: 0.75, z: -20 }, "Checkpoint da clareira");
-  createItemSpawner(builder, { x: -4.8, y: 0.82, z: 4 }, {
-    name: "Arma basica da missao",
-    properties: {
-      color: "#06b6d4",
-      spawnItemType: "weapon_basic",
-      itemPool: ["weapon_basic"],
-      spawnMode: "fixed",
-      respawnTime: 10,
-      spawnOnStart: true,
-      maxSpawnedItems: 1,
-      collision: false,
-    },
-  });
-  const enemyA = createEnemy(builder, { x: -3.8, y: 0.75, z: -21 }, {
-    name: "Inimigo da clareira A",
-    properties: { health: 35, damage: 8, speed: 1.7, detectionRange: 7, attackRange: 1.4 },
-  });
-  const enemyB = createEnemy(builder, { x: 3.8, y: 0.75, z: -19 }, {
-    name: "Inimigo da clareira B",
-    properties: { health: 35, damage: 8, speed: 1.7, detectionRange: 7, attackRange: 1.4 },
-  });
-  const final = createFinish(builder, { x: 0, y: 0.85, z: -34 }, {
-    name: "Final da missao do guia",
-    properties: { message: "Missao do Guia concluida!", requiresAllCoins: false },
-  });
+  createItemSpawner(
+    builder,
+    { x: -4.8, y: 0.82, z: 4 },
+    {
+      name: "Arma basica da missao",
+      properties: {
+        color: "#06b6d4",
+        spawnItemType: "weapon_basic",
+        itemPool: ["weapon_basic"],
+        spawnMode: "fixed",
+        respawnTime: 10,
+        spawnOnStart: true,
+        maxSpawnedItems: 1,
+        collision: false,
+      },
+    }
+  );
+  const enemyA = createEnemy(
+    builder,
+    { x: -3.8, y: 0.75, z: -21 },
+    {
+      name: "Inimigo da clareira A",
+      properties: { health: 35, damage: 8, speed: 1.7, detectionRange: 7, attackRange: 1.4 },
+    }
+  );
+  const enemyB = createEnemy(
+    builder,
+    { x: 3.8, y: 0.75, z: -19 },
+    {
+      name: "Inimigo da clareira B",
+      properties: { health: 35, damage: 8, speed: 1.7, detectionRange: 7, attackRange: 1.4 },
+    }
+  );
+  const final = createFinish(
+    builder,
+    { x: 0, y: 0.85, z: -34 },
+    {
+      name: "Final da missao do guia",
+      properties: { message: "Missao do Guia concluida!", requiresAllCoins: false },
+    }
+  );
 
   builder.addObjective({
     id: "guide_talk",
@@ -2339,33 +2661,58 @@ function createCleanGuideMissionMap(config: TemplateConfig): GameMap {
     completedMessage: "Missao finalizada.",
   });
 
-  builder.addLogic("Guia inicia a missao", { type: "onNpcInteracted", objectId: guide.id }, [{ type: "once" }], [
-    { type: "completeObjective", objectiveId: "guide_talk" },
-    { type: "showMessage", message: "Guia acionado. Pegue a chave e avance." },
-  ]);
-  builder.addLogic("Botao da porta mostra dica", { type: "onButtonActivated", objectId: button.id }, [{ type: "once" }], [
-    { type: "showMessage", message: "A porta abre com a chave verde ao lado da trilha." },
-  ]);
-  builder.addLogic("Chave da missao abre porta", { type: "onKeyCollected", keyId: getKeyObjectId(key) }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(door) },
-  ]);
-  builder.addLogic("Primeiro inimigo derrotado", { type: "onEnemyDefeated", objectId: enemyA.id }, [{ type: "once" }], [
-    { type: "showMessage", message: "Um inimigo derrotado." },
-  ]);
-  builder.addLogic("Segundo inimigo derrotado", { type: "onEnemyDefeated", objectId: enemyB.id }, [{ type: "once" }], [
-    { type: "showMessage", message: "Clareira limpa." },
-  ]);
+  builder.addLogic(
+    "Guia inicia a missao",
+    { type: "onNpcInteracted", objectId: guide.id },
+    [{ type: "once" }],
+    [
+      { type: "completeObjective", objectiveId: "guide_talk" },
+      { type: "showMessage", message: "Guia acionado. Pegue a chave e avance." },
+    ]
+  );
+  builder.addLogic(
+    "Botao da porta mostra dica",
+    { type: "onButtonActivated", objectId: button.id },
+    [{ type: "once" }],
+    [{ type: "showMessage", message: "A porta abre com a chave verde ao lado da trilha." }]
+  );
+  builder.addLogic(
+    "Chave da missao abre porta",
+    { type: "onKeyCollected", keyId: getKeyObjectId(key) },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(door) }]
+  );
+  builder.addLogic(
+    "Primeiro inimigo derrotado",
+    { type: "onEnemyDefeated", objectId: enemyA.id },
+    [{ type: "once" }],
+    [{ type: "showMessage", message: "Um inimigo derrotado." }]
+  );
+  builder.addLogic(
+    "Segundo inimigo derrotado",
+    { type: "onEnemyDefeated", objectId: enemyB.id },
+    [{ type: "once" }],
+    [{ type: "showMessage", message: "Clareira limpa." }]
+  );
   addFinishRule(builder, final, "Missao do Guia: finaliza ao tocar no portal.");
 
-  createMessageZone(builder, { x: 0, y: 1.2, z: 6.2 }, "Mire no Guia e pressione E para iniciar a missao.", {
-    name: "Mensagem inicial do guia",
-    scale: { x: 8, y: 1.4, z: 2 },
-  });
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.2, z: 6.2 },
+    "Mire no Guia e pressione E para iniciar a missao.",
+    {
+      name: "Mensagem inicial do guia",
+      scale: { x: 8, y: 1.4, z: 2 },
+    }
+  );
 
   return builder.map;
 }
 
-function createCleanKeySequenceMap(config: TemplateConfig, variant: CleanKeySequenceVariant): GameMap {
+function createCleanKeySequenceMap(
+  config: TemplateConfig,
+  variant: CleanKeySequenceVariant
+): GameMap {
   const builder = new TemplateBuilder(config);
   const isDungeon = variant === "dungeon";
   const roomCount = isDungeon ? 7 : 5;
@@ -2406,25 +2753,32 @@ function createCleanKeySequenceMap(config: TemplateConfig, variant: CleanKeySequ
       index % 2 === 0 ? "#22c55e" : "#8b5cf6",
       keyId
     );
-    const key = createKey(builder, {
-      x: current.x + (index % 2 === 0 ? -3.4 : 3.4),
-      y: 0.82,
-      z: current.z - 1.5,
-    }, {
-      name: `Chave ${index + 1} antes da porta`,
-      properties: {
-        color: index % 2 === 0 ? "#22c55e" : "#8b5cf6",
-        keyId,
-        label: `Chave ${index + 1}`,
+    const key = createKey(
+      builder,
+      {
+        x: current.x + (index % 2 === 0 ? -3.4 : 3.4),
+        y: 0.82,
+        z: current.z - 1.5,
       },
-    });
+      {
+        name: `Chave ${index + 1} antes da porta`,
+        properties: {
+          color: index % 2 === 0 ? "#22c55e" : "#8b5cf6",
+          keyId,
+          label: `Chave ${index + 1}`,
+        },
+      }
+    );
 
     doors.push(door);
     keys.push(key);
 
-    builder.addLogic(`Chave ${index + 1} abre porta ${index + 1}`, { type: "onKeyCollected", keyId }, [{ type: "once" }], [
-      { type: "openDoor", doorId: getDoorId(door) },
-    ]);
+    builder.addLogic(
+      `Chave ${index + 1} abre porta ${index + 1}`,
+      { type: "onKeyCollected", keyId },
+      [{ type: "once" }],
+      [{ type: "openDoor", doorId: getDoorId(door) }]
+    );
 
     createCoinLine(
       builder,
@@ -2435,64 +2789,111 @@ function createCleanKeySequenceMap(config: TemplateConfig, variant: CleanKeySequ
     );
 
     if (index > 0 && index % 2 === 0) {
-      createCheckpoint(builder, { x: current.x + 4.4, y: 0.75, z: current.z + 1.6 }, `Checkpoint sala ${index + 1}`);
+      createCheckpoint(
+        builder,
+        { x: current.x + 4.4, y: 0.75, z: current.z + 1.6 },
+        `Checkpoint sala ${index + 1}`
+      );
     }
   }
 
   if (isDungeon) {
     const firstButtonDoor = doors[1];
     const secondButtonDoor = doors[4];
-    const buttonA = createButton(builder, { x: rooms[1].x - 4.2, y: 0.62, z: rooms[1].z + 1.6 }, {
-      name: "Botao de dica sala 2",
-      properties: {
-        color: "#f97316",
-        targetDoorId: getDoorId(firstButtonDoor),
-        buttonTargetId: getDoorId(firstButtonDoor),
-        oneTime: true,
-      },
-    });
-    const buttonB = createButton(builder, { x: rooms[4].x + 4.2, y: 0.62, z: rooms[4].z + 1.6 }, {
-      name: "Botao de dica sala 5",
-      properties: {
-        color: "#f97316",
-        targetDoorId: getDoorId(secondButtonDoor),
-        buttonTargetId: getDoorId(secondButtonDoor),
-        oneTime: true,
-      },
-    });
-    createDamageZone(builder, { x: rooms[3].x - 4.6, y: 0.03, z: rooms[3].z - 1.6 }, {
-      name: "Armadilha lateral da dungeon",
-      scale: { x: 3.4, y: 0.22, z: 2.6 },
-      properties: { color: builder.palette.hazard, mode: "kill", collision: false, opacity: 0.45 },
-    });
-    builder.addLogic("Botao sala 2 mostra porta alvo", { type: "onButtonActivated", objectId: buttonA.id }, [{ type: "once" }], [
-      { type: "showMessage", message: "A chave desta sala abre a proxima porta." },
-    ]);
-    builder.addLogic("Botao sala 5 mostra porta alvo", { type: "onButtonActivated", objectId: buttonB.id }, [{ type: "once" }], [
-      { type: "showMessage", message: "Sem atalhos falsos: siga a sequencia das chaves." },
-    ]);
+    const buttonA = createButton(
+      builder,
+      { x: rooms[1].x - 4.2, y: 0.62, z: rooms[1].z + 1.6 },
+      {
+        name: "Botao de dica sala 2",
+        properties: {
+          color: "#f97316",
+          targetDoorId: getDoorId(firstButtonDoor),
+          buttonTargetId: getDoorId(firstButtonDoor),
+          oneTime: true,
+        },
+      }
+    );
+    const buttonB = createButton(
+      builder,
+      { x: rooms[4].x + 4.2, y: 0.62, z: rooms[4].z + 1.6 },
+      {
+        name: "Botao de dica sala 5",
+        properties: {
+          color: "#f97316",
+          targetDoorId: getDoorId(secondButtonDoor),
+          buttonTargetId: getDoorId(secondButtonDoor),
+          oneTime: true,
+        },
+      }
+    );
+    createDamageZone(
+      builder,
+      { x: rooms[3].x - 4.6, y: 0.03, z: rooms[3].z - 1.6 },
+      {
+        name: "Armadilha lateral da dungeon",
+        scale: { x: 3.4, y: 0.22, z: 2.6 },
+        properties: {
+          color: builder.palette.hazard,
+          mode: "kill",
+          collision: false,
+          opacity: 0.45,
+        },
+      }
+    );
+    builder.addLogic(
+      "Botao sala 2 mostra porta alvo",
+      { type: "onButtonActivated", objectId: buttonA.id },
+      [{ type: "once" }],
+      [{ type: "showMessage", message: "A chave desta sala abre a proxima porta." }]
+    );
+    builder.addLogic(
+      "Botao sala 5 mostra porta alvo",
+      { type: "onButtonActivated", objectId: buttonB.id },
+      [{ type: "once" }],
+      [{ type: "showMessage", message: "Sem atalhos falsos: siga a sequencia das chaves." }]
+    );
   } else {
-    const button = createButton(builder, { x: rooms[1].x + 4, y: 0.62, z: rooms[1].z + 1.5 }, {
-      name: "Botao de dica do puzzle",
-      properties: {
-        color: "#f97316",
-        targetDoorId: getDoorId(doors[1]),
-        buttonTargetId: getDoorId(doors[1]),
-        oneTime: true,
-      },
-    });
-    builder.addLogic("Botao do puzzle mostra dica", { type: "onButtonActivated", objectId: button.id }, [{ type: "once" }], [
-      { type: "showMessage", message: "As chaves sempre ficam antes das portas." },
-    ]);
+    const button = createButton(
+      builder,
+      { x: rooms[1].x + 4, y: 0.62, z: rooms[1].z + 1.5 },
+      {
+        name: "Botao de dica do puzzle",
+        properties: {
+          color: "#f97316",
+          targetDoorId: getDoorId(doors[1]),
+          buttonTargetId: getDoorId(doors[1]),
+          oneTime: true,
+        },
+      }
+    );
+    builder.addLogic(
+      "Botao do puzzle mostra dica",
+      { type: "onButtonActivated", objectId: button.id },
+      [{ type: "once" }],
+      [{ type: "showMessage", message: "As chaves sempre ficam antes das portas." }]
+    );
   }
 
   createSign(builder, { x: -5.5, y: 0.68, z: 7.2 }, "Pegue a chave da sala antes de avancar.");
-  createSign(builder, { x: 6.2, y: 0.68, z: rooms[Math.min(2, rooms.length - 1)].z }, "Nenhuma porta leva para parede.");
-  createSign(builder, { x: -5.8, y: 0.68, z: rooms.at(-1)?.z ?? -40 }, "A ultima sala contem o final.");
-  createMessageZone(builder, { x: 0, y: 1.2, z: 4 }, `${config.name}: sequencia limpa de chaves e portas.`, {
-    name: `Mensagem ${config.name}`,
-    scale: { x: 8, y: 1.4, z: 2 },
-  });
+  createSign(
+    builder,
+    { x: 6.2, y: 0.68, z: rooms[Math.min(2, rooms.length - 1)].z },
+    "Nenhuma porta leva para parede."
+  );
+  createSign(
+    builder,
+    { x: -5.8, y: 0.68, z: rooms.at(-1)?.z ?? -40 },
+    "A ultima sala contem o final."
+  );
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.2, z: 4 },
+    `${config.name}: sequencia limpa de chaves e portas.`,
+    {
+      name: `Mensagem ${config.name}`,
+      scale: { x: 8, y: 1.4, z: 2 },
+    }
+  );
 
   const lastRoom = rooms.at(-1) ?? rooms[0];
   createCoinLine(
@@ -2502,10 +2903,14 @@ function createCleanKeySequenceMap(config: TemplateConfig, variant: CleanKeySequ
     isDungeon ? 4 : 2,
     `${config.name} moedas finais`
   );
-  const final = createFinish(builder, { x: lastRoom.x, y: 0.85, z: lastRoom.z - 2.8 }, {
-    name: `Final - ${config.name}`,
-    properties: { message: `${config.name} concluido!`, requiresAllCoins: false },
-  });
+  const final = createFinish(
+    builder,
+    { x: lastRoom.x, y: 0.85, z: lastRoom.z - 2.8 },
+    {
+      name: `Final - ${config.name}`,
+      properties: { message: `${config.name} concluido!`, requiresAllCoins: false },
+    }
+  );
   addFinishRule(builder, final, `${config.name}: finaliza sequencia.`);
 
   return builder.map;
@@ -2537,63 +2942,124 @@ function createCleanMegaCoinWorldMap(config: TemplateConfig): GameMap {
   createCleanBridge(builder, areas[4], areas[5], "Ponte porta final", 4.2);
 
   areas.forEach((area, index) => {
-    createCoinCluster(builder, { x: area.x, y: 0.85, z: area.z }, index === 0 ? 10 : 8, 3.3, `${area.name} moeda`);
+    createCoinCluster(
+      builder,
+      { x: area.x, y: 0.85, z: area.z },
+      index === 0 ? 10 : 8,
+      3.3,
+      `${area.name} moeda`
+    );
   });
 
   createCheckpoint(builder, { x: 0, y: 0.75, z: 3.4 }, "Checkpoint hub de coleta");
   createCheckpoint(builder, { x: -18, y: 0.75, z: -22.2 }, "Checkpoint ilha da chave");
   createCheckpoint(builder, { x: 0, y: 0.75, z: -37.4 }, "Checkpoint ilha final");
-  const keyA = createKey(builder, { x: -21.8, y: 0.82, z: -24 }, {
-    name: "Chave azul da coleta",
-    properties: { color: "#3b82f6", keyId: "coin_world_blue_key", label: "Chave Azul" },
-  });
-  const keyB = createKey(builder, { x: 14.2, y: 0.82, z: -24 }, {
-    name: "Chave verde da coleta",
-    properties: { color: "#22c55e", keyId: "coin_world_green_key", label: "Chave Verde" },
-  });
-  const doorA = createCleanDoor(builder, { x: -9, y: 1.65, z: -32 }, "coin_world_blue_door", "Porta azul da coleta", "#3b82f6", "coin_world_blue_key");
-  const doorB = createCleanDoor(builder, { x: 9, y: 1.65, z: -32 }, "coin_world_green_door", "Porta verde da coleta", "#22c55e", "coin_world_green_key");
-  const teleporterA = createTeleporter(builder, { x: -4.5, y: 0.78, z: 6 }, {
-    name: "Teleporte hub",
-    properties: {
-      color: builder.palette.accent,
-      teleporterId: "coin_world_teleporter_a",
-      targetTeleporterId: "coin_world_teleporter_b",
-      cooldown: 1,
-    },
-  });
-  const teleporterB = createTeleporter(builder, { x: 0, y: 0.78, z: -40 }, {
-    name: "Teleporte final",
-    properties: {
-      color: builder.palette.accent,
-      teleporterId: "coin_world_teleporter_b",
-      targetTeleporterId: "coin_world_teleporter_a",
-      cooldown: 1,
-    },
-  });
+  const keyA = createKey(
+    builder,
+    { x: -21.8, y: 0.82, z: -24 },
+    {
+      name: "Chave azul da coleta",
+      properties: { color: "#3b82f6", keyId: "coin_world_blue_key", label: "Chave Azul" },
+    }
+  );
+  const keyB = createKey(
+    builder,
+    { x: 14.2, y: 0.82, z: -24 },
+    {
+      name: "Chave verde da coleta",
+      properties: { color: "#22c55e", keyId: "coin_world_green_key", label: "Chave Verde" },
+    }
+  );
+  const doorA = createCleanDoor(
+    builder,
+    { x: -9, y: 1.65, z: -32 },
+    "coin_world_blue_door",
+    "Porta azul da coleta",
+    "#3b82f6",
+    "coin_world_blue_key"
+  );
+  const doorB = createCleanDoor(
+    builder,
+    { x: 9, y: 1.65, z: -32 },
+    "coin_world_green_door",
+    "Porta verde da coleta",
+    "#22c55e",
+    "coin_world_green_key"
+  );
+  const teleporterA = createTeleporter(
+    builder,
+    { x: -4.5, y: 0.78, z: 6 },
+    {
+      name: "Teleporte hub",
+      properties: {
+        color: builder.palette.accent,
+        teleporterId: "coin_world_teleporter_a",
+        targetTeleporterId: "coin_world_teleporter_b",
+        cooldown: 1,
+      },
+    }
+  );
+  const teleporterB = createTeleporter(
+    builder,
+    { x: 0, y: 0.78, z: -40 },
+    {
+      name: "Teleporte final",
+      properties: {
+        color: builder.palette.accent,
+        teleporterId: "coin_world_teleporter_b",
+        targetTeleporterId: "coin_world_teleporter_a",
+        cooldown: 1,
+      },
+    }
+  );
 
-  createSign(builder, { x: -6.8, y: 0.68, z: 8 }, "Colete em ilhas: trilhas visiveis, sem bagunca.");
+  createSign(
+    builder,
+    { x: -6.8, y: 0.68, z: 8 },
+    "Colete em ilhas: trilhas visiveis, sem bagunca."
+  );
   createSign(builder, { x: -23.4, y: 0.68, z: -24 }, "Chaves ficam em ilhas abertas.");
   createSign(builder, { x: 11.6, y: 0.68, z: -32 }, "Portas protegem a rota final.");
-  createMessageZone(builder, { x: 0, y: 1.2, z: 3.4 }, "Mundo de coleta revisado com ilhas e objetivos claros.", {
-    name: "Mensagem mundo de coleta",
-    scale: { x: 8, y: 1.4, z: 2 },
-  });
+  createMessageZone(
+    builder,
+    { x: 0, y: 1.2, z: 3.4 },
+    "Mundo de coleta revisado com ilhas e objetivos claros.",
+    {
+      name: "Mensagem mundo de coleta",
+      scale: { x: 8, y: 1.4, z: 2 },
+    }
+  );
 
-  builder.addLogic("Chave azul abre porta azul", { type: "onKeyCollected", keyId: getKeyObjectId(keyA) }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(doorA) },
-  ]);
-  builder.addLogic("Chave verde abre porta verde", { type: "onKeyCollected", keyId: getKeyObjectId(keyB) }, [{ type: "once" }], [
-    { type: "openDoor", doorId: getDoorId(doorB) },
-  ]);
-  builder.addLogic("Teleporte hub mostra dica", { type: "onPlayerEnterObject", objectId: teleporterA.id }, [{ type: "once" }], [
-    { type: "showMessage", message: "Teleporte rapido para a ilha final." },
-  ]);
+  builder.addLogic(
+    "Chave azul abre porta azul",
+    { type: "onKeyCollected", keyId: getKeyObjectId(keyA) },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(doorA) }]
+  );
+  builder.addLogic(
+    "Chave verde abre porta verde",
+    { type: "onKeyCollected", keyId: getKeyObjectId(keyB) },
+    [{ type: "once" }],
+    [{ type: "openDoor", doorId: getDoorId(doorB) }]
+  );
+  builder.addLogic(
+    "Teleporte hub mostra dica",
+    { type: "onPlayerEnterObject", objectId: teleporterA.id },
+    [{ type: "once" }],
+    [{ type: "showMessage", message: "Teleporte rapido para a ilha final." }]
+  );
 
-  const final = createFinish(builder, { x: 0, y: 0.85, z: -43 }, {
-    name: "Final do mundo de coleta",
-    properties: { message: "Coleta gigante concluida sem poluicao visual!", requiresAllCoins: false },
-  });
+  const final = createFinish(
+    builder,
+    { x: 0, y: 0.85, z: -43 },
+    {
+      name: "Final do mundo de coleta",
+      properties: {
+        message: "Coleta gigante concluida sem poluicao visual!",
+        requiresAllCoins: false,
+      },
+    }
+  );
   addFinishRule(builder, final, "Mundo de coleta: finaliza ao tocar no portal.");
 
   return builder.map;
@@ -2685,9 +3151,12 @@ function createCleanDoor(
 }
 
 function addFinishRule(builder: TemplateBuilder, final: MapObject, name: string): void {
-  builder.addLogic(name, { type: "onPlayerEnterObject", objectId: final.id }, [{ type: "once" }], [
-    { type: "finishMap" },
-  ]);
+  builder.addLogic(
+    name,
+    { type: "onPlayerEnterObject", objectId: final.id },
+    [{ type: "once" }],
+    [{ type: "finishMap" }]
+  );
 }
 
 function createDesignedSandboxMap(config: TemplateConfig): GameMap {

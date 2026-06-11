@@ -1015,7 +1015,10 @@ function validateGameMode(templateId, map, summary, refs) {
     validatePositiveTarget(errors, templateId, winCondition, winCondition.type);
   }
 
-  if (winCondition.type === "completeTycoon" && summary.tycoonBuyButtons + summary.tycoonUpgrades < 1) {
+  if (
+    winCondition.type === "completeTycoon" &&
+    summary.tycoonBuyButtons + summary.tycoonUpgrades < 1
+  ) {
     errors.push(`${templateId}: completeTycoon sem compras ou upgrades tycoon.`);
   }
 
@@ -1125,15 +1128,7 @@ function validateTycoonObject(templateId, object, refs) {
       refs.tycoonPurchaseIds.add(purchaseId);
     }
 
-    validateOptionalNumberRange(
-      errors,
-      templateId,
-      object.id,
-      "cost",
-      properties.cost,
-      0,
-      100000
-    );
+    validateOptionalNumberRange(errors, templateId, object.id, "cost", properties.cost, 0, 100000);
   }
 
   if (object.type === "tycoonBarrier") {
@@ -1162,15 +1157,7 @@ function validateTycoonObject(templateId, object, refs) {
       refs.tycoonPurchaseIds.add(upgradeId);
     }
 
-    validateOptionalNumberRange(
-      errors,
-      templateId,
-      object.id,
-      "cost",
-      properties.cost,
-      0,
-      100000
-    );
+    validateOptionalNumberRange(errors, templateId, object.id, "cost", properties.cost, 0, 100000);
     validateOptionalNumberRange(
       errors,
       templateId,

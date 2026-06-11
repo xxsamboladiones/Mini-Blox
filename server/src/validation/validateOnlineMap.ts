@@ -191,26 +191,30 @@ function validateObjects(
     }
 
     if (objectRecord.rotation !== undefined) {
-      const rotationError = validateVector(
-        objectRecord.rotation,
-        `${objectPath}.rotation`,
-        36000
-      );
+      const rotationError = validateVector(objectRecord.rotation, `${objectPath}.rotation`, 36000);
       if (rotationError) {
         return rotationError;
       }
     }
 
     if (objectRecord.scale !== undefined) {
-      const scaleError = validateVector(objectRecord.scale, `${objectPath}.scale`, MAX_OBJECT_SCALE, {
-        min: 0.01,
-      });
+      const scaleError = validateVector(
+        objectRecord.scale,
+        `${objectPath}.scale`,
+        MAX_OBJECT_SCALE,
+        {
+          min: 0.01,
+        }
+      );
       if (scaleError) {
         return scaleError;
       }
     }
 
-    if (!isOptionalSafeString(objectRecord.assetId) || !isOptionalSafeString(objectRecord.materialId)) {
+    if (
+      !isOptionalSafeString(objectRecord.assetId) ||
+      !isOptionalSafeString(objectRecord.materialId)
+    ) {
       return { valid: false, error: `${objectPath} contains an invalid asset or material id` };
     }
 
@@ -237,7 +241,10 @@ function validateObjects(
   return null;
 }
 
-function validateCollider(collider: unknown, objectPath: string): { valid: boolean; error?: string } | null {
+function validateCollider(
+  collider: unknown,
+  objectPath: string
+): { valid: boolean; error?: string } | null {
   if (collider === undefined) {
     return null;
   }
@@ -265,7 +272,12 @@ function validateCollider(collider: unknown, objectPath: string): { valid: boole
     return radiusError;
   }
 
-  return validateOptionalNumber(record.height, `${objectPath}.collider.height`, 0, MAX_OBJECT_SCALE);
+  return validateOptionalNumber(
+    record.height,
+    `${objectPath}.collider.height`,
+    0,
+    MAX_OBJECT_SCALE
+  );
 }
 
 function validateObjectProperties(
@@ -413,7 +425,10 @@ function validateStringArray(
   }
 
   if (!Array.isArray(value) || value.length > MAX_TYCOON_ARRAY_ITEMS) {
-    return { valid: false, error: `${path} must be an array with at most ${MAX_TYCOON_ARRAY_ITEMS} items` };
+    return {
+      valid: false,
+      error: `${path} must be an array with at most ${MAX_TYCOON_ARRAY_ITEMS} items`,
+    };
   }
 
   for (const item of value) {
@@ -479,13 +494,19 @@ function validateTycoonReferences(
 
     for (const unlockButtonId of getStringArray(properties.unlockButtonIds)) {
       if (!objectIds.has(unlockButtonId) && !purchaseIds.has(unlockButtonId)) {
-        return { valid: false, error: `${objectId} unlocks missing button or purchase ${unlockButtonId}` };
+        return {
+          valid: false,
+          error: `${objectId} unlocks missing button or purchase ${unlockButtonId}`,
+        };
       }
     }
 
     for (const requiredPurchaseId of getStringArray(properties.requiredPurchaseIds)) {
       if (!purchaseIds.has(requiredPurchaseId)) {
-        return { valid: false, error: `${objectId} requires missing purchase ${requiredPurchaseId}` };
+        return {
+          valid: false,
+          error: `${objectId} requires missing purchase ${requiredPurchaseId}`,
+        };
       }
     }
 
@@ -762,7 +783,9 @@ function isOptionalSafeString(value: unknown, maxLength = MAX_OBJECT_ID_LENGTH):
 }
 
 function isNonEmptySafeString(value: unknown, maxLength = MAX_OBJECT_ID_LENGTH): value is string {
-  return typeof value === "string" && value.trim().length > 0 && isOptionalSafeString(value, maxLength);
+  return (
+    typeof value === "string" && value.trim().length > 0 && isOptionalSafeString(value, maxLength)
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

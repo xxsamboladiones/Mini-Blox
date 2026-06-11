@@ -40,7 +40,9 @@ export function resolveSqliteFilename(databaseUrl: string): string {
   }
 
   if (databaseUrl.startsWith("postgres://") || databaseUrl.startsWith("postgresql://")) {
-    throw new Error("Postgres DATABASE_URL is reserved for a future adapter; SQLite is active now.");
+    throw new Error(
+      "Postgres DATABASE_URL is reserved for a future adapter; SQLite is active now."
+    );
   }
 
   if (!databaseUrl.startsWith("file:")) {

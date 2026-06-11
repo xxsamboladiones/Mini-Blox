@@ -253,7 +253,9 @@ function getStringArray(value: unknown): string[] {
     return [];
   }
 
-  return value.filter((item): item is string => typeof item === "string").map((item) => item.trim());
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim());
 }
 
 function isHealthItemId(value: string): boolean {

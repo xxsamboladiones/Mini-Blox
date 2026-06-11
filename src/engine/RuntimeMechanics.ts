@@ -1,9 +1,5 @@
 import * as THREE from "three";
-import {
-  getWeaponDefinition,
-  getWeaponLabel,
-  normalizeWeaponId,
-} from "../shared/ItemCatalog";
+import { getWeaponDefinition, getWeaponLabel, normalizeWeaponId } from "../shared/ItemCatalog";
 import {
   applyObjectAppearanceToThree,
   applyObjectTransformToThree,
@@ -47,6 +43,7 @@ import {
   type DoorCloseOptions,
   type DoorOpenOptions,
 } from "./runtime/systems/RuntimeDoorButtonSystem";
+import { RuntimeMovementObjectSystem } from "./runtime/systems/RuntimeMovementObjectSystem";
 import type { GameMap } from "../shared/types/MapSchema";
 import type {
   EnemyNetState,
@@ -88,21 +85,6 @@ type MultiplayerRuntimeOptions = {
   onPlayerAttackVisual: (payload: PlayerAttackVisualPayload) => void;
   onPlayerDamageReport: (damage: number, source: "enemy" | "hazard" | "logic") => void;
   onPlayerHealRequest: (payload: PlayerHealRequestPayload) => void;
-};
-
-type MovingPlatformRuntimeState = {
-  mapObject: MapObject;
-  basePosition: THREE.Vector3;
-  startOffset: THREE.Vector3;
-  endOffset: THREE.Vector3;
-  progress: number;
-  direction: 1 | -1;
-};
-
-type DisappearingBlockRuntimeState = {
-  mapObject: MapObject;
-  phase: "idle" | "waiting" | "hidden";
-  timer: number;
 };
 
 type EnemyRuntimeState = {
@@ -167,11 +149,7 @@ export class RuntimeMechanics {
   private readonly runtimeSystems = new RuntimeSystemManager();
   private readonly activeProjectiles = new Map<string, ActiveProjectile<EquippedWeapon>>();
   private projectileSequence = 0;
-  private readonly movingPlatformStates = new Map<string, MovingPlatformRuntimeState>();
-  private readonly disappearingBlockStates = new Map<string, DisappearingBlockRuntimeState>();
   private readonly enemyStates = new Map<string, EnemyRuntimeState>();
-  private readonly jumpPadCooldowns = new Map<string, number>();
-  private readonly teleporterCooldowns = new Map<string, number>();
   private suppressWorldEvents = false;
   private deathCooldown = 0;
   private messageCooldown = 0;
@@ -182,6 +160,7 @@ export class RuntimeMechanics {
   private isGameFinished = false;
   private readonly pickupSystem: RuntimePickupSystem;
   private readonly doorButtonSystem: RuntimeDoorButtonSystem;
+  private readonly movementObjectSystem: RuntimeMovementObjectSystem;
   private readonly logicRuntime: LogicRuntime;
   private readonly objectiveRuntime: ObjectiveRuntime;
   private readonly gameModeRuntime: GameModeRuntime;
@@ -239,6 +218,21 @@ export class RuntimeMechanics {
       onButtonActivated: (objectId) => this.objectiveRuntime.onButtonActivated(objectId),
       onLogicEvent: (event) => this.logicRuntime.dispatch(event),
     });
+    this.movementObjectSystem = new RuntimeMovementObjectSystem({
+      map: this.map,
+      objectViews: this.objectViews,
+      physicsSystem: this.physicsSystem,
+      hud: this.hud,
+      audio: this.audio,
+      feedback: this.feedback,
+      getPlayerBounds: () => this.player.getBounds(),
+      getPlayerPosition: () => this.player.getPosition(),
+      setPlayerPosition: (position) => this.player.setPosition(position),
+      resetPlayerVelocity: () => this.player.resetVelocity(),
+      applyPlayerImpulseY: (force) => this.player.applyImpulseY(force),
+      playJumpPadFeedback: () => this.player.playJumpPadFeedback(),
+    });
+    this.runtimeSystems.register(this.movementObjectSystem);
     this.runtimeSystems.register(this.pickupSystem, {
       interactionPriority: RUNTIME_INTERACTION_PRIORITIES.pickup,
       worldEventPriority: RUNTIME_INTERACTION_PRIORITIES.pickup,
@@ -355,10 +349,6 @@ export class RuntimeMechanics {
   dispose(): void {
     this.clearProjectiles();
     this.enemyStates.clear();
-    this.movingPlatformStates.clear();
-    this.disappearingBlockStates.clear();
-    this.jumpPadCooldowns.clear();
-    this.teleporterCooldowns.clear();
     this.activeDialogue = null;
     this.runtimeSystems.dispose();
   }
@@ -372,9 +362,7 @@ export class RuntimeMechanics {
     this.messageCooldown = Math.max(0, this.messageCooldown - deltaSeconds);
     this.combatSystem.update(deltaSeconds);
     this.updateWeaponCooldownHud();
-    this.updateCooldownMap(this.jumpPadCooldowns, deltaSeconds);
-    this.updateCooldownMap(this.teleporterCooldowns, deltaSeconds);
-    this.updateMovingPlatforms(deltaSeconds);
+    this.runtimeSystems.update(deltaSeconds);
     this.updateProjectiles(deltaSeconds);
 
     if (this.updateVoidDeath()) {
@@ -385,7 +373,6 @@ export class RuntimeMechanics {
 
     this.updateEnemies(deltaSeconds, playerBounds);
     this.updateLogicObjectEntryEvents(playerBounds);
-    this.runtimeSystems.update(deltaSeconds);
     this.gameModeRuntime.update(deltaSeconds, playerBounds, this.player.getPosition());
 
     if (this.isGameFinished) {
@@ -405,12 +392,12 @@ export class RuntimeMechanics {
         this.pickupSystem.updateObject(mapObject, playerBounds);
       } else if (mapObject.type === "button" || mapObject.type === "door") {
         this.doorButtonSystem.updateObject(mapObject, playerBounds);
-      } else if (mapObject.type === "disappearingBlock") {
-        this.updateDisappearingBlock(mapObject, playerBounds, deltaSeconds);
-      } else if (mapObject.type === "jumpPad") {
-        this.updateJumpPad(mapObject, playerBounds);
-      } else if (mapObject.type === "teleporter") {
-        this.updateTeleporter(mapObject, playerBounds);
+      } else if (
+        mapObject.type === "disappearingBlock" ||
+        mapObject.type === "jumpPad" ||
+        mapObject.type === "teleporter"
+      ) {
+        this.movementObjectSystem.updateObject(mapObject, playerBounds, deltaSeconds);
       } else if (mapObject.type === "messageZone") {
         this.updateMessageZone(mapObject, playerBounds);
       } else if (mapObject.type === "finish" || mapObject.type === "goal") {
@@ -597,8 +584,6 @@ export class RuntimeMechanics {
     this.logicInsideObjectIds.clear();
     this.logicDisabledObjectIds.clear();
     this.defeatedEnemyIds.clear();
-    this.jumpPadCooldowns.clear();
-    this.teleporterCooldowns.clear();
     this.deathCooldown = 0;
     this.messageCooldown = 0;
     this.combatSystem.reset();
@@ -1137,96 +1122,6 @@ export class RuntimeMechanics {
     this.killPlayer("Voce morreu", mapObject.position);
   }
 
-  private updateDisappearingBlock(
-    mapObject: MapObject,
-    playerBounds: THREE.Box3,
-    deltaSeconds: number
-  ): void {
-    const state = this.disappearingBlockStates.get(mapObject.id);
-
-    if (!state) {
-      return;
-    }
-
-    if (state.phase === "idle" && this.intersects(mapObject, playerBounds)) {
-      state.phase = "waiting";
-      state.timer = Math.max(0, getNumber(mapObject.properties?.delayBeforeDisappear, 0.5));
-    }
-
-    if (state.phase === "waiting") {
-      state.timer -= deltaSeconds;
-
-      if (state.timer <= 0) {
-        this.hideDisappearingBlock(state);
-      }
-    } else if (state.phase === "hidden") {
-      state.timer -= deltaSeconds;
-
-      if (state.timer <= 0) {
-        this.showDisappearingBlock(state);
-      }
-    }
-  }
-
-  private updateJumpPad(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if (
-      (this.jumpPadCooldowns.get(mapObject.id) ?? 0) > 0 ||
-      !this.intersects(mapObject, playerBounds)
-    ) {
-      return;
-    }
-
-    this.player.applyImpulseY(Math.max(0, getNumber(mapObject.properties?.force, 12)));
-    this.jumpPadCooldowns.set(
-      mapObject.id,
-      Math.max(0.05, getNumber(mapObject.properties?.cooldown, 0.4))
-    );
-    this.hud.showMessage("Impulso!");
-    this.audio.play("jumpPad");
-    this.feedback.spawn("jumpPad", mapObject.position);
-    this.player.playJumpPadFeedback();
-  }
-
-  private updateTeleporter(mapObject: MapObject, playerBounds: THREE.Box3): void {
-    if (
-      (this.teleporterCooldowns.get(mapObject.id) ?? 0) > 0 ||
-      !this.intersects(mapObject, playerBounds)
-    ) {
-      return;
-    }
-
-    const targetTeleporterId = getString(mapObject.properties?.targetTeleporterId, "").trim();
-
-    if (!targetTeleporterId) {
-      return;
-    }
-
-    const target = this.map.objects.find(
-      (candidate) =>
-        candidate.type === "teleporter" &&
-        (candidate.id === targetTeleporterId ||
-          candidate.properties?.teleporterId === targetTeleporterId)
-    );
-
-    if (!target) {
-      return;
-    }
-
-    this.player.setPosition(target.position);
-    this.player.resetVelocity();
-    const cooldown = Math.max(
-      0.2,
-      getNumber(mapObject.properties?.cooldown, 1),
-      getNumber(target.properties?.cooldown, 1)
-    );
-    this.teleporterCooldowns.set(mapObject.id, cooldown);
-    this.teleporterCooldowns.set(target.id, cooldown);
-    this.hud.showMessage("Teleporte");
-    this.audio.play("teleporter");
-    this.feedback.spawn("teleport", mapObject.position);
-    this.feedback.spawn("teleport", target.position);
-  }
-
   private updateMessageZone(mapObject: MapObject, playerBounds: THREE.Box3): void {
     const inside = this.intersects(mapObject, playerBounds);
 
@@ -1298,29 +1193,10 @@ export class RuntimeMechanics {
   }
 
   private initializeBehaviorStates(): void {
-    this.movingPlatformStates.clear();
-    this.disappearingBlockStates.clear();
     this.enemyStates.clear();
 
     for (const mapObject of this.map.objects) {
-      if (mapObject.type === "movingPlatform") {
-        const state: MovingPlatformRuntimeState = {
-          mapObject,
-          basePosition: toThreeVector(mapObject.position),
-          startOffset: getThreeVector(mapObject.properties?.startOffset, { x: 0, y: 0, z: 0 }),
-          endOffset: getThreeVector(mapObject.properties?.endOffset, { x: 5, y: 0, z: 0 }),
-          progress: 0,
-          direction: 1,
-        };
-        this.movingPlatformStates.set(mapObject.id, state);
-        this.applyMovingPlatformPosition(state);
-      } else if (mapObject.type === "disappearingBlock") {
-        this.disappearingBlockStates.set(mapObject.id, {
-          mapObject,
-          phase: "idle",
-          timer: 0,
-        });
-      } else if (mapObject.type === "enemy") {
+      if (mapObject.type === "enemy") {
         const view = this.objectViews.get(mapObject.id);
         const config = getEnemyRuntimeConfig(mapObject);
         const maxHealth = config.maxHealth;
@@ -1344,74 +1220,6 @@ export class RuntimeMechanics {
         });
       }
     }
-  }
-
-  private updateMovingPlatforms(deltaSeconds: number): void {
-    for (const state of this.movingPlatformStates.values()) {
-      const distance = state.startOffset.distanceTo(state.endOffset);
-      const speed = Math.max(0, getNumber(state.mapObject.properties?.speed, 1));
-
-      if (distance <= 0.001 || speed <= 0) {
-        this.applyMovingPlatformPosition(state);
-        continue;
-      }
-
-      state.progress += ((deltaSeconds * speed) / distance) * state.direction;
-
-      if (state.mapObject.properties?.loop === false) {
-        state.progress = Math.min(1, state.progress);
-      } else if (state.progress >= 1) {
-        state.progress = 2 - state.progress;
-        state.direction = -1;
-      } else if (state.progress <= 0) {
-        state.progress = Math.abs(state.progress);
-        state.direction = 1;
-      }
-
-      this.applyMovingPlatformPosition(state);
-    }
-  }
-
-  private applyMovingPlatformPosition(state: MovingPlatformRuntimeState): void {
-    const view = this.objectViews.get(state.mapObject.id);
-
-    if (!view) {
-      return;
-    }
-
-    const offset = state.startOffset
-      .clone()
-      .lerp(state.endOffset, THREE.MathUtils.clamp(state.progress, 0, 1));
-    view.position.copy(state.basePosition).add(offset);
-    this.physicsSystem.updateColliderForObject(state.mapObject, view, true);
-  }
-
-  private hideDisappearingBlock(state: DisappearingBlockRuntimeState): void {
-    const view = this.objectViews.get(state.mapObject.id);
-
-    if (view) {
-      view.visible = false;
-    }
-
-    this.physicsSystem.removeCollider(state.mapObject.id);
-    this.audio.play("disappearingBlock");
-    this.feedback.spawn("disappearingBlock", state.mapObject.position);
-    state.phase = "hidden";
-    state.timer = Math.max(0, getNumber(state.mapObject.properties?.respawnDelay, 3));
-  }
-
-  private showDisappearingBlock(state: DisappearingBlockRuntimeState): void {
-    const view = this.objectViews.get(state.mapObject.id);
-
-    if (view) {
-      view.visible = true;
-      applyObjectTransformToThree(view, state.mapObject);
-      applyObjectAppearanceToThree(view, state.mapObject);
-      this.physicsSystem.updateColliderForObject(state.mapObject, view, true);
-    }
-
-    state.phase = "idle";
-    state.timer = 0;
   }
 
   private updateEnemies(deltaSeconds: number, playerBounds: THREE.Box3): void {
@@ -1832,18 +1640,6 @@ export class RuntimeMechanics {
     ) {
       this.allEnemiesDefeatedDispatched = true;
       this.logicRuntime.dispatch({ type: "onAllEnemiesDefeated" });
-    }
-  }
-
-  private updateCooldownMap(cooldowns: Map<string, number>, deltaSeconds: number): void {
-    for (const [id, cooldown] of cooldowns) {
-      const nextCooldown = Math.max(0, cooldown - deltaSeconds);
-
-      if (nextCooldown <= 0) {
-        cooldowns.delete(id);
-      } else {
-        cooldowns.set(id, nextCooldown);
-      }
     }
   }
 

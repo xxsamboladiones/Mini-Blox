@@ -152,8 +152,7 @@ export class ObjectiveRuntime {
       }
 
       const target = getObjectiveTargetAmount(state.objective, 100);
-      const collectedProgress =
-        collectedAmount > 0 ? state.progress + collectedAmount : totalCash;
+      const collectedProgress = collectedAmount > 0 ? state.progress + collectedAmount : totalCash;
       state.progress = Math.min(target, Math.max(0, collectedProgress));
 
       if (state.progress >= target) {
@@ -461,12 +460,14 @@ function getKeyId(object: MapObject): string {
 
 function getTycoonPurchaseId(object: MapObject): string {
   if (object.type === "tycoonUpgrade") {
-    return typeof object.properties?.upgradeId === "string" && object.properties.upgradeId.length > 0
+    return typeof object.properties?.upgradeId === "string" &&
+      object.properties.upgradeId.length > 0
       ? object.properties.upgradeId
       : object.id;
   }
 
-  return typeof object.properties?.purchaseId === "string" && object.properties.purchaseId.length > 0
+  return typeof object.properties?.purchaseId === "string" &&
+    object.properties.purchaseId.length > 0
     ? object.properties.purchaseId
     : object.id;
 }

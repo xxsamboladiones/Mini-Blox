@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  getBlockingValidationIssues,
-  validateEditorMap,
-} from "../editor/EditorMapValidator";
+import { getBlockingValidationIssues, validateEditorMap } from "../editor/EditorMapValidator";
 import { MAP_TEMPLATES, createMapFromTemplate } from "./MapTemplates";
 import { normalizeGameMap } from "./normalizeGameMap";
 import { createEmptyGameMap, type GameMap } from "./types/MapSchema";
@@ -49,9 +46,7 @@ describe("Map validation", () => {
 
     const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
 
-    expect(blockingIssues.some((issue) => issue.code === "tycoon.unlock.objectMissing")).toBe(
-      true
-    );
+    expect(blockingIssues.some((issue) => issue.code === "tycoon.unlock.objectMissing")).toBe(true);
   });
 
   it("falha quando winPurchaseIds aponta para compra inexistente", () => {
@@ -67,9 +62,7 @@ describe("Map validation", () => {
 
     const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
 
-    expect(blockingIssues.some((issue) => issue.code === "tycoon.win.purchaseMissing")).toBe(
-      true
-    );
+    expect(blockingIssues.some((issue) => issue.code === "tycoon.win.purchaseMissing")).toBe(true);
   });
 
   it("falha quando objeto Tycoon nao tem tycoonId", () => {

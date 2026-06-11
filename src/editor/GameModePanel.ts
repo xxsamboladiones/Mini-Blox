@@ -369,9 +369,7 @@ export class GameModePanel {
 
     this.root.querySelectorAll<HTMLInputElement>("[data-tycoon-setting]").forEach((input) => {
       input.addEventListener("change", () => {
-        const property = input.dataset.tycoonSetting as
-          | "startingCash"
-          | "generatorTickRateScale";
+        const property = input.dataset.tycoonSetting as "startingCash" | "generatorTickRateScale";
         this.updateSettings((settings) => {
           settings.tycoonSettings = {
             ...(settings.tycoonSettings ?? {}),

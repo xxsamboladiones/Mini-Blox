@@ -126,7 +126,9 @@ export class MapRepository {
 
   claimLegacyMap(id: string, userId: string): boolean {
     const result = this.database
-      .prepare("UPDATE maps SET owner_user_id = ?, updated_at = ? WHERE id = ? AND owner_user_id IS NULL")
+      .prepare(
+        "UPDATE maps SET owner_user_id = ?, updated_at = ? WHERE id = ? AND owner_user_id IS NULL"
+      )
       .run(userId, new Date().toISOString(), id);
     return result.changes > 0;
   }
@@ -151,7 +153,9 @@ export class MapRepository {
 
     const liked = this.isLikedByUser(id, userId);
     if (liked) {
-      this.database.prepare("DELETE FROM map_likes WHERE map_id = ? AND user_id = ?").run(id, userId);
+      this.database
+        .prepare("DELETE FROM map_likes WHERE map_id = ? AND user_id = ?")
+        .run(id, userId);
     } else {
       this.database
         .prepare("INSERT INTO map_likes (map_id, user_id, created_at) VALUES (?, ?, ?)")
@@ -276,7 +280,9 @@ function getMapMetadata(map: GameMap, creatorName: string) {
 function parseTags(value: string): string[] {
   try {
     const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : [];
   } catch {
     return [];
   }

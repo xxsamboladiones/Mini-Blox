@@ -13,15 +13,13 @@ import type { MapObject, Vector3 } from "../../../shared/types/ObjectSchema";
 
 describe("RuntimePickupSystem", () => {
   it("coleta coin uma vez e emite world event", () => {
-    const coin = createRuntimeTestObject(
-      "coin",
-      "coin_1",
-      { value: 5 },
-      { x: 0, y: 0.5, z: 0 }
-    );
+    const coin = createRuntimeTestObject("coin", "coin_1", { value: 5 }, { x: 0, y: 0.5, z: 0 });
     const fixture = createPickupFixture([coin]);
 
-    fixture.system.updateObject(coin, createPlayerBounds({ x: 0, y: 0.5, z: 0 }, { x: 1, y: 1, z: 1 }));
+    fixture.system.updateObject(
+      coin,
+      createPlayerBounds({ x: 0, y: 0.5, z: 0 }, { x: 1, y: 1, z: 1 })
+    );
     fixture.system.updateObject(
       coin,
       createPlayerBounds({ x: 0, y: 0.5, z: 0 }, { x: 1, y: 1, z: 1 })
@@ -57,7 +55,9 @@ describe("RuntimePickupSystem", () => {
 
     expect(fixture.system.hasKey("blue_key")).toBe(true);
     expect(fixture.hud.keys.at(-1)).toEqual(["Chave Azul"]);
-    expect(fixture.logicEvents).toEqual([{ type: "onKeyCollected", objectId: "key_1", keyId: "blue_key" }]);
+    expect(fixture.logicEvents).toEqual([
+      { type: "onKeyCollected", objectId: "key_1", keyId: "blue_key" },
+    ]);
   });
 
   it("health pickup cura no modo solo", () => {
@@ -99,7 +99,9 @@ describe("RuntimePickupSystem", () => {
     fixture.system.update(0.25);
 
     expect(fixture.objectViews.has("itemPickup-spawner_1-0")).toBe(true);
-    expect(fixture.world.children.some((child) => child.userData.runtimePickup === true)).toBe(true);
+    expect(fixture.world.children.some((child) => child.userData.runtimePickup === true)).toBe(
+      true
+    );
   });
 
   it("reset limpa pickups runtime e estado de moedas", () => {
@@ -140,6 +142,18 @@ describe("RuntimePickupSystem", () => {
 
     expect(fixture.system.getCoinCount()).toBe(0);
     expect(fixture.objectViews.get("item_1")?.visible).toBe(false);
+  });
+
+  it("ignora giveCoins com zero ou valor negativo sem feedback de coleta", () => {
+    const fixture = createPickupFixture([]);
+
+    fixture.system.giveCoins(0);
+    fixture.system.giveCoins(-10);
+
+    expect(fixture.system.getCoinCount()).toBe(0);
+    expect(fixture.hud.coins.at(-1)).toEqual({ count: 0, total: 0 });
+    expect(fixture.audio.playedCues).toEqual([]);
+    expect(fixture.objectiveCoins).toEqual([]);
   });
 });
 

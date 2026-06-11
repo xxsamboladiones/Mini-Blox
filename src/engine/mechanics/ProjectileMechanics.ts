@@ -49,7 +49,10 @@ export function createProjectile<TWeapon extends ProjectileWeapon>(
 }
 
 export function advanceProjectile(projectile: ActiveProjectile, deltaSeconds: number): void {
-  const step = Math.min(projectile.weapon.projectileSpeed * deltaSeconds, projectile.remainingRange);
+  const step = Math.min(
+    projectile.weapon.projectileSpeed * deltaSeconds,
+    projectile.remainingRange
+  );
   projectile.mesh.position.addScaledVector(projectile.direction, step);
   projectile.remainingRange -= step;
 }

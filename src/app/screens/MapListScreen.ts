@@ -251,32 +251,40 @@ export class MapListScreen implements Screen {
 
     this.multiplayerLobbyModal = new MultiplayerLobbyModal();
 
-    this.onlineMapDetailsModal = new OnlineMapDetailsModal(this.root, {
-      onPlayMap: (map) => this.actions.onPlayMap(map),
-      onEditMap: (map) => this.actions.onEditMap(map),
-      onClose: () => {
-        this.onlineMapDetailsModal = null;
+    this.onlineMapDetailsModal = new OnlineMapDetailsModal(
+      this.root,
+      {
+        onPlayMap: (map) => this.actions.onPlayMap(map),
+        onEditMap: (map) => this.actions.onEditMap(map),
+        onClose: () => {
+          this.onlineMapDetailsModal = null;
+        },
+        onPlayMultiplayer: (map, roomId, onlineMapId) =>
+          this.actions.onPlayMultiplayer?.(map, roomId, onlineMapId),
+        onCreateMultiplayerRoom: (map, onlineMapId) =>
+          this.actions.onCreateMultiplayerRoom?.(map, onlineMapId),
       },
-      onPlayMultiplayer: (map, roomId, onlineMapId) =>
-        this.actions.onPlayMultiplayer?.(map, roomId, onlineMapId),
-      onCreateMultiplayerRoom: (map, onlineMapId) =>
-        this.actions.onCreateMultiplayerRoom?.(map, onlineMapId),
-    }, this.multiplayerLobbyModal);
+      this.multiplayerLobbyModal
+    );
 
-    this.onlineMapsTab = new OnlineMapsTab(onlineTabContent, {
-      onPlayMap: (map) => this.actions.onPlayMap(map),
-      onEditMap: (map) => this.actions.onEditMap(map),
-      onShowDetails: (summary) => {
-        this.onlineMapDetailsModal?.show(summary);
+    this.onlineMapsTab = new OnlineMapsTab(
+      onlineTabContent,
+      {
+        onPlayMap: (map) => this.actions.onPlayMap(map),
+        onEditMap: (map) => this.actions.onEditMap(map),
+        onShowDetails: (summary) => {
+          this.onlineMapDetailsModal?.show(summary);
+        },
+        onDownloadCopy: (summary) => {
+          void this.handleDownloadOnlineCopy(summary);
+        },
+        onPlayMultiplayer: (map, roomId, onlineMapId) =>
+          this.actions.onPlayMultiplayer?.(map, roomId, onlineMapId),
+        onCreateMultiplayerRoom: (map, onlineMapId) =>
+          this.actions.onCreateMultiplayerRoom?.(map, onlineMapId),
       },
-      onDownloadCopy: (summary) => {
-        void this.handleDownloadOnlineCopy(summary);
-      },
-      onPlayMultiplayer: (map, roomId, onlineMapId) =>
-        this.actions.onPlayMultiplayer?.(map, roomId, onlineMapId),
-      onCreateMultiplayerRoom: (map, onlineMapId) =>
-        this.actions.onCreateMultiplayerRoom?.(map, onlineMapId),
-    }, this.multiplayerLobbyModal);
+      this.multiplayerLobbyModal
+    );
 
     this.onlineMapsTab.render();
   }

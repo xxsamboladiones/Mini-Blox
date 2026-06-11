@@ -385,7 +385,11 @@ export class PropertiesPanel {
   }
 
   private renderTycoonBaseFields(object: MapObject): string {
-    return this.renderTextField("tycoonId", "Tycoon ID", String(object.properties?.tycoonId ?? "tycoon_1"));
+    return this.renderTextField(
+      "tycoonId",
+      "Tycoon ID",
+      String(object.properties?.tycoonId ?? "tycoon_1")
+    );
   }
 
   private renderCollisionField(object: MapObject): string {
@@ -510,9 +514,11 @@ export class PropertiesPanel {
         this.selectedObject = this.selectedObject ? { ...this.selectedObject, name: value } : null;
         this.onChange({ name: value });
       });
-    this.root.querySelector<HTMLInputElement>('[data-field="name"]')?.addEventListener("change", () => {
-      this.finishPropertyCommit();
-    });
+    this.root
+      .querySelector<HTMLInputElement>('[data-field="name"]')
+      ?.addEventListener("change", () => {
+        this.finishPropertyCommit();
+      });
 
     this.root
       .querySelector<HTMLInputElement>('[data-field="color"]')
@@ -520,9 +526,11 @@ export class PropertiesPanel {
         const color = (event.currentTarget as HTMLInputElement).value;
         this.onChange({ properties: { color } });
       });
-    this.root.querySelector<HTMLInputElement>('[data-field="color"]')?.addEventListener("change", () => {
-      this.finishPropertyCommit();
-    });
+    this.root
+      .querySelector<HTMLInputElement>('[data-field="color"]')
+      ?.addEventListener("change", () => {
+        this.finishPropertyCommit();
+      });
 
     this.root.querySelectorAll<HTMLInputElement>("[data-vector]").forEach((input) => {
       input.addEventListener("input", () => this.handleVectorInput(input));

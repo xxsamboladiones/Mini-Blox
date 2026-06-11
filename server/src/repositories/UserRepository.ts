@@ -46,9 +46,9 @@ export class UserRepository {
   }
 
   findByUsername(username: string): UserRecord | null {
-    const row = this.database
-      .prepare("SELECT * FROM users WHERE username = ?")
-      .get(username) as UserRow | undefined;
+    const row = this.database.prepare("SELECT * FROM users WHERE username = ?").get(username) as
+      | UserRow
+      | undefined;
     return row ? toUserRecord(row) : null;
   }
 

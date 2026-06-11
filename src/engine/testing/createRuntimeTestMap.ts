@@ -84,7 +84,10 @@ export function createDoorButtonTestMap(): GameMap {
   });
 }
 
-export function createTycoonTestMap(objects: MapObject[], options: RuntimeTestMapOptions = {}): GameMap {
+export function createTycoonTestMap(
+  objects: MapObject[],
+  options: RuntimeTestMapOptions = {}
+): GameMap {
   return createRuntimeTestMap({
     ...options,
     gameMode: "tycoon",

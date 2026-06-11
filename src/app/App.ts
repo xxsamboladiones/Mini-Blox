@@ -4,9 +4,8 @@ import type { Screen } from "./AppState";
 import { LocalMapMetadataStorage } from "../storage/LocalMapMetadataStorage";
 import { LocalProfileStorage } from "../storage/LocalProfileStorage";
 import { MapStorage } from "../storage/MapStorage";
-import { createMapFromTemplate, type MapTemplateId } from "../shared/MapTemplates";
+import type { MapTemplateId } from "../shared/MapTemplateMetadata";
 import { assertGameMap, type GameMap } from "../shared/types/MapSchema";
-import { multiplayerService } from "../services/MultiplayerService.js";
 
 export class App {
   private activeScreen: Screen | null = null;
@@ -20,15 +19,14 @@ export class App {
   private showMainMenu(): void {
     this.replaceScreen(
       new MainMenuScreen(this.root, {
-        onCreateMap: (templateId) => void this.showEditor(this.createProfileMap(templateId)),
+        onCreateMap: (templateId) => void this.showEditorFromTemplate(templateId),
         onOpenMapList: () => void this.showMapList(),
         onOpenProfile: () => this.showProfile(),
-        onContinueLastMap: () =>
-          void this.showEditor(MapStorage.getLastMap() ?? this.createProfileMap("empty")),
+        onContinueLastMap: () => void this.continueLastMap(),
         onContinueLastPlayed: () => {
           const mapId = LocalMapMetadataStorage.getLastPlayedMapId();
           const map = mapId ? MapStorage.getMap(mapId) : null;
-          void this.showPlay(map ?? MapStorage.getLastMap() ?? this.createProfileMap("empty"));
+          void this.continueLastPlayed(map);
         },
         onImportMap: (file) => void this.importMap(file),
       })
@@ -41,7 +39,7 @@ export class App {
     this.replaceScreen(
       new MapListScreen(this.root, {
         onBackToMenu: () => this.showMainMenu(),
-        onCreateMap: () => void this.showEditor(this.createProfileMap("empty")),
+        onCreateMap: () => void this.showEditorFromTemplate("empty"),
         onEditMap: (map) => void this.showEditor(map),
         onPlayMap: (map) => void this.showPlay(map),
         onPlayMultiplayer: async (map, roomId, onlineMapId) => {
@@ -100,7 +98,7 @@ export class App {
     this.replaceScreen(
       new PlayScreen(this.root, map, {
         onBackToMenu: () => {
-          multiplayerService.disconnect();
+          void this.disconnectMultiplayer();
           this.showMainMenu();
         },
         onEditMap: (currentMap) => void this.showEditor(currentMap),
@@ -122,8 +120,34 @@ export class App {
       throw new Error("Este mapa nao esta publicado online.");
     }
 
+    const { multiplayerService } = await import("../services/MultiplayerService.js");
     const response = await multiplayerService.createRoom(onlineMapId, playerName);
     await this.showPlayMultiplayer(map, response.roomId, onlineMapId);
+  }
+
+  private async showEditorFromTemplate(templateId: MapTemplateId = "empty"): Promise<void> {
+    this.showLoading("Carregando template...");
+    await this.showEditor(await this.createProfileMap(templateId));
+  }
+
+  private async continueLastMap(): Promise<void> {
+    const map = MapStorage.getLastMap() ?? (await this.createProfileMap("empty"));
+    await this.showEditor(map);
+  }
+
+  private async continueLastPlayed(map: GameMap | null): Promise<void> {
+    if (map) {
+      await this.showPlay(map);
+      return;
+    }
+
+    const fallbackMap = MapStorage.getLastMap() ?? (await this.createProfileMap("empty"));
+    await this.showPlay(fallbackMap);
+  }
+
+  private async disconnectMultiplayer(): Promise<void> {
+    const { multiplayerService } = await import("../services/MultiplayerService.js");
+    multiplayerService.disconnect();
   }
 
   private replaceScreen(screen: Screen): void {
@@ -150,7 +174,8 @@ export class App {
     `;
   }
 
-  private createProfileMap(templateId: MapTemplateId = "empty"): GameMap {
+  private async createProfileMap(templateId: MapTemplateId = "empty"): Promise<GameMap> {
+    const { createMapFromTemplate } = await import("../shared/MapTemplates");
     return applyProfileCreatorName(createMapFromTemplate(templateId));
   }
 

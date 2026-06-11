@@ -288,7 +288,12 @@ export class EditorScene {
 
         this.selectObject(existingSpawn.id);
         this.emitMapChange();
-        this.emitSceneCommit("object-transform-commit", existingSpawn.id, before, selectedObjectIdBefore);
+        this.emitSceneCommit(
+          "object-transform-commit",
+          existingSpawn.id,
+          before,
+          selectedObjectIdBefore
+        );
         return structuredClone(existingSpawn);
       }
     }

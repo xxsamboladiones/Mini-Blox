@@ -466,8 +466,7 @@ function isTycoonSettings(value: unknown): value is TycoonSettings {
         value.winPurchaseIds.every((purchaseId) => typeof purchaseId === "string"))) &&
     (value.allowStealing === undefined || typeof value.allowStealing === "boolean") &&
     (value.autoClaimInSolo === undefined || typeof value.autoClaimInSolo === "boolean") &&
-    (value.generatorTickRateScale === undefined ||
-      Number.isFinite(value.generatorTickRateScale))
+    (value.generatorTickRateScale === undefined || Number.isFinite(value.generatorTickRateScale))
   );
 }
 

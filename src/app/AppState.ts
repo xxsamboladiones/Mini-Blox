@@ -1,5 +1,5 @@
 import type { GameMap } from "../shared/types/MapSchema";
-import type { MapTemplateId } from "../shared/MapTemplates";
+import type { MapTemplateId } from "../shared/MapTemplateMetadata";
 
 export type AppRoute = "menu" | "editor" | "map-list" | "play" | "profile";
 
@@ -26,11 +26,7 @@ export type MapListActions = {
   onCreateMap: () => void;
   onEditMap: (map: GameMap) => void;
   onPlayMap: (map: GameMap) => void;
-  onPlayMultiplayer?: (
-    map: GameMap,
-    roomId: string,
-    onlineMapId?: string
-  ) => void | Promise<void>;
+  onPlayMultiplayer?: (map: GameMap, roomId: string, onlineMapId?: string) => void | Promise<void>;
   onCreateMultiplayerRoom?: (map: GameMap, onlineMapId?: string) => void | Promise<void>;
 };
 

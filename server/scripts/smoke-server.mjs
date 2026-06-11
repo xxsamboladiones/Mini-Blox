@@ -215,7 +215,8 @@ async function main() {
     const otherToken = await registerUser(`other_${suffix}`);
     if (!ownerToken || !otherToken) throw new Error("Auth register failed");
     if (!(await testMe(ownerToken))) throw new Error("Auth me failed");
-    if (!(await testUnauthorizedPublish())) throw new Error("Unauthenticated publish was not rejected");
+    if (!(await testUnauthorizedPublish()))
+      throw new Error("Unauthenticated publish was not rejected");
 
     const onlineId = await testPublishMap(ownerToken);
     if (!onlineId) throw new Error("Publish map failed");
@@ -227,9 +228,13 @@ async function main() {
       map.objects[0].type = "enemy";
       map.objects[0].properties = { health: 100, damage: 9999, speed: 1 };
     });
-    const suspiciousFieldRejected = await testInvalidPublishMap("suspicious-field", ownerToken, (map) => {
-      map.objects[0].properties = { outerHTML: "<script>alert(1)</script>" };
-    });
+    const suspiciousFieldRejected = await testInvalidPublishMap(
+      "suspicious-field",
+      ownerToken,
+      (map) => {
+        map.objects[0].properties = { outerHTML: "<script>alert(1)</script>" };
+      }
+    );
 
     if (!invalidScaleRejected || !invalidDamageRejected || !suspiciousFieldRejected) {
       throw new Error("Invalid publish validation failed");
@@ -239,9 +244,11 @@ async function main() {
     if (!(await testGetMap(onlineId))) throw new Error("Get map failed");
     if (!(await testRegisterPlay(onlineId))) throw new Error("Register play failed");
     if (!(await testLikeMap(onlineId, ownerToken))) throw new Error("Like map failed");
-    if (!(await testForbiddenUpdate(onlineId, otherToken))) throw new Error("Forbidden update failed");
+    if (!(await testForbiddenUpdate(onlineId, otherToken)))
+      throw new Error("Forbidden update failed");
     if (!(await testUpdateMap(onlineId, ownerToken))) throw new Error("Update map failed");
-    if (!(await testForbiddenDelete(onlineId, otherToken))) throw new Error("Forbidden delete failed");
+    if (!(await testForbiddenDelete(onlineId, otherToken)))
+      throw new Error("Forbidden delete failed");
     if (!(await testDeleteMap(onlineId, ownerToken))) throw new Error("Delete map failed");
 
     console.log("\n=== All tests passed! ===");

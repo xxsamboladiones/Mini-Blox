@@ -1,8 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import {
-  createHttpTestServer,
-  type HttpTestServer,
-} from "../testing/createHttpTestServer";
+import { createHttpTestServer, type HttpTestServer } from "../testing/createHttpTestServer";
 import { createOnlineTestMap } from "../testing/createOnlineTestMap";
 import type { GameMap } from "../types/OnlineMapSchema";
 

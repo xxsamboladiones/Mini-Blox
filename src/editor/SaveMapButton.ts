@@ -28,7 +28,11 @@ export class SaveMapButton {
       : this.isOnlinePublished
         ? "Atualizar Online"
         : "Publicar Online";
-    const publishIcon = this.publishing ? "loader-circle" : this.isOnlinePublished ? "refresh-cw" : "send";
+    const publishIcon = this.publishing
+      ? "loader-circle"
+      : this.isOnlinePublished
+        ? "refresh-cw"
+        : "send";
 
     this.root.innerHTML = `
       <button class="top-action" type="button" data-action="test">

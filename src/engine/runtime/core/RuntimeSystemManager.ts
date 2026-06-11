@@ -13,10 +13,15 @@ export class RuntimeSystemManager {
   private readonly registrations: RuntimeSystemRegistration[] = [];
   private nextOrder = 0;
 
-  register(
-    system: RuntimeSystem,
-    options: RuntimeSystemRegistrationOptions = {}
-  ): RuntimeSystem {
+  register(system: RuntimeSystem, options: RuntimeSystemRegistrationOptions = {}): RuntimeSystem {
+    if (!system.id) {
+      throw new Error("Runtime system must declare an id.");
+    }
+
+    if (this.getSystem(system.id)) {
+      throw new Error(`Runtime system already registered: ${system.id}`);
+    }
+
     this.registrations.push({
       system,
       order: this.nextOrder,
@@ -25,6 +30,11 @@ export class RuntimeSystemManager {
     });
     this.nextOrder += 1;
     return system;
+  }
+
+  getSystem<TSystem extends RuntimeSystem = RuntimeSystem>(id: string): TSystem | null {
+    return (this.registrations.find((registration) => registration.system.id === id)?.system ??
+      null) as TSystem | null;
   }
 
   start(): void {
@@ -46,8 +56,21 @@ export class RuntimeSystemManager {
   }
 
   dispose(): void {
+    let firstError: unknown = null;
+
     for (const { system } of [...this.registrations].reverse()) {
-      system.dispose?.();
+      try {
+        system.dispose?.();
+      } catch (error) {
+        firstError ??= error;
+        if (import.meta.env.DEV) {
+          console.error(`[RuntimeSystemManager] dispose failed for ${system.id}`, error);
+        }
+      }
+    }
+
+    if (firstError) {
+      throw firstError;
     }
   }
 

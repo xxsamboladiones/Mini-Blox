@@ -11,18 +11,27 @@ export function createOnlineTestMap(overrides: Partial<GameMap> = {}): GameMap {
     spawnPoint: overrides.spawnPoint ?? { x: 0, y: 1, z: 0 },
     objects: overrides.objects ?? [
       createObject("spawn", "spawn", {}, { x: 0, y: 0.5, z: 0 }),
-      createObject("cube", "ground", { collision: true }, { x: 0, y: -0.05, z: 0 }, {
-        x: 10,
-        y: 0.1,
-        z: 10,
-      }),
+      createObject(
+        "cube",
+        "ground",
+        { collision: true },
+        { x: 0, y: -0.05, z: 0 },
+        {
+          x: 10,
+          y: 0.1,
+          z: 10,
+        }
+      ),
     ],
     objectives: overrides.objectives ?? [],
     logic: overrides.logic ?? [],
     visualSettings: overrides.visualSettings ?? { theme: "classic" },
     audioSettings: overrides.audioSettings ?? { ambientMusic: "none" },
     gameplaySettings: overrides.gameplaySettings ?? { voidDeathEnabled: true },
-    multiplayerSettings: overrides.multiplayerSettings ?? { pvpEnabled: false, friendlyFire: false },
+    multiplayerSettings: overrides.multiplayerSettings ?? {
+      pvpEnabled: false,
+      friendlyFire: false,
+    },
     gameModeSettings: overrides.gameModeSettings ?? {
       mode: "freeplay",
       winCondition: { type: "none" },

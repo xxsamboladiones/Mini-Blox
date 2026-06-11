@@ -5,10 +5,7 @@ import { createMockAudioSystem } from "../testing/createMockAudioSystem";
 import { createMockFeedbackSystem } from "../testing/createMockFeedbackSystem";
 import { createMockHud } from "../testing/createMockHud";
 import { createMockPhysicsSystem } from "../testing/createMockPhysicsSystem";
-import {
-  createRuntimeTestMap,
-  createRuntimeTestObject,
-} from "../testing/createRuntimeTestMap";
+import { createRuntimeTestMap, createRuntimeTestObject } from "../testing/createRuntimeTestMap";
 import { simulateRuntimeTicks } from "../testing/simulateRuntimeTicks";
 import type { GameMap } from "../../shared/types/MapSchema";
 import type { WorldEvent } from "../../shared/types/MultiplayerSchema";
@@ -16,11 +13,14 @@ import type { MapObject, MapObjectProperties } from "../../shared/types/ObjectSc
 
 describe("TycoonSystem", () => {
   it("usa o cash inicial configurado", () => {
-    const fixture = createTycoonFixture([
-      tycoonObject("tycoonOwnerClaim", "claim", {
-        autoClaimInSolo: true,
-      }),
-    ], { startingCash: 25 });
+    const fixture = createTycoonFixture(
+      [
+        tycoonObject("tycoonOwnerClaim", "claim", {
+          autoClaimInSolo: true,
+        }),
+      ],
+      { startingCash: 25 }
+    );
 
     expect(fixture.system.getCash()).toBe(25);
     expect(fixture.hud.getLatestTycoonStatus()?.cash).toBe(25);
@@ -68,12 +68,15 @@ describe("TycoonSystem", () => {
   });
 
   it("compra botao quando ha dinheiro suficiente", () => {
-    const fixture = createTycoonFixture([
-      tycoonObject("tycoonBuyButton", "button", {
-        purchaseId: "buy_wall",
-        cost: 25,
-      }),
-    ], { startingCash: 50 });
+    const fixture = createTycoonFixture(
+      [
+        tycoonObject("tycoonBuyButton", "button", {
+          purchaseId: "buy_wall",
+          cost: 25,
+        }),
+      ],
+      { startingCash: 50 }
+    );
 
     expect(fixture.system.interactWithObject("button")).toBe(true);
 
@@ -226,16 +229,19 @@ describe("TycoonSystem", () => {
 
   it("dispara completeTycoon quando todos winPurchaseIds foram comprados", () => {
     const onCompleted = vi.fn();
-    const fixture = createTycoonFixture([
-      tycoonObject("tycoonBuyButton", "button_a", {
-        purchaseId: "buy_a",
-        cost: 0,
-      }),
-      tycoonObject("tycoonBuyButton", "button_b", {
-        purchaseId: "buy_b",
-        cost: 0,
-      }),
-    ], { winPurchaseIds: ["buy_a", "buy_b"], onCompleted });
+    const fixture = createTycoonFixture(
+      [
+        tycoonObject("tycoonBuyButton", "button_a", {
+          purchaseId: "buy_a",
+          cost: 0,
+        }),
+        tycoonObject("tycoonBuyButton", "button_b", {
+          purchaseId: "buy_b",
+          cost: 0,
+        }),
+      ],
+      { winPurchaseIds: ["buy_a", "buy_b"], onCompleted }
+    );
 
     expect(fixture.system.interactWithObject("button_a")).toBe(true);
     expect(onCompleted).not.toHaveBeenCalled();
@@ -248,16 +254,19 @@ describe("TycoonSystem", () => {
 
   it("nao duplica upgrade quando recebe eco local de worldEvent", () => {
     const worldEvents: WorldEvent[] = [];
-    const fixture = createTycoonFixture([
-      tycoonObject("tycoonUpgrade", "upgrade", {
-        upgradeId: "upgrade_income",
-        cost: 0,
-        maxLevel: 2,
-        hideAfterPurchase: false,
-      }),
-    ], {
-      onWorldEvent: (event) => worldEvents.push(event),
-    });
+    const fixture = createTycoonFixture(
+      [
+        tycoonObject("tycoonUpgrade", "upgrade", {
+          upgradeId: "upgrade_income",
+          cost: 0,
+          maxLevel: 2,
+          hideAfterPurchase: false,
+        }),
+      ],
+      {
+        onWorldEvent: (event) => worldEvents.push(event),
+      }
+    );
 
     expect(fixture.system.interactWithObject("upgrade")).toBe(true);
     expect(fixture.system.getUpgradeLevel("upgrade_income")).toBe(1);
@@ -303,32 +312,35 @@ describe("TycoonSystem", () => {
   });
 
   it("reset limpa cash, compras, upgrades, pending cash e objetos bloqueados", () => {
-    const fixture = createTycoonFixture([
-      tycoonObject("tycoonCollector", "collector", {
-        collectorId: "collector_1",
-        autoCollect: false,
-      }),
-      tycoonObject("tycoonGenerator", "generator", {
-        generatorId: "gen_1",
-        incomePerTick: 10,
-        tickInterval: 1,
-        targetCollectorId: "collector_1",
-      }),
-      tycoonObject("tycoonUnlockable", "wall", {
-        startsLocked: true,
-      }),
-      tycoonObject("tycoonBuyButton", "button", {
-        purchaseId: "buy_wall",
-        cost: 10,
-        unlockObjectIds: ["wall"],
-      }),
-      tycoonObject("tycoonUpgrade", "upgrade", {
-        upgradeId: "upgrade_income",
-        cost: 0,
-        targetGeneratorIds: ["gen_1"],
-        incomeMultiplier: 2,
-      }),
-    ], { startingCash: 50 });
+    const fixture = createTycoonFixture(
+      [
+        tycoonObject("tycoonCollector", "collector", {
+          collectorId: "collector_1",
+          autoCollect: false,
+        }),
+        tycoonObject("tycoonGenerator", "generator", {
+          generatorId: "gen_1",
+          incomePerTick: 10,
+          tickInterval: 1,
+          targetCollectorId: "collector_1",
+        }),
+        tycoonObject("tycoonUnlockable", "wall", {
+          startsLocked: true,
+        }),
+        tycoonObject("tycoonBuyButton", "button", {
+          purchaseId: "buy_wall",
+          cost: 10,
+          unlockObjectIds: ["wall"],
+        }),
+        tycoonObject("tycoonUpgrade", "upgrade", {
+          upgradeId: "upgrade_income",
+          cost: 0,
+          targetGeneratorIds: ["gen_1"],
+          incomeMultiplier: 2,
+        }),
+      ],
+      { startingCash: 50 }
+    );
 
     simulateRuntimeTicks(fixture.system, { ticks: 1, deltaSeconds: 1 });
     expect(fixture.system.interactWithObject("button")).toBe(true);
@@ -394,10 +406,7 @@ function createObjectViews(map: GameMap): Map<string, THREE.Object3D> {
   const views = new Map<string, THREE.Object3D>();
 
   for (const object of map.objects) {
-    const view = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshStandardMaterial()
-    );
+    const view = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial());
     view.position.set(object.position.x, object.position.y, object.position.z);
     view.rotation.set(object.rotation?.x ?? 0, object.rotation?.y ?? 0, object.rotation?.z ?? 0);
     view.scale.set(object.scale?.x ?? 1, object.scale?.y ?? 1, object.scale?.z ?? 1);

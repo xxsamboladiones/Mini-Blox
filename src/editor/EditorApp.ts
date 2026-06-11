@@ -154,7 +154,9 @@ export class EditorApp {
 
     this.logicPanel = new LogicPanel(logicPanelRoot, {
       onChange: (logic) =>
-        this.commitImmediateHistoryChange("logic-commit", () => this.editorScene?.updateLogic(logic)),
+        this.commitImmediateHistoryChange("logic-commit", () =>
+          this.editorScene?.updateLogic(logic)
+        ),
       onDebugChange: (logicDebug) =>
         this.commitImmediateHistoryChange("logic-commit", () =>
           this.editorScene?.updateMapInfo({ logicDebug })
@@ -1136,7 +1138,10 @@ export class EditorApp {
     this.gameModePanel?.setMap(normalizedMap);
     this.objectivesPanel?.setMap(normalizedMap);
     this.logicPanel?.setMap(normalizedMap);
-    if (selectedObjectId && normalizedMap.objects.some((object) => object.id === selectedObjectId)) {
+    if (
+      selectedObjectId &&
+      normalizedMap.objects.some((object) => object.id === selectedObjectId)
+    ) {
       this.editorScene?.selectObjectById(selectedObjectId);
     }
     this.refreshOutliner(normalizedMap);

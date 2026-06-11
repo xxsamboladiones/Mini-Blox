@@ -39,10 +39,7 @@ export function getCoinAmount(mapObject: MapObject): number {
   return getNumber(mapObject.properties?.value, getNumber(mapObject.properties?.coinValue, 1));
 }
 
-export function shouldCollectPickup(
-  playerBounds: THREE.Box3,
-  objectBounds: THREE.Box3
-): boolean {
+export function shouldCollectPickup(playerBounds: THREE.Box3, objectBounds: THREE.Box3): boolean {
   return objectBounds.intersectsBox(playerBounds);
 }
 
@@ -52,7 +49,10 @@ export function hideCollectedPickupObject(view: THREE.Object3D | undefined): voi
   }
 }
 
-export function shouldTrackSharedPickup(sharedWorldEnabled: boolean, applyEffects?: boolean): boolean {
+export function shouldTrackSharedPickup(
+  sharedWorldEnabled: boolean,
+  applyEffects?: boolean
+): boolean {
   return sharedWorldEnabled || applyEffects === false;
 }
 

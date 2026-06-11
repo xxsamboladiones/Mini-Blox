@@ -4,10 +4,7 @@ import type { WorldEvent } from "../../../shared/types/MultiplayerSchema";
 import type { MapObject } from "../../../shared/types/ObjectSchema";
 import type { AudioSystem } from "../../AudioSystem";
 import type { FeedbackSystem } from "../../FeedbackSystem";
-import {
-  applyObjectAppearanceToThree,
-  applyObjectTransformToThree,
-} from "../../ObjectFactory";
+import { applyObjectAppearanceToThree, applyObjectTransformToThree } from "../../ObjectFactory";
 import type { RuntimeHud } from "../../RuntimeHud";
 import {
   applyButtonActivatedVisual,
@@ -41,8 +38,7 @@ export type ButtonActivationOptions = {
   dispatchRuntimeEvents?: boolean;
 };
 
-export type RuntimeDoorButtonLogicEvent =
-  | { type: "onButtonActivated"; objectId: string };
+export type RuntimeDoorButtonLogicEvent = { type: "onButtonActivated"; objectId: string };
 
 export type RuntimeDoorButtonSystemOptions = {
   map: GameMap;
@@ -207,7 +203,11 @@ export class RuntimeDoorButtonSystem implements RuntimeSystem {
     }
 
     if (options.emitWorldEvent !== false) {
-      this.options.emitWorldEvent({ type: "doorClosed", doorId: resolvedDoorId, objectId: door.id });
+      this.options.emitWorldEvent({
+        type: "doorClosed",
+        doorId: resolvedDoorId,
+        objectId: door.id,
+      });
     }
 
     return true;
@@ -310,7 +310,10 @@ export class RuntimeDoorButtonSystem implements RuntimeSystem {
     if (options.playFeedback !== false) {
       this.options.audio.play("button");
       this.options.feedback.spawn("button", mapObject.position);
-      this.options.hud.showMessage(doorId ? "Botao acionado: porta liberada" : "Botao acionado", 1400);
+      this.options.hud.showMessage(
+        doorId ? "Botao acionado: porta liberada" : "Botao acionado",
+        1400
+      );
     }
 
     if (options.dispatchRuntimeEvents !== false) {

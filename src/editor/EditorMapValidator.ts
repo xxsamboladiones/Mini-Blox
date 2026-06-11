@@ -133,7 +133,8 @@ export function formatMapValidationIssues(issues: EditorMapValidationIssue[]): s
   }
 
   const firstIssues = issues.slice(0, 3).map((issue) => issue.message);
-  const suffix = issues.length > firstIssues.length ? ` (+${issues.length - firstIssues.length})` : "";
+  const suffix =
+    issues.length > firstIssues.length ? ` (+${issues.length - firstIssues.length})` : "";
   return `Mapa invalido: ${firstIssues.join(" ")}${suffix}`;
 }
 
@@ -174,9 +175,7 @@ function validateObject(
     issues.push({
       level: "error",
       code: "object.type",
-      message: objectId
-        ? `O objeto "${objectId}" esta sem tipo.`
-        : "Existe um objeto sem tipo.",
+      message: objectId ? `O objeto "${objectId}" esta sem tipo.` : "Existe um objeto sem tipo.",
       objectId,
     });
   }
@@ -324,7 +323,11 @@ function validateTycoonObjects(
       }
 
       const requiredPurchaseId = getString(object.properties?.purchaseId);
-      if (object.properties?.requiresPurchase && requiredPurchaseId && !purchaseIds.has(requiredPurchaseId)) {
+      if (
+        object.properties?.requiresPurchase &&
+        requiredPurchaseId &&
+        !purchaseIds.has(requiredPurchaseId)
+      ) {
         issues.push({
           level: "error",
           code: "tycoon.generator.purchaseMissing",

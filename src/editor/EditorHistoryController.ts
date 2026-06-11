@@ -74,16 +74,11 @@ export class EditorHistoryController {
 
     const pending = this.pending;
     this.pending = null;
-    this.push(
-      reason ?? pending.reason,
-      pending.before,
-      this.options.getSnapshot(),
-      {
-        objectId: objectId ?? pending.objectId,
-        selectedObjectIdBefore: pending.selectedObjectIdBefore,
-        selectedObjectIdAfter: this.options.getSelectedObjectId?.() ?? null,
-      }
-    );
+    this.push(reason ?? pending.reason, pending.before, this.options.getSnapshot(), {
+      objectId: objectId ?? pending.objectId,
+      selectedObjectIdBefore: pending.selectedObjectIdBefore,
+      selectedObjectIdAfter: this.options.getSelectedObjectId?.() ?? null,
+    });
   }
 
   cancel(): void {

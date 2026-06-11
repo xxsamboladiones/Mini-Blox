@@ -777,11 +777,7 @@ export class GameRoom {
     return distance3D(player.position, position) <= maxDistance;
   }
 
-  private isEnemyMovementPlausible(
-    enemy: EnemyNetState,
-    position: Vector3,
-    now: number
-  ): boolean {
+  private isEnemyMovementPlausible(enemy: EnemyNetState, position: Vector3, now: number): boolean {
     const lastUpdateAt = this.lastEnemyPositionUpdateAtByObjectId.get(enemy.objectId);
 
     if (!lastUpdateAt) {
