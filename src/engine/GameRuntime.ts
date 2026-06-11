@@ -935,6 +935,8 @@ function cloneSharedWorldState(state: SharedWorldState): SharedWorldState {
     activatedButtonIds: [...state.activatedButtonIds],
     collectedCoinObjectIds: [...state.collectedCoinObjectIds],
     collectedItemObjectIds: [...state.collectedItemObjectIds],
+    tycoonPurchasedIds: [...(state.tycoonPurchasedIds ?? [])],
+    tycoonUpgradeIds: [...(state.tycoonUpgradeIds ?? [])],
   };
 }
 
@@ -946,6 +948,8 @@ function mergeWorldEvent(state: SharedWorldState | null, event: WorldEvent): Sha
       activatedButtonIds: [],
       collectedCoinObjectIds: [],
       collectedItemObjectIds: [],
+      tycoonPurchasedIds: [],
+      tycoonUpgradeIds: [],
     } satisfies SharedWorldState);
 
   if (event.type === "doorOpened") {
@@ -958,6 +962,10 @@ function mergeWorldEvent(state: SharedWorldState | null, event: WorldEvent): Sha
     addUnique(next.collectedCoinObjectIds, event.objectId);
   } else if (event.type === "itemCollected") {
     addUnique(next.collectedItemObjectIds, event.objectId);
+  } else if (event.type === "tycoonPurchase") {
+    addUnique(next.tycoonPurchasedIds, event.purchaseId);
+  } else if (event.type === "tycoonUpgrade") {
+    addUnique(next.tycoonUpgradeIds, event.upgradeId);
   }
 
   return cloneSharedWorldState(next);

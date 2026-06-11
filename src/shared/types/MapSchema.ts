@@ -43,7 +43,8 @@ export type GameMode =
   | "combatArena"
   | "objectiveRun"
   | "teamBattle"
-  | "capturePoint";
+  | "capturePoint"
+  | "tycoon";
 
 export type WinConditionType =
   | "none"
@@ -52,7 +53,8 @@ export type WinConditionType =
   | "defeatEnemies"
   | "completeObjectives"
   | "score"
-  | "capturePoint";
+  | "capturePoint"
+  | "completeTycoon";
 
 export type GameModeWinCondition = {
   type: WinConditionType;
@@ -67,6 +69,16 @@ export type ScoringSettings = {
   deathPenalty?: number;
 };
 
+export type TycoonSettings = {
+  startingCash?: number;
+  sharedCash?: boolean;
+  requireAllPurchasesToWin?: boolean;
+  winPurchaseIds?: string[];
+  allowStealing?: boolean;
+  autoClaimInSolo?: boolean;
+  generatorTickRateScale?: number;
+};
+
 export type GameModeSettings = {
   mode: GameMode;
   roundEnabled?: boolean;
@@ -76,6 +88,7 @@ export type GameModeSettings = {
   requireObjectivesToFinish?: boolean;
   winCondition?: GameModeWinCondition;
   scoring?: ScoringSettings;
+  tycoonSettings?: TycoonSettings;
 };
 
 export type TeamDefinition = {
@@ -92,7 +105,10 @@ export type ObjectiveType =
   | "activateButton"
   | "openDoor"
   | "defeatEnemies"
-  | "customLogic";
+  | "customLogic"
+  | "completeTycoon"
+  | "purchaseTycoonItem"
+  | "collectTycoonCash";
 
 export type MapObjective = {
   id: string;
@@ -102,6 +118,8 @@ export type MapObjective = {
   targetObjectId?: string;
   targetKeyId?: string;
   targetDoorId?: string;
+  targetPurchaseId?: string;
+  targetTycoonId?: string;
   targetAmount?: number;
   required?: boolean;
   visible?: boolean;
@@ -191,6 +209,15 @@ export function createEmptyGameMap(name = "Novo mapa"): GameMap {
         objectiveScore: 250,
         deathPenalty: 25,
       },
+      tycoonSettings: {
+        startingCash: 0,
+        sharedCash: false,
+        requireAllPurchasesToWin: true,
+        winPurchaseIds: [],
+        allowStealing: false,
+        autoClaimInSolo: true,
+        generatorTickRateScale: 1,
+      },
     },
     teams: [],
     tags: [],
@@ -269,6 +296,8 @@ function isMapObjective(value: unknown): value is MapObjective {
     (value.targetObjectId === undefined || typeof value.targetObjectId === "string") &&
     (value.targetKeyId === undefined || typeof value.targetKeyId === "string") &&
     (value.targetDoorId === undefined || typeof value.targetDoorId === "string") &&
+    (value.targetPurchaseId === undefined || typeof value.targetPurchaseId === "string") &&
+    (value.targetTycoonId === undefined || typeof value.targetTycoonId === "string") &&
     (value.targetAmount === undefined || Number.isFinite(value.targetAmount)) &&
     (value.required === undefined || typeof value.required === "boolean") &&
     (value.visible === undefined || typeof value.visible === "boolean") &&
@@ -392,7 +421,8 @@ function isGameModeSettings(value: unknown): value is GameModeSettings {
     (value.requireObjectivesToFinish === undefined ||
       typeof value.requireObjectivesToFinish === "boolean") &&
     (value.winCondition === undefined || isGameModeWinCondition(value.winCondition)) &&
-    (value.scoring === undefined || isScoringSettings(value.scoring))
+    (value.scoring === undefined || isScoringSettings(value.scoring)) &&
+    (value.tycoonSettings === undefined || isTycoonSettings(value.tycoonSettings))
   );
 }
 
@@ -421,6 +451,26 @@ function isScoringSettings(value: unknown): value is ScoringSettings {
   );
 }
 
+function isTycoonSettings(value: unknown): value is TycoonSettings {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value.startingCash === undefined || Number.isFinite(value.startingCash)) &&
+    (value.sharedCash === undefined || typeof value.sharedCash === "boolean") &&
+    (value.requireAllPurchasesToWin === undefined ||
+      typeof value.requireAllPurchasesToWin === "boolean") &&
+    (value.winPurchaseIds === undefined ||
+      (Array.isArray(value.winPurchaseIds) &&
+        value.winPurchaseIds.every((purchaseId) => typeof purchaseId === "string"))) &&
+    (value.allowStealing === undefined || typeof value.allowStealing === "boolean") &&
+    (value.autoClaimInSolo === undefined || typeof value.autoClaimInSolo === "boolean") &&
+    (value.generatorTickRateScale === undefined ||
+      Number.isFinite(value.generatorTickRateScale))
+  );
+}
+
 function isTeamDefinition(value: unknown): value is TeamDefinition {
   if (!isRecord(value)) {
     return false;
@@ -442,7 +492,8 @@ function isGameMode(value: unknown): value is GameMode {
     value === "combatArena" ||
     value === "objectiveRun" ||
     value === "teamBattle" ||
-    value === "capturePoint"
+    value === "capturePoint" ||
+    value === "tycoon"
   );
 }
 
@@ -454,7 +505,8 @@ function isWinConditionType(value: unknown): value is WinConditionType {
     value === "defeatEnemies" ||
     value === "completeObjectives" ||
     value === "score" ||
-    value === "capturePoint"
+    value === "capturePoint" ||
+    value === "completeTycoon"
   );
 }
 
@@ -466,7 +518,10 @@ function isObjectiveType(value: unknown): value is ObjectiveType {
     value === "activateButton" ||
     value === "openDoor" ||
     value === "defeatEnemies" ||
-    value === "customLogic"
+    value === "customLogic" ||
+    value === "completeTycoon" ||
+    value === "purchaseTycoonItem" ||
+    value === "collectTycoonCash"
   );
 }
 

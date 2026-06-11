@@ -62,6 +62,7 @@ import {
   isDamageZoneObject,
   shouldApplyDamageZone,
 } from "./mechanics/DamageZoneMechanics";
+import { TycoonSystem } from "./mechanics/TycoonSystem";
 import {
   advanceProjectile,
   createProjectile,
@@ -69,6 +70,8 @@ import {
   isProjectileNearPosition,
   type ActiveProjectile,
 } from "./mechanics/ProjectileMechanics";
+import { RuntimeCombatSystem } from "./runtime/RuntimeCombatSystem";
+import { RuntimeInventorySystem } from "./runtime/RuntimeInventorySystem";
 import type { GameMap } from "../shared/types/MapSchema";
 import type {
   EnemyNetState,
@@ -82,7 +85,6 @@ import type {
 } from "../shared/types/MultiplayerSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
 import type {
-  InventoryItem,
   ItemPickupObject,
   WeaponAttackType,
   WeaponClass,
@@ -229,7 +231,8 @@ export class RuntimeMechanics {
   private readonly logicInsideObjectIds = new Set<string>();
   private readonly logicDisabledObjectIds = new Set<string>();
   private readonly defeatedEnemyIds = new Set<string>();
-  private readonly inventory = new Map<string, InventoryItem>();
+  private readonly inventorySystem = new RuntimeInventorySystem();
+  private readonly combatSystem = new RuntimeCombatSystem();
   private readonly activeProjectiles = new Map<string, ActiveProjectile<EquippedWeapon>>();
   private projectileSequence = 0;
   private readonly itemSpawnerStates = new Map<string, ItemSpawnerRuntimeState>();
@@ -244,7 +247,6 @@ export class RuntimeMechanics {
   private coinCount = 0;
   private deathCooldown = 0;
   private messageCooldown = 0;
-  private attackCooldown = 0;
   private enemySyncAccumulator = 0;
   private equippedWeapon: EquippedWeapon | null = null;
   private activeDialogue: DialogueState | null = null;
@@ -254,6 +256,7 @@ export class RuntimeMechanics {
   private readonly logicRuntime: LogicRuntime;
   private readonly objectiveRuntime: ObjectiveRuntime;
   private readonly gameModeRuntime: GameModeRuntime;
+  private tycoonSystem: TycoonSystem | null = null;
 
   constructor(
     private readonly map: GameMap,
@@ -315,6 +318,22 @@ export class RuntimeMechanics {
       endRound: (result) => this.gameModeRuntime.endRound(result),
       getObjectById: (objectId) =>
         this.map.objects.find((mapObject) => mapObject.id === objectId) ?? null,
+      getTycoonCash: () => this.tycoonSystem?.getCash() ?? 0,
+      isTycoonPurchaseCompleted: (purchaseId) =>
+        this.tycoonSystem?.isPurchaseCompleted(purchaseId) ?? false,
+      getTycoonUpgradeLevel: (upgradeId) => this.tycoonSystem?.getUpgradeLevel(upgradeId) ?? 0,
+      getClaimedTycoonId: () => this.tycoonSystem?.getClaimedTycoonId() ?? null,
+      giveTycoonCash: (amount) => this.tycoonSystem?.addCash(amount),
+      removeTycoonCash: (amount) => this.tycoonSystem?.removeCash(amount),
+      completeTycoonPurchase: (purchaseId) =>
+        this.tycoonSystem?.completePurchaseById(purchaseId, {
+          bypassCost: true,
+          emitWorldEvent: true,
+          showFeedback: true,
+        }) ?? false,
+      setTycoonGeneratorEnabled: (generatorId, enabled) =>
+        this.tycoonSystem?.setGeneratorEnabled(generatorId, enabled) ?? false,
+      unlockTycoonGroup: (groupId) => this.tycoonSystem?.unlockGroup(groupId) ?? false,
     });
     this.objectiveRuntime = new ObjectiveRuntime(this.map, this.hud, this.audio, this.feedback, {
       onObjectiveCompleted: (objective) => {
@@ -327,6 +346,25 @@ export class RuntimeMechanics {
       onLogicEvent: (event) => this.logicRuntime.dispatch(event),
       onTeamChanged: (team) => this.player.setTeamColor(team?.color ?? null),
     });
+    this.tycoonSystem = new TycoonSystem(
+      this.map,
+      this.objectViews,
+      this.physicsSystem,
+      this.hud,
+      this.audio,
+      this.feedback,
+      {
+        isMultiplayer: () => this.isMultiplayerEnabled(),
+        emitWorldEvent: (event) => this.emitWorldEvent(event),
+        onLogicEvent: (event) => this.logicRuntime.dispatch(event),
+        onPurchaseCompleted: (purchaseId) =>
+          this.objectiveRuntime.onTycoonPurchaseCompleted(purchaseId),
+        onCashCollected: (totalCash, amount) =>
+          this.objectiveRuntime.onTycoonCashCollected(totalCash, amount),
+        onCompleted: () => this.objectiveRuntime.onTycoonCompleted(),
+        onProgressChanged: (summary) => this.gameModeRuntime.onTycoonProgress(summary),
+      }
+    );
     this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint(this.currentRespawnPoint);
     this.player.setPosition(this.currentRespawnPoint);
     this.player.resetVelocity();
@@ -343,6 +381,7 @@ export class RuntimeMechanics {
     this.jumpPadCooldowns.clear();
     this.teleporterCooldowns.clear();
     this.activeDialogue = null;
+    this.tycoonSystem?.dispose();
   }
 
   update(deltaSeconds: number): void {
@@ -352,7 +391,7 @@ export class RuntimeMechanics {
 
     this.deathCooldown = Math.max(0, this.deathCooldown - deltaSeconds);
     this.messageCooldown = Math.max(0, this.messageCooldown - deltaSeconds);
-    this.attackCooldown = Math.max(0, this.attackCooldown - deltaSeconds);
+    this.combatSystem.update(deltaSeconds);
     this.updateWeaponCooldownHud();
     this.updateCooldownMap(this.jumpPadCooldowns, deltaSeconds);
     this.updateCooldownMap(this.teleporterCooldowns, deltaSeconds);
@@ -369,6 +408,7 @@ export class RuntimeMechanics {
     this.updateItemPickups(playerBounds);
     this.updateEnemies(deltaSeconds, playerBounds);
     this.updateLogicObjectEntryEvents(playerBounds);
+    this.tycoonSystem?.update(deltaSeconds, playerBounds, this.player.getPosition());
     this.gameModeRuntime.update(deltaSeconds, playerBounds, this.player.getPosition());
 
     if (this.isGameFinished) {
@@ -413,6 +453,11 @@ export class RuntimeMechanics {
       return null;
     }
 
+    const tycoonHint = this.tycoonSystem?.getInteractionHint(objectId);
+    if (tycoonHint) {
+      return tycoonHint;
+    }
+
     if (isButtonObject(target)) {
       const oneTime = target.properties?.oneTime !== false;
       return oneTime && this.activatedButtonIds.has(target.id) ? null : "Botao";
@@ -449,6 +494,10 @@ export class RuntimeMechanics {
 
     if (!target) {
       return false;
+    }
+
+    if (this.tycoonSystem?.interactWithObject(objectId)) {
+      return true;
     }
 
     if (isButtonObject(target)) {
@@ -540,14 +589,14 @@ export class RuntimeMechanics {
       return false;
     }
 
-    if (this.attackCooldown > 0) {
+    if (!this.combatSystem.canAttack()) {
       return false;
     }
 
     const weapon = this.equippedWeapon;
     const direction = this.player.getForwardDirection();
     const origin = this.getAttackOrigin(direction);
-    this.attackCooldown = weapon.cooldown;
+    this.combatSystem.beginAttack(weapon);
     this.updateWeaponCooldownHud();
     this.audio.play(weapon.attackType === "shoot" ? "blaster" : "attack");
     this.player.playAttackFeedback(weapon.attackType);
@@ -612,12 +661,12 @@ export class RuntimeMechanics {
     this.defeatedEnemyIds.clear();
     this.jumpPadCooldowns.clear();
     this.teleporterCooldowns.clear();
-    this.inventory.clear();
+    this.inventorySystem.clear();
     this.warnedMissingDoorIds = new Set();
     this.coinCount = 0;
     this.deathCooldown = 0;
     this.messageCooldown = 0;
-    this.attackCooldown = 0;
+    this.combatSystem.reset();
     this.enemySyncAccumulator = 0;
     this.equippedWeapon = null;
     this.player.setEquippedWeapon(null);
@@ -652,6 +701,7 @@ export class RuntimeMechanics {
     this.initializeBehaviorStates();
     this.physicsSystem.setCollidersFromObjects(this.map, this.objectViews);
     this.applyInitialDoorState();
+    this.tycoonSystem?.reset();
     this.initializeItemSpawners();
     this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint({ ...this.map.spawnPoint });
     this.player.setPosition(this.currentRespawnPoint);
@@ -732,6 +782,14 @@ export class RuntimeMechanics {
       for (const objectId of state.collectedItemObjectIds) {
         this.applyWorldEvent({ type: "itemCollected", objectId });
       }
+
+      for (const purchaseId of state.tycoonPurchasedIds ?? []) {
+        this.tycoonSystem?.applySharedPurchase(purchaseId);
+      }
+
+      for (const upgradeId of state.tycoonUpgradeIds ?? []) {
+        this.tycoonSystem?.applySharedUpgrade(upgradeId);
+      }
     });
   }
 
@@ -786,6 +844,10 @@ export class RuntimeMechanics {
           applyEffects: false,
           emitWorldEvent: false,
         });
+      }
+
+      if (event.type === "tycoonPurchase" || event.type === "tycoonUpgrade") {
+        return this.tycoonSystem?.applyWorldEvent(event) ?? false;
       }
 
       return false;
@@ -1035,20 +1097,7 @@ export class RuntimeMechanics {
       cooldownProgress: 1,
     });
 
-    const inventoryItemId = weapon.itemId;
-    const existingItem = this.inventory.get(inventoryItemId);
-    const now = new Date().toISOString();
-
-    if (existingItem) {
-      existingItem.quantity = Math.max(1, existingItem.quantity);
-      existingItem.collectedAt = now;
-    } else {
-      this.inventory.set(inventoryItemId, {
-        itemId: inventoryItemId,
-        quantity: 1,
-        collectedAt: now,
-      });
-    }
+    this.inventorySystem.setSingleItem(weapon.itemId);
   }
 
   private hasWeapon(weaponId: string): boolean {
@@ -2009,8 +2058,7 @@ export class RuntimeMechanics {
       return;
     }
 
-    const progress =
-      this.equippedWeapon.cooldown > 0 ? 1 - this.attackCooldown / this.equippedWeapon.cooldown : 1;
+    const progress = this.combatSystem.getWeaponCooldownProgress(this.equippedWeapon);
     this.hud.setWeaponCooldown(progress);
   }
 
@@ -2274,19 +2322,7 @@ export class RuntimeMechanics {
       feedbackLabel = "Arma";
     } else {
       this.dispatchItemCollected(itemId);
-      const existingItem = this.inventory.get(itemId);
-      const now = new Date().toISOString();
-
-      if (existingItem) {
-        existingItem.quantity += 1;
-        existingItem.collectedAt = now;
-      } else {
-        this.inventory.set(itemId, {
-          itemId,
-          quantity: 1,
-          collectedAt: now,
-        });
-      }
+      this.inventorySystem.upsertItem(itemId);
     }
 
     this.updateInventoryHud();
@@ -2365,7 +2401,7 @@ export class RuntimeMechanics {
 
   private updateInventoryHud(): void {
     this.hud.setInventory(
-      [...this.inventory.values()].map((item) => ({
+      this.inventorySystem.getHudItems().map((item) => ({
         label: getItemLabel(item.itemId),
         quantity: item.quantity,
       }))

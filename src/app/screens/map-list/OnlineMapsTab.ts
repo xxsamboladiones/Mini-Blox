@@ -147,7 +147,7 @@ export class OnlineMapsTab {
   }
 
   private renderMapCard(map: OnlineMapSummary): string {
-    const isOwner = false;
+    const isOwner = map.isOwner === true;
     const thumbnailHtml = map.thumbnail
       ? `<img src="${this.escapeAttribute(map.thumbnail)}" alt="${this.escapeHtml(map.name)}" class="map-thumbnail" />`
       : `<div class="map-thumbnail-placeholder">
@@ -214,7 +214,7 @@ export class OnlineMapsTab {
               <span>Multiplayer</span>
             </button>
             <button class="icon-button" type="button" data-action="like" title="Curtir" aria-label="Curtir mapa">
-              <i data-lucide="heart"></i>
+              <i data-lucide="heart" class="${map.likedByCurrentUser ? "filled" : ""}"></i>
             </button>
             <button class="icon-button" type="button" data-action="download" title="Salvar copia local" aria-label="Salvar copia local">
               <i data-lucide="download"></i>
@@ -248,6 +248,9 @@ export class OnlineMapsTab {
       card
         .querySelector('[data-action="details"]')
         ?.addEventListener("click", () => this.actions.onShowDetails(map));
+      card
+        .querySelector('[data-action="delete"]')
+        ?.addEventListener("click", () => this.handleDelete(map));
     });
   }
 
@@ -279,6 +282,19 @@ export class OnlineMapsTab {
       } else {
         alert(error instanceof Error ? error.message : "Erro ao curtir mapa.");
       }
+    }
+  }
+
+  private async handleDelete(map: OnlineMapSummary): Promise<void> {
+    if (!window.confirm(`Excluir "${map.name}" do catalogo online?`)) {
+      return;
+    }
+
+    try {
+      await OnlineMapService.deleteOnlineMap(map.id);
+      await this.loadOnlineMaps();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Erro ao excluir mapa online.");
     }
   }
 

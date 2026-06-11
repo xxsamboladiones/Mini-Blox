@@ -140,7 +140,36 @@ export class ThirdPersonCameraController {
       }
     }
 
-    return null;
+    return this.findNearbyInteractiveObject(rootObjects);
+  }
+
+  private findNearbyInteractiveObject(rootObjects: THREE.Object3D[]): string | null {
+    const targetPosition = this.options.getTargetPosition();
+    const worldPosition = new THREE.Vector3();
+    let nearest: { objectId: string; distance: number } | null = null;
+
+    for (const object of rootObjects) {
+      const objectId = getMapObjectId(object);
+      if (!objectId) {
+        continue;
+      }
+
+      object.getWorldPosition(worldPosition);
+      const distance = distance2D(targetPosition, worldPosition);
+      if (distance > NEARBY_INTERACTION_DISTANCE) {
+        continue;
+      }
+
+      if (!this.options.getInteractionHint(objectId)) {
+        continue;
+      }
+
+      if (!nearest || distance < nearest.distance) {
+        nearest = { objectId, distance };
+      }
+    }
+
+    return nearest?.objectId ?? null;
   }
 
   private updateOverlay(): void {
@@ -201,7 +230,7 @@ export class ThirdPersonCameraController {
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (!this.active || !this.locked || event.code.toLowerCase() !== "keye") {
+    if (!this.active || event.code.toLowerCase() !== "keye" || isTextInputTarget(event.target)) {
       return;
     }
 
@@ -223,6 +252,25 @@ function getMapObjectId(object: THREE.Object3D): string | null {
   return typeof value === "string" ? value : null;
 }
 
+function distance2D(a: THREE.Vector3, b: THREE.Vector3): number {
+  const dx = a.x - b.x;
+  const dz = a.z - b.z;
+  return Math.sqrt(dx * dx + dz * dz);
+}
+
+function isTextInputTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target.isContentEditable
+  );
+}
+
 const CENTER_SCREEN = new THREE.Vector2(0, 0);
 const CAMERA_DISTANCE = 5.4;
 const CAMERA_HEIGHT = 1.15;
@@ -230,6 +278,7 @@ const CAMERA_LERP = 0.32;
 const TARGET_HEIGHT = 1.1;
 const LOOK_AHEAD = 2.4;
 const INTERACTION_DISTANCE = 6;
+const NEARBY_INTERACTION_DISTANCE = 2.35;
 const MOUSE_SENSITIVITY = 0.0024;
 const MIN_PITCH = -0.35;
 const MAX_PITCH = 0.85;

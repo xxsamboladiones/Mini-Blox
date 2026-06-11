@@ -40,6 +40,10 @@ const MAX_HEAL_AMOUNT = 100;
 const MAX_FORCE = 250;
 const MAX_RANGE = 250;
 const MAX_COOLDOWN = 120;
+const MAX_TYCOON_OBJECTS = 600;
+const MAX_TYCOON_CASH = 1_000_000_000;
+const MAX_TYCOON_INCOME = 1_000_000;
+const MAX_TYCOON_ARRAY_ITEMS = 100;
 
 export function validateOnlineMap(map: unknown): { valid: boolean; error?: string } {
   if (!map || typeof map !== "object") {
@@ -83,7 +87,7 @@ export function validateOnlineMap(map: unknown): { valid: boolean; error?: strin
     return spawnPointError;
   }
 
-  const objectError = validateObjects(gameMap.objects);
+  const objectError = validateObjects(gameMap.objects, gameMap.gameModeSettings);
   if (objectError) {
     return objectError;
   }
@@ -132,8 +136,12 @@ export function validateOnlineMap(map: unknown): { valid: boolean; error?: strin
   return { valid: true };
 }
 
-function validateObjects(objects: unknown[]): { valid: boolean; error?: string } | null {
+function validateObjects(
+  objects: unknown[],
+  gameModeSettings?: unknown
+): { valid: boolean; error?: string } | null {
   const ids = new Set<string>();
+  let tycoonObjectCount = 0;
 
   for (let index = 0; index < objects.length; index += 1) {
     const objectPath = `objects[${index}]`;
@@ -161,6 +169,16 @@ function validateObjects(objects: unknown[]): { valid: boolean; error?: string }
       type.length > MAX_OBJECT_TYPE_LENGTH
     ) {
       return { valid: false, error: `${objectPath}.type is invalid` };
+    }
+
+    if (type.startsWith("tycoon")) {
+      tycoonObjectCount += 1;
+      if (tycoonObjectCount > MAX_TYCOON_OBJECTS) {
+        return {
+          valid: false,
+          error: `Map cannot have more than ${MAX_TYCOON_OBJECTS} tycoon objects`,
+        };
+      }
     }
 
     const positionError = validateVector(
@@ -209,6 +227,11 @@ function validateObjects(objects: unknown[]): { valid: boolean; error?: string }
     if (propertiesError) {
       return propertiesError;
     }
+  }
+
+  const tycoonReferenceError = validateTycoonReferences(objects, ids, gameModeSettings);
+  if (tycoonReferenceError) {
+    return tycoonReferenceError;
   }
 
   return null;
@@ -281,6 +304,17 @@ function validateObjectProperties(
     ["scorePerSecond", 0, 1000],
     ["lightIntensity", 0, 100],
     ["lightRange", 0, MAX_RANGE],
+    ["cost", 0, MAX_TYCOON_CASH],
+    ["incomePerTick", 0, MAX_TYCOON_INCOME],
+    ["tickInterval", 0.1, 3600],
+    ["maxStoredAmount", 0, MAX_TYCOON_CASH],
+    ["collectRadius", 0.1, MAX_RANGE],
+    ["capacity", 0, MAX_TYCOON_CASH],
+    ["collectCooldown", 0, MAX_COOLDOWN],
+    ["incomeMultiplier", 0, 100],
+    ["intervalMultiplier", 0.05, 100],
+    ["collectorCapacityBonus", 0, MAX_TYCOON_CASH],
+    ["maxLevel", 1, 100],
   ];
 
   for (const [key, min, max] of numericLimits) {
@@ -296,6 +330,216 @@ function validateObjectProperties(
       if (error) {
         return error;
       }
+    }
+  }
+
+  const stringFields = [
+    "tycoonId",
+    "claimLabel",
+    "generatorId",
+    "targetCollectorId",
+    "purchaseId",
+    "upgradeGroupId",
+    "collectorId",
+    "unlockGroupId",
+    "purchasedMessage",
+    "insufficientFundsMessage",
+    "groupId",
+    "unlockedMessage",
+    "upgradeId",
+    "unlockedColor",
+    "lockedColor",
+  ];
+
+  for (const key of stringFields) {
+    if (!isOptionalSafeString(record[key], key.endsWith("Message") ? 240 : MAX_OBJECT_ID_LENGTH)) {
+      return { valid: false, error: `${path}.${key} is invalid` };
+    }
+  }
+
+  for (const key of [
+    "unlockObjectIds",
+    "unlockButtonIds",
+    "requiredPurchaseIds",
+    "targetGeneratorIds",
+  ]) {
+    const arrayError = validateStringArray(record[key], `${path}.${key}`);
+    if (arrayError) {
+      return arrayError;
+    }
+  }
+
+  if (objectType.startsWith("tycoon")) {
+    const requiredError = validateTycoonRequiredFields(objectType, record, path);
+    if (requiredError) {
+      return requiredError;
+    }
+  }
+
+  return null;
+}
+
+function validateTycoonRequiredFields(
+  objectType: string,
+  record: Record<string, unknown>,
+  path: string
+): { valid: boolean; error?: string } | null {
+  if (!isNonEmptySafeString(record.tycoonId)) {
+    return { valid: false, error: `${path}.tycoonId is required for tycoon objects` };
+  }
+
+  const requiredFieldByType: Record<string, string> = {
+    tycoonGenerator: "generatorId",
+    tycoonCollector: "collectorId",
+    tycoonBuyButton: "purchaseId",
+    tycoonUpgrade: "upgradeId",
+    tycoonBarrier: "purchaseId",
+  };
+  const requiredField = requiredFieldByType[objectType];
+
+  if (requiredField && !isNonEmptySafeString(record[requiredField])) {
+    return { valid: false, error: `${path}.${requiredField} is required` };
+  }
+
+  return null;
+}
+
+function validateStringArray(
+  value: unknown,
+  path: string
+): { valid: boolean; error?: string } | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (!Array.isArray(value) || value.length > MAX_TYCOON_ARRAY_ITEMS) {
+    return { valid: false, error: `${path} must be an array with at most ${MAX_TYCOON_ARRAY_ITEMS} items` };
+  }
+
+  for (const item of value) {
+    if (!isNonEmptySafeString(item)) {
+      return { valid: false, error: `${path} contains an invalid id` };
+    }
+  }
+
+  return null;
+}
+
+function validateTycoonReferences(
+  objects: unknown[],
+  objectIds: Set<string>,
+  gameModeSettings?: unknown
+): { valid: boolean; error?: string } | null {
+  const purchaseIds = new Set<string>();
+  const generatorIds = new Set<string>();
+  const collectorIds = new Set<string>();
+  const records = objects.filter(isRecord);
+
+  for (const object of records) {
+    const type = typeof object.type === "string" ? object.type : "";
+    const properties = isRecord(object.properties) ? object.properties : {};
+
+    if (type === "tycoonBuyButton" || type === "tycoonBarrier") {
+      const purchaseId = getString(properties.purchaseId);
+      if (purchaseId) {
+        purchaseIds.add(purchaseId);
+      }
+    } else if (type === "tycoonUpgrade") {
+      const upgradeId = getString(properties.upgradeId);
+      if (upgradeId) {
+        purchaseIds.add(upgradeId);
+      }
+    } else if (type === "tycoonGenerator") {
+      const generatorId = getString(properties.generatorId);
+      if (generatorId) {
+        generatorIds.add(generatorId);
+      }
+    } else if (type === "tycoonCollector") {
+      const collectorId = getString(properties.collectorId);
+      if (collectorId) {
+        collectorIds.add(collectorId);
+      }
+    }
+  }
+
+  for (const object of records) {
+    const type = typeof object.type === "string" ? object.type : "";
+    if (!type.startsWith("tycoon")) {
+      continue;
+    }
+
+    const objectId = typeof object.id === "string" ? object.id : "unknown";
+    const properties = isRecord(object.properties) ? object.properties : {};
+
+    for (const unlockObjectId of getStringArray(properties.unlockObjectIds)) {
+      if (!objectIds.has(unlockObjectId)) {
+        return { valid: false, error: `${objectId} unlocks missing object ${unlockObjectId}` };
+      }
+    }
+
+    for (const unlockButtonId of getStringArray(properties.unlockButtonIds)) {
+      if (!objectIds.has(unlockButtonId) && !purchaseIds.has(unlockButtonId)) {
+        return { valid: false, error: `${objectId} unlocks missing button or purchase ${unlockButtonId}` };
+      }
+    }
+
+    for (const requiredPurchaseId of getStringArray(properties.requiredPurchaseIds)) {
+      if (!purchaseIds.has(requiredPurchaseId)) {
+        return { valid: false, error: `${objectId} requires missing purchase ${requiredPurchaseId}` };
+      }
+    }
+
+    const collectorId = getString(properties.targetCollectorId);
+    if (collectorId && !collectorIds.has(collectorId)) {
+      return { valid: false, error: `${objectId} targets missing collector ${collectorId}` };
+    }
+
+    for (const generatorId of getStringArray(properties.targetGeneratorIds)) {
+      if (!generatorIds.has(generatorId)) {
+        return { valid: false, error: `${objectId} targets missing generator ${generatorId}` };
+      }
+    }
+  }
+
+  const winPurchaseError = validateTycoonWinPurchases(gameModeSettings, purchaseIds);
+  if (winPurchaseError) {
+    return winPurchaseError;
+  }
+
+  return null;
+}
+
+function validateTycoonWinPurchases(
+  gameModeSettings: unknown,
+  purchaseIds: Set<string>
+): { valid: boolean; error?: string } | null {
+  if (!isRecord(gameModeSettings)) {
+    return null;
+  }
+
+  const tycoonSettings = gameModeSettings.tycoonSettings;
+  if (tycoonSettings === undefined) {
+    return null;
+  }
+
+  if (!isRecord(tycoonSettings)) {
+    return { valid: false, error: "gameModeSettings.tycoonSettings must be an object" };
+  }
+
+  const arrayError = validateStringArray(
+    tycoonSettings.winPurchaseIds,
+    "gameModeSettings.tycoonSettings.winPurchaseIds"
+  );
+  if (arrayError) {
+    return arrayError;
+  }
+
+  for (const purchaseId of getStringArray(tycoonSettings.winPurchaseIds)) {
+    if (!purchaseIds.has(purchaseId)) {
+      return {
+        valid: false,
+        error: `gameModeSettings.tycoonSettings.winPurchaseIds references missing purchase ${purchaseId}`,
+      };
     }
   }
 
@@ -515,6 +759,24 @@ function isOptionalSafeString(value: unknown, maxLength = MAX_OBJECT_ID_LENGTH):
     !normalized.startsWith("vbscript:") &&
     !normalized.startsWith("data:text/html")
   );
+}
+
+function isNonEmptySafeString(value: unknown, maxLength = MAX_OBJECT_ID_LENGTH): value is string {
+  return typeof value === "string" && value.trim().length > 0 && isOptionalSafeString(value, maxLength);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
 }
 
 function isAllowedAssetDataUrl(value: string): boolean {

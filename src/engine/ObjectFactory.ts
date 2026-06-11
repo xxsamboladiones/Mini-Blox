@@ -138,6 +138,20 @@ function createPrimitive(mapObject: MapObject): THREE.Object3D {
       return createTeamSpawnObject(mapObject);
     case "capturePoint":
       return createCapturePointObject(mapObject);
+    case "tycoonOwnerClaim":
+      return createTycoonClaimObject(mapObject);
+    case "tycoonGenerator":
+      return createTycoonGeneratorObject(mapObject);
+    case "tycoonCollector":
+      return createTycoonCollectorObject(mapObject);
+    case "tycoonBuyButton":
+      return createTycoonBuyButtonObject(mapObject);
+    case "tycoonUnlockable":
+      return createTycoonUnlockableObject(mapObject);
+    case "tycoonUpgrade":
+      return createTycoonUpgradeObject(mapObject);
+    case "tycoonBarrier":
+      return createTycoonBarrierObject(mapObject);
     case "itemPickup":
       return createItemPickupObject(mapObject);
     case "tree":
@@ -842,6 +856,156 @@ function createCapturePointObject(mapObject: MapObject): THREE.Object3D {
   radiusHalo.rotation.x = Math.PI / 2;
 
   group.add(plate, ring, pillar, beacon, radiusHalo);
+  return group;
+}
+
+function createTycoonClaimObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, {
+    emissive: new THREE.Color("#14532d"),
+    emissiveIntensity: 0.18,
+  });
+  const darkMaterial = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.74 });
+  darkMaterial.userData.fixedColor = true;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.82, 0.1, 32), material);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.74, 0.035, 8, 36), darkMaterial);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.08;
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.35, 10), darkMaterial);
+  pole.position.set(-0.28, 0.72, 0);
+  const flag = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.34, 0.035), material);
+  flag.position.set(0.04, 1.22, 0);
+  group.add(base, ring, pole, flag);
+  return group;
+}
+
+function createTycoonGeneratorObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, { metalness: 0.18, roughness: 0.44 });
+  const darkMaterial = new THREE.MeshStandardMaterial({
+    color: "#172033",
+    roughness: 0.7,
+    metalness: 0.12,
+  });
+  darkMaterial.userData.fixedColor = true;
+  const coinMaterial = new THREE.MeshStandardMaterial({
+    color: "#facc15",
+    emissive: "#f59e0b",
+    emissiveIntensity: 0.25,
+    roughness: 0.34,
+    metalness: 0.16,
+  });
+  coinMaterial.userData.fixedColor = true;
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.72, 0.9), material);
+  base.position.y = 0.36;
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.04, 0.16, 1.04), darkMaterial);
+  top.position.y = 0.8;
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.16, 32), coinMaterial);
+  core.rotation.x = Math.PI / 2;
+  core.position.set(0, 0.44, -0.48);
+  const pipeA = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 1.2), darkMaterial);
+  pipeA.position.set(-0.36, 0.58, 0);
+  const pipeB = pipeA.clone();
+  pipeB.position.x = 0.36;
+  const light = new THREE.PointLight("#fde68a", 0.65, 4);
+  light.position.set(0, 1.15, 0);
+  group.add(base, top, core, pipeA, pipeB, light);
+  return group;
+}
+
+function createTycoonCollectorObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, {
+    emissive: new THREE.Color("#92400e"),
+    emissiveIntensity: 0.12,
+  });
+  const darkMaterial = new THREE.MeshStandardMaterial({ color: "#1f2937", roughness: 0.78 });
+  darkMaterial.userData.fixedColor = true;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.74, 0.82, 0.12, 36), darkMaterial);
+  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.66, 0.18, 36, 1, true), material);
+  bowl.position.y = 0.16;
+  const coin = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.24, 0.24, 0.07, 28),
+    new THREE.MeshStandardMaterial({ color: "#fde047", roughness: 0.3, metalness: 0.12 })
+  );
+  coin.material.userData.fixedColor = true;
+  coin.position.y = 0.32;
+  coin.rotation.x = Math.PI / 2;
+  group.add(base, bowl, coin);
+  return group;
+}
+
+function createTycoonBuyButtonObject(mapObject: MapObject): THREE.Object3D {
+  const group = createButtonObject(mapObject);
+  const coinMaterial = new THREE.MeshStandardMaterial({
+    color: "#fde047",
+    roughness: 0.32,
+    metalness: 0.18,
+    emissive: "#f59e0b",
+    emissiveIntensity: 0.16,
+  });
+  coinMaterial.userData.fixedColor = true;
+  const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.06, 24), coinMaterial);
+  coin.position.set(0, 0.42, 0);
+  coin.rotation.x = Math.PI / 2;
+  group.add(coin);
+  return group;
+}
+
+function createTycoonUnlockableObject(mapObject: MapObject): THREE.Object3D {
+  const group = createBlockObject(mapObject);
+  const lockMaterial = new THREE.MeshStandardMaterial({ color: "#f8fafc", roughness: 0.45 });
+  lockMaterial.userData.fixedColor = true;
+  const lockBody = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.28, 0.08), lockMaterial);
+  lockBody.position.set(0, 0.18, -0.53);
+  const shackle = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.028, 8, 24), lockMaterial);
+  shackle.position.set(0, 0.4, -0.53);
+  group.add(lockBody, shackle);
+  return group;
+}
+
+function createTycoonUpgradeObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, {
+    emissive: new THREE.Color("#083344"),
+    emissiveIntensity: 0.18,
+  });
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: "#1f2937",
+    roughness: 0.72,
+    metalness: 0.12,
+  });
+  baseMaterial.userData.fixedColor = true;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.62, 0.16, 28), baseMaterial);
+  const column = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.42, 0.48), material);
+  column.position.y = 0.28;
+  const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.52, 4), material);
+  arrow.position.y = 0.8;
+  arrow.rotation.y = Math.PI / 4;
+  group.add(base, column, arrow);
+  return group;
+}
+
+function createTycoonBarrierObject(mapObject: MapObject): THREE.Object3D {
+  const group = new THREE.Group();
+  const material = createMaterial(mapObject, {
+    transparent: true,
+    opacity: getNumberProperty(mapObject, "opacity", 0.58),
+    emissive: new THREE.Color("#7f1d1d"),
+    emissiveIntensity: 0.22,
+  });
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
+  const postMaterial = new THREE.MeshStandardMaterial({
+    color: "#111827",
+    roughness: 0.64,
+    metalness: 0.18,
+  });
+  postMaterial.userData.fixedColor = true;
+  const postA = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.08, 1.08), postMaterial);
+  postA.position.x = -0.54;
+  const postB = postA.clone();
+  postB.position.x = 0.54;
+  group.add(panel, postA, postB);
   return group;
 }
 

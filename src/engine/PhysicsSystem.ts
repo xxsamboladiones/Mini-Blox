@@ -318,6 +318,16 @@ export function getCollisionRole(mapObject: MapObject): CollisionRole {
     return "solid";
   }
 
+  if (mapObject.type === "tycoonBarrier") {
+    return mapObject.properties?.startsLocked === false ? "none" : "solid";
+  }
+
+  if (mapObject.type === "tycoonUnlockable") {
+    return mapObject.properties?.lockedCollision === true || mapObject.properties?.startsLocked === false
+      ? "solid"
+      : "none";
+  }
+
   if (
     mapObject.type === "cube" ||
     mapObject.type === "platform" ||
@@ -354,6 +364,10 @@ function isTriggerMapObject(mapObject: MapObject): boolean {
     mapObject.type === "capturePoint" ||
     mapObject.type === "finish" ||
     mapObject.type === "goal" ||
-    mapObject.type === "itemPickup"
+    mapObject.type === "itemPickup" ||
+    mapObject.type === "tycoonOwnerClaim" ||
+    mapObject.type === "tycoonCollector" ||
+    mapObject.type === "tycoonBuyButton" ||
+    mapObject.type === "tycoonUpgrade"
   );
 }

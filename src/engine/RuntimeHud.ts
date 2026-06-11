@@ -76,7 +76,19 @@ export type GameModeSummary = {
   deaths: number;
   objectivesCompleted: number;
   capturePointsOwned: number;
+  tycoonCash?: number;
+  tycoonPendingCash?: number;
+  tycoonPurchasesCompleted?: number;
+  tycoonPurchasesTotal?: number;
   elapsedTimeSeconds?: number;
+};
+
+export type TycoonHudStatus = {
+  cash: number;
+  pendingCash: number;
+  purchasedCount: number;
+  totalPurchases: number;
+  claimedTycoonId: string | null;
 };
 
 export type MultiplayerHudPlayer = {
@@ -127,6 +139,7 @@ export class RuntimeHud {
   private audioMuted = false;
   private coinState: { count: number; total?: number } = { count: 0 };
   private gameModeStatus: GameModeHudStatus | null = null;
+  private tycoonStatus: TycoonHudStatus | null = null;
   private sessionStatus: RuntimeSessionHudStatus | null = null;
   private sessionTimeSeconds: number | null = null;
   private multiplayerInfo: (MultiplayerHudInfo & { onLeaveRoom: () => void }) | null = null;
@@ -281,6 +294,15 @@ export class RuntimeHud {
 
   setCoins(count: number, total?: number): void {
     this.coinState = typeof total === "number" ? { count, total } : { count };
+    this.renderStatsPanel();
+  }
+
+  setTycoonStatus(status: TycoonHudStatus | null): void {
+    if (areTycoonStatusesEqual(this.tycoonStatus, status)) {
+      return;
+    }
+
+    this.tycoonStatus = status;
     this.renderStatsPanel();
   }
 
@@ -964,6 +986,33 @@ export class RuntimeHud {
       this.coinState.count > 0 ||
       (typeof this.coinState.total === "number" && this.coinState.total > 0);
 
+    if (this.tycoonStatus) {
+      rows.push(`
+        <span>
+          <small>Dinheiro</small>
+          <strong>$${Math.max(0, Math.floor(this.tycoonStatus.cash))}</strong>
+        </span>
+      `);
+
+      if (this.tycoonStatus.pendingCash > 0) {
+        rows.push(`
+          <span>
+            <small>Pendente</small>
+            <strong>$${Math.max(0, Math.floor(this.tycoonStatus.pendingCash))}</strong>
+          </span>
+        `);
+      }
+
+      if (this.tycoonStatus.totalPurchases > 0) {
+        rows.push(`
+          <span>
+            <small>Tycoon</small>
+            <strong>${this.tycoonStatus.purchasedCount}/${this.tycoonStatus.totalPurchases}</strong>
+          </span>
+        `);
+      }
+    }
+
     if (showCoins) {
       rows.push(`
         <span>
@@ -1052,6 +1101,27 @@ function shortRoomId(roomId: string): string {
   return roomId.length > 12 ? `${roomId.slice(0, 8)}...${roomId.slice(-4)}` : roomId;
 }
 
+function areTycoonStatusesEqual(
+  current: TycoonHudStatus | null,
+  next: TycoonHudStatus | null
+): boolean {
+  if (current === next) {
+    return true;
+  }
+
+  if (!current || !next) {
+    return false;
+  }
+
+  return (
+    current.cash === next.cash &&
+    current.pendingCash === next.pendingCash &&
+    current.purchasedCount === next.purchasedCount &&
+    current.totalPurchases === next.totalPurchases &&
+    current.claimedTycoonId === next.claimedTycoonId
+  );
+}
+
 function buildVictoryStats(
   summary: GameModeSummary | undefined,
   coinCount: number,
@@ -1067,6 +1137,17 @@ function buildVictoryStats(
     { label: "Deaths", value: String(summary?.deaths ?? 0) },
     { label: "Objetivos", value: String(summary?.objectivesCompleted ?? 0) },
   ];
+
+  if (summary?.tycoonCash !== undefined) {
+    stats.push({ label: "Dinheiro", value: `$${summary.tycoonCash}` });
+  }
+
+  if (summary?.tycoonPurchasesTotal) {
+    stats.push({
+      label: "Compras",
+      value: `${summary.tycoonPurchasesCompleted ?? 0}/${summary.tycoonPurchasesTotal}`,
+    });
+  }
 
   if (summary?.capturePointsOwned) {
     stats.push({ label: "Capturas", value: String(summary.capturePointsOwned) });

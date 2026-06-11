@@ -21,6 +21,8 @@ export type RoomMapIndex = {
   coinObjectIds: Set<string>;
   itemObjectIds: Set<string>;
   itemHealAmounts: Map<string, number>;
+  tycoonPurchaseIds: Set<string>;
+  tycoonUpgradeIds: Set<string>;
   enemyObjectIds: Set<string>;
   enemySpeeds: Map<string, number>;
   teamIds: Set<string>;
@@ -48,6 +50,8 @@ export function createRoomMapIndex(map: GameMap): RoomMapIndex {
   const coinObjectIds = new Set<string>();
   const itemObjectIds = new Set<string>();
   const itemHealAmounts = new Map<string, number>();
+  const tycoonPurchaseIds = new Set<string>();
+  const tycoonUpgradeIds = new Set<string>();
   const enemyObjectIds = new Set<string>();
   const enemySpeeds = new Map<string, number>();
   const teamIds = new Set<string>();
@@ -111,6 +115,13 @@ export function createRoomMapIndex(map: GameMap): RoomMapIndex {
       enemyObjectIds.add(mapObject.id);
       enemySpeeds.set(mapObject.id, Math.max(0.1, getNumber(mapObject.properties?.speed, 1)));
       enemyInitialStates[mapObject.id] = createEnemyInitialState(mapObject);
+    } else if (mapObject.type === "tycoonBuyButton" || mapObject.type === "tycoonBarrier") {
+      const purchaseId = getString(mapObject.properties?.purchaseId, mapObject.id);
+      tycoonPurchaseIds.add(purchaseId);
+    } else if (mapObject.type === "tycoonUpgrade") {
+      const upgradeId = getString(mapObject.properties?.upgradeId, mapObject.id);
+      tycoonPurchaseIds.add(upgradeId);
+      tycoonUpgradeIds.add(upgradeId);
     } else if (mapObject.type === "teamSpawn") {
       const teamId = getString(mapObject.properties?.teamId, "");
       if (teamId) {
@@ -132,6 +143,8 @@ export function createRoomMapIndex(map: GameMap): RoomMapIndex {
     coinObjectIds,
     itemObjectIds,
     itemHealAmounts,
+    tycoonPurchaseIds,
+    tycoonUpgradeIds,
     enemyObjectIds,
     enemySpeeds,
     teamIds,
@@ -162,6 +175,8 @@ export function createEmptyRoomMapIndex(onlineMapId: string): RoomMapIndex {
     coinObjectIds: new Set(),
     itemObjectIds: new Set(),
     itemHealAmounts: new Map(),
+    tycoonPurchaseIds: new Set(),
+    tycoonUpgradeIds: new Set(),
     enemyObjectIds: new Set(),
     enemySpeeds: new Map(),
     teamIds: new Set(),

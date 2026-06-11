@@ -133,6 +133,45 @@ export class ObjectiveRuntime {
     this.updateHud();
   }
 
+  onTycoonPurchaseCompleted(purchaseId: string): void {
+    for (const state of this.states.values()) {
+      if (
+        state.objective.type === "purchaseTycoonItem" &&
+        state.objective.targetPurchaseId === purchaseId &&
+        !state.completed
+      ) {
+        this.markCompleted(state, this.getPurchasePosition(purchaseId));
+      }
+    }
+  }
+
+  onTycoonCashCollected(totalCash: number, collectedAmount = 0): void {
+    for (const state of this.states.values()) {
+      if (state.objective.type !== "collectTycoonCash" || state.completed) {
+        continue;
+      }
+
+      const target = getObjectiveTargetAmount(state.objective, 100);
+      const collectedProgress =
+        collectedAmount > 0 ? state.progress + collectedAmount : totalCash;
+      state.progress = Math.min(target, Math.max(0, collectedProgress));
+
+      if (state.progress >= target) {
+        this.markCompleted(state);
+      }
+    }
+
+    this.updateHud();
+  }
+
+  onTycoonCompleted(): void {
+    for (const state of this.states.values()) {
+      if (state.objective.type === "completeTycoon" && !state.completed) {
+        this.markCompleted(state);
+      }
+    }
+  }
+
   areRequiredObjectivesComplete(): boolean {
     for (const state of this.states.values()) {
       if (state.objective.required !== false && !state.completed) {
@@ -211,6 +250,10 @@ export class ObjectiveRuntime {
       return this.getDoorPosition(objective.targetDoorId);
     }
 
+    if (objective.targetPurchaseId) {
+      return this.getPurchasePosition(objective.targetPurchaseId);
+    }
+
     return undefined;
   }
 
@@ -226,6 +269,10 @@ export class ObjectiveRuntime {
   private getDoorPosition(doorId: string): Vector3 | undefined {
     return this.map.objects.find((object) => object.type === "door" && getDoorId(object) === doorId)
       ?.position;
+  }
+
+  private getPurchasePosition(purchaseId: string): Vector3 | undefined {
+    return this.map.objects.find((object) => getTycoonPurchaseId(object) === purchaseId)?.position;
   }
 }
 
@@ -279,6 +326,19 @@ function getFallbackObjectives(map: GameMap): MapObjective[] {
 
   if ((mode === "obby" || mode === "objectiveRun") && finishObject) {
     return [createReachFinishFallback(finishObject.id)];
+  }
+
+  if (mode === "tycoon" || winCondition?.type === "completeTycoon") {
+    return [
+      {
+        id: "fallback-tycoon",
+        title: "Complete seu tycoon",
+        description: "Colete dinheiro, compre upgrades e termine a base.",
+        type: "completeTycoon",
+        required: true,
+        visible: true,
+      },
+    ];
   }
 
   if (finishObject) {
@@ -350,7 +410,11 @@ function getPositiveTarget(value: number | undefined, fallback: number): number 
 }
 
 function getProgressValue(state: ObjectiveState): number | undefined {
-  if (state.objective.type === "collectCoins" || state.objective.type === "defeatEnemies") {
+  if (
+    state.objective.type === "collectCoins" ||
+    state.objective.type === "defeatEnemies" ||
+    state.objective.type === "collectTycoonCash"
+  ) {
     return state.completed
       ? getObjectiveTargetAmount(state.objective, Math.max(1, state.progress))
       : state.progress;
@@ -367,6 +431,10 @@ function getTargetValue(state: ObjectiveState, map: GameMap): number | undefined
   if (state.objective.type === "defeatEnemies") {
     const enemyCount = map.objects.filter((object) => object.type === "enemy").length;
     return getObjectiveTargetAmount(state.objective, Math.max(1, enemyCount));
+  }
+
+  if (state.objective.type === "collectTycoonCash") {
+    return getObjectiveTargetAmount(state.objective, 100);
   }
 
   return undefined;
@@ -388,5 +456,17 @@ function getDoorId(object: MapObject): string {
 function getKeyId(object: MapObject): string {
   return typeof object.properties?.keyId === "string" && object.properties.keyId.length > 0
     ? object.properties.keyId
+    : object.id;
+}
+
+function getTycoonPurchaseId(object: MapObject): string {
+  if (object.type === "tycoonUpgrade") {
+    return typeof object.properties?.upgradeId === "string" && object.properties.upgradeId.length > 0
+      ? object.properties.upgradeId
+      : object.id;
+  }
+
+  return typeof object.properties?.purchaseId === "string" && object.properties.purchaseId.length > 0
+    ? object.properties.purchaseId
     : object.id;
 }

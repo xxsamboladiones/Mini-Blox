@@ -392,6 +392,142 @@ export const OBJECT_CATALOG: ObjectCatalogItem[] = [
     properties: { collision: true, material: "default" },
   },
   {
+    type: "tycoonOwnerClaim",
+    label: "Claim Tycoon",
+    icon: "flag",
+    description: "Area para reivindicar uma base tycoon.",
+    color: "#22c55e",
+    defaultScale: { x: 2.4, y: 0.25, z: 2.4 },
+    collider: { shape: "box", isTrigger: true },
+    properties: {
+      collision: false,
+      tycoonId: "tycoon_1",
+      claimLabel: "Minha Fabrica",
+      autoClaimInSolo: true,
+    },
+  },
+  {
+    type: "tycoonGenerator",
+    label: "Gerador Tycoon",
+    icon: "factory",
+    description: "Maquina que gera dinheiro para o tycoon.",
+    color: "#38bdf8",
+    defaultScale: { x: 1.6, y: 1.3, z: 1.6 },
+    collider: { shape: "box" },
+    properties: {
+      collision: true,
+      tycoonId: "tycoon_1",
+      generatorId: "generator_1",
+      incomePerTick: 5,
+      tickInterval: 2,
+      targetCollectorId: "collector_1",
+      requiresPurchase: false,
+      startsEnabled: true,
+      maxStoredAmount: 500,
+    },
+  },
+  {
+    type: "tycoonCollector",
+    label: "Coletor Tycoon",
+    icon: "hand-coins",
+    description: "Area que transfere dinheiro pendente para o jogador.",
+    color: "#facc15",
+    defaultScale: { x: 2.2, y: 0.35, z: 2.2 },
+    collider: { shape: "box", isTrigger: true },
+    properties: {
+      collision: false,
+      tycoonId: "tycoon_1",
+      collectorId: "collector_1",
+      collectRadius: 2,
+      capacity: 1000,
+      autoCollect: true,
+      collectCooldown: 0.5,
+    },
+  },
+  {
+    type: "tycoonBuyButton",
+    label: "Botao de Compra",
+    icon: "shopping-cart",
+    description: "Botao que gasta dinheiro e libera itens do tycoon.",
+    color: "#f97316",
+    defaultScale: { x: 1.25, y: 0.25, z: 1.25 },
+    collider: { shape: "box", isTrigger: true },
+    properties: {
+      collision: false,
+      tycoonId: "tycoon_1",
+      purchaseId: "purchase_1",
+      cost: 25,
+      unlockObjectIds: [],
+      unlockGroupId: "",
+      unlockButtonIds: [],
+      requiredPurchaseIds: [],
+      hideAfterPurchase: true,
+      purchasedMessage: "Comprado!",
+      insufficientFundsMessage: "Dinheiro insuficiente.",
+      oneTime: true,
+    },
+  },
+  {
+    type: "tycoonUnlockable",
+    label: "Item Tycoon",
+    icon: "package-open",
+    description: "Objeto que comeca bloqueado e aparece apos compra.",
+    color: "#a78bfa",
+    defaultScale: { x: 2, y: 1, z: 2 },
+    collider: { shape: "box" },
+    properties: {
+      collision: true,
+      tycoonId: "tycoon_1",
+      purchaseId: "",
+      groupId: "group_1",
+      startsLocked: true,
+      lockedCollision: false,
+      unlockedMessage: "Item desbloqueado!",
+    },
+  },
+  {
+    type: "tycoonUpgrade",
+    label: "Upgrade Tycoon",
+    icon: "trending-up",
+    description: "Compra que melhora geradores ou capacidade do coletor.",
+    color: "#06b6d4",
+    defaultScale: { x: 1.25, y: 0.35, z: 1.25 },
+    collider: { shape: "box", isTrigger: true },
+    properties: {
+      collision: false,
+      tycoonId: "tycoon_1",
+      upgradeId: "upgrade_1",
+      cost: 80,
+      targetGeneratorIds: [],
+      incomeMultiplier: 1.5,
+      intervalMultiplier: 1,
+      collectorCapacityBonus: 0,
+      requiredPurchaseIds: [],
+      maxLevel: 1,
+      hideAfterPurchase: true,
+    },
+  },
+  {
+    type: "tycoonBarrier",
+    label: "Barreira Tycoon",
+    icon: "shield",
+    description: "Barreira compravel que libera passagem apos desbloquear.",
+    color: "#ef4444",
+    defaultScale: { x: 3, y: 2.4, z: 0.25 },
+    collider: { shape: "box" },
+    properties: {
+      collision: true,
+      tycoonId: "tycoon_1",
+      purchaseId: "barrier_1",
+      startsLocked: true,
+      lockedCollision: true,
+      lockedColor: "#ef4444",
+      unlockedColor: "#22c55e",
+      opacity: 0.58,
+      material: "glass",
+    },
+  },
+  {
     type: "model",
     label: "Modelo 3D",
     icon: "upload",
@@ -447,6 +583,45 @@ export function createMapObject(
     properties.pointId =
       typeof overrides.properties?.pointId === "string" && overrides.properties.pointId.length > 0
         ? overrides.properties.pointId
+        : id;
+  }
+
+  if (type === "tycoonOwnerClaim") {
+    properties.tycoonId =
+      typeof overrides.properties?.tycoonId === "string" && overrides.properties.tycoonId.length > 0
+        ? overrides.properties.tycoonId
+        : id;
+  }
+
+  if (type === "tycoonGenerator") {
+    properties.generatorId =
+      typeof overrides.properties?.generatorId === "string" &&
+      overrides.properties.generatorId.length > 0
+        ? overrides.properties.generatorId
+        : id;
+  }
+
+  if (type === "tycoonCollector") {
+    properties.collectorId =
+      typeof overrides.properties?.collectorId === "string" &&
+      overrides.properties.collectorId.length > 0
+        ? overrides.properties.collectorId
+        : id;
+  }
+
+  if (type === "tycoonBuyButton" || type === "tycoonBarrier") {
+    properties.purchaseId =
+      typeof overrides.properties?.purchaseId === "string" &&
+      overrides.properties.purchaseId.length > 0
+        ? overrides.properties.purchaseId
+        : id;
+  }
+
+  if (type === "tycoonUpgrade") {
+    properties.upgradeId =
+      typeof overrides.properties?.upgradeId === "string" &&
+      overrides.properties.upgradeId.length > 0
+        ? overrides.properties.upgradeId
         : id;
   }
 

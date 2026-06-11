@@ -2,7 +2,8 @@ import type { Request, Response } from "express";
 import type { CreateRoomRequest, CreateRoomResponse } from "../multiplayer/types.js";
 import type { RoomManager } from "../multiplayer/RoomManager.js";
 import { createRoomMapIndex } from "../multiplayer/RoomMapIndex.js";
-import { onlineMapStorage } from "../storage/OnlineMapStorage.js";
+import { logger } from "../logger.js";
+import { mapRepository } from "../repositories/MapRepository.js";
 
 export function createRoomRoute(roomManager: RoomManager) {
   return async (req: Request, res: Response): Promise<void> => {
@@ -14,8 +15,7 @@ export function createRoomRoute(roomManager: RoomManager) {
         return;
       }
 
-      await onlineMapStorage.load();
-      const onlineMap = onlineMapStorage.getMap(body.onlineMapId);
+      const onlineMap = mapRepository.getMap(body.onlineMapId);
 
       if (!onlineMap) {
         res.status(404).json({ ok: false, error: "Online map not found" });
@@ -33,6 +33,7 @@ export function createRoomRoute(roomManager: RoomManager) {
 
       res.json(response);
     } catch (error) {
+      logger.error("failed to create room", { error });
       res.status(500).json({ ok: false, error: "Failed to create room" });
     }
   };
@@ -44,6 +45,7 @@ export function listRoomsRoute(roomManager: RoomManager) {
       const rooms = roomManager.listRooms();
       res.json({ ok: true, rooms });
     } catch (error) {
+      logger.error("failed to list rooms", { error });
       res.status(500).json({ ok: false, error: "Failed to list rooms" });
     }
   };
@@ -78,6 +80,7 @@ export function getRoomRoute(roomManager: RoomManager) {
         })),
       });
     } catch (error) {
+      logger.error("failed to get room", { error });
       res.status(500).json({ ok: false, error: "Failed to get room" });
     }
   };

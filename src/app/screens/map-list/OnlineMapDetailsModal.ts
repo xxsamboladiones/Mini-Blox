@@ -172,13 +172,23 @@ export class OnlineMapDetailsModal {
             <span>Multiplayer</span>
           </button>
           <button class="action-button" type="button" data-action="like">
-            <i data-lucide="heart"></i>
-            <span>Curtir</span>
+            <i data-lucide="heart" class="${summary.likedByCurrentUser ? "filled" : ""}"></i>
+            <span>${summary.likedByCurrentUser ? "Descurtir" : "Curtir"}</span>
           </button>
           <button class="action-button" type="button" data-action="download">
             <i data-lucide="download"></i>
             <span>Salvar copia local</span>
           </button>
+          ${
+            summary.isOwner
+              ? `
+            <button class="action-button danger" type="button" data-action="delete">
+              <i data-lucide="trash-2"></i>
+              <span>Excluir online</span>
+            </button>
+          `
+              : ""
+          }
         </footer>
       </div>
     `;
@@ -200,6 +210,9 @@ export class OnlineMapDetailsModal {
     this.modal
       ?.querySelector('[data-action="download"]')
       ?.addEventListener("click", () => this.handleDownload(summary));
+    this.modal
+      ?.querySelector('[data-action="delete"]')
+      ?.addEventListener("click", () => this.handleDelete(summary));
   }
 
   private handleMultiplayer(summary: OnlineMapSummary): void {
@@ -262,6 +275,20 @@ export class OnlineMapDetailsModal {
       } else {
         alert(error instanceof Error ? error.message : "Erro ao baixar mapa.");
       }
+    }
+  }
+
+  private async handleDelete(summary: OnlineMapSummary): Promise<void> {
+    if (!window.confirm(`Excluir "${summary.name}" do catalogo online?`)) {
+      return;
+    }
+
+    try {
+      await OnlineMapService.deleteOnlineMap(summary.id);
+      this.close();
+      this.actions.onClose();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Erro ao excluir mapa online.");
     }
   }
 

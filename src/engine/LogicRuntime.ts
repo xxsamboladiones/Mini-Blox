@@ -67,6 +67,29 @@ export type LogicRuntimeEvent =
       teamId?: string;
     }
   | {
+      type: "onTycoonClaimed";
+      tycoonId?: string;
+    }
+  | {
+      type: "onTycoonCashCollected";
+      tycoonId?: string;
+      amount: number;
+    }
+  | {
+      type: "onTycoonPurchaseCompleted";
+      purchaseId: string;
+      tycoonId?: string;
+    }
+  | {
+      type: "onTycoonUpgradePurchased";
+      upgradeId: string;
+      tycoonId?: string;
+    }
+  | {
+      type: "onTycoonCompleted";
+      tycoonId?: string;
+    }
+  | {
       type: "onGameModeWon";
     }
   | {
@@ -100,6 +123,15 @@ export type LogicRuntimeContext = {
   setTeam: (teamId: string) => boolean;
   endRound: (result: "win" | "lose" | "draw") => void;
   getObjectById: (objectId: string) => MapObject | null;
+  getTycoonCash: () => number;
+  isTycoonPurchaseCompleted: (purchaseId: string) => boolean;
+  getTycoonUpgradeLevel: (upgradeId: string) => number;
+  getClaimedTycoonId: () => string | null;
+  giveTycoonCash: (amount: number) => void;
+  removeTycoonCash: (amount: number) => void;
+  completeTycoonPurchase: (purchaseId: string) => boolean;
+  setTycoonGeneratorEnabled: (generatorId: string, enabled: boolean) => boolean;
+  unlockTycoonGroup: (groupId: string) => boolean;
 };
 
 export class LogicRuntime {
@@ -205,6 +237,38 @@ export class LogicRuntime {
       );
     }
 
+    if (trigger.type === "onTycoonClaimed") {
+      return event.type === "onTycoonClaimed" && matchesOptionalId(trigger.tycoonId, event.tycoonId);
+    }
+
+    if (trigger.type === "onTycoonCashCollected") {
+      return (
+        event.type === "onTycoonCashCollected" &&
+        matchesOptionalId(trigger.tycoonId, event.tycoonId) &&
+        (trigger.amount === undefined || event.amount >= trigger.amount)
+      );
+    }
+
+    if (trigger.type === "onTycoonPurchaseCompleted") {
+      return (
+        event.type === "onTycoonPurchaseCompleted" &&
+        event.purchaseId === trigger.purchaseId &&
+        matchesOptionalId(trigger.tycoonId, event.tycoonId)
+      );
+    }
+
+    if (trigger.type === "onTycoonUpgradePurchased") {
+      return (
+        event.type === "onTycoonUpgradePurchased" &&
+        event.upgradeId === trigger.upgradeId &&
+        matchesOptionalId(trigger.tycoonId, event.tycoonId)
+      );
+    }
+
+    if (trigger.type === "onTycoonCompleted") {
+      return event.type === "onTycoonCompleted" && matchesOptionalId(trigger.tycoonId, event.tycoonId);
+    }
+
     if (trigger.type === "onGameModeWon") {
       return event.type === "onGameModeWon";
     }
@@ -253,6 +317,23 @@ export class LogicRuntime {
       return this.context.getHealth() < condition.amount;
     }
 
+    if (condition.type === "tycoonCashAtLeast") {
+      return this.context.getTycoonCash() >= condition.amount;
+    }
+
+    if (condition.type === "tycoonPurchaseCompleted") {
+      return this.context.isTycoonPurchaseCompleted(condition.purchaseId);
+    }
+
+    if (condition.type === "tycoonUpgradeLevelAtLeast") {
+      return this.context.getTycoonUpgradeLevel(condition.upgradeId) >= condition.level;
+    }
+
+    if (condition.type === "tycoonClaimed") {
+      const claimedTycoonId = this.context.getClaimedTycoonId();
+      return Boolean(claimedTycoonId && (!condition.tycoonId || condition.tycoonId === claimedTycoonId));
+    }
+
     return !this.executedOnceRuleIds.has(rule.id);
   }
 
@@ -295,6 +376,18 @@ export class LogicRuntime {
       this.context.setTeam(action.teamId);
     } else if (action.type === "endRound") {
       this.context.endRound(action.result);
+    } else if (action.type === "giveTycoonCash") {
+      this.context.giveTycoonCash(action.amount);
+    } else if (action.type === "removeTycoonCash") {
+      this.context.removeTycoonCash(action.amount);
+    } else if (action.type === "completeTycoonPurchase") {
+      this.context.completeTycoonPurchase(action.purchaseId);
+    } else if (action.type === "enableTycoonGenerator") {
+      this.context.setTycoonGeneratorEnabled(action.generatorId, true);
+    } else if (action.type === "disableTycoonGenerator") {
+      this.context.setTycoonGeneratorEnabled(action.generatorId, false);
+    } else if (action.type === "unlockTycoonGroup") {
+      this.context.unlockTycoonGroup(action.groupId);
     }
   }
 
@@ -356,6 +449,32 @@ function isLogicTrigger(value: unknown): value is LogicTrigger {
     );
   }
 
+  if (value.type === "onTycoonClaimed" || value.type === "onTycoonCompleted") {
+    return value.tycoonId === undefined || typeof value.tycoonId === "string";
+  }
+
+  if (value.type === "onTycoonCashCollected") {
+    return (
+      (value.tycoonId === undefined || typeof value.tycoonId === "string") &&
+      (value.amount === undefined ||
+        (typeof value.amount === "number" && Number.isFinite(value.amount)))
+    );
+  }
+
+  if (value.type === "onTycoonPurchaseCompleted") {
+    return (
+      typeof value.purchaseId === "string" &&
+      (value.tycoonId === undefined || typeof value.tycoonId === "string")
+    );
+  }
+
+  if (value.type === "onTycoonUpgradePurchased") {
+    return (
+      typeof value.upgradeId === "string" &&
+      (value.tycoonId === undefined || typeof value.tycoonId === "string")
+    );
+  }
+
   if (value.type === "onKeyCollected") {
     return typeof value.keyId === "string";
   }
@@ -394,12 +513,32 @@ function isLogicCondition(value: unknown): value is LogicCondition {
     return typeof value.objectId === "string";
   }
 
-  if (value.type === "enemiesDefeatedAtLeast" || value.type === "healthBelow") {
+  if (
+    value.type === "enemiesDefeatedAtLeast" ||
+    value.type === "healthBelow" ||
+    value.type === "tycoonCashAtLeast"
+  ) {
     return typeof value.amount === "number" && Number.isFinite(value.amount);
   }
 
   if (value.type === "hasWeapon") {
     return typeof value.weaponId === "string";
+  }
+
+  if (value.type === "tycoonPurchaseCompleted") {
+    return typeof value.purchaseId === "string";
+  }
+
+  if (value.type === "tycoonUpgradeLevelAtLeast") {
+    return (
+      typeof value.upgradeId === "string" &&
+      typeof value.level === "number" &&
+      Number.isFinite(value.level)
+    );
+  }
+
+  if (value.type === "tycoonClaimed") {
+    return value.tycoonId === undefined || typeof value.tycoonId === "string";
   }
 
   return value.type === "once";
@@ -474,6 +613,22 @@ function isLogicAction(value: unknown): value is LogicAction {
     return value.result === "win" || value.result === "lose" || value.result === "draw";
   }
 
+  if (value.type === "giveTycoonCash" || value.type === "removeTycoonCash") {
+    return typeof value.amount === "number" && Number.isFinite(value.amount);
+  }
+
+  if (value.type === "completeTycoonPurchase") {
+    return typeof value.purchaseId === "string";
+  }
+
+  if (value.type === "enableTycoonGenerator" || value.type === "disableTycoonGenerator") {
+    return typeof value.generatorId === "string";
+  }
+
+  if (value.type === "unlockTycoonGroup") {
+    return typeof value.groupId === "string";
+  }
+
   return value.type === "finishMap";
 }
 
@@ -510,6 +665,22 @@ function describeEvent(event: LogicRuntimeEvent): string {
     return `${event.type} ${event.pointId}`;
   }
 
+  if (event.type === "onTycoonCashCollected") {
+    return `${event.type} ${event.tycoonId ?? ""} ${event.amount}`;
+  }
+
+  if (event.type === "onTycoonPurchaseCompleted") {
+    return `${event.type} ${event.purchaseId}`;
+  }
+
+  if (event.type === "onTycoonUpgradePurchased") {
+    return `${event.type} ${event.upgradeId}`;
+  }
+
+  if (event.type === "onTycoonClaimed" || event.type === "onTycoonCompleted") {
+    return `${event.type} ${event.tycoonId ?? ""}`;
+  }
+
   if ("objectId" in event) {
     return `${event.type} ${event.objectId}`;
   }
@@ -544,6 +715,22 @@ function describeCondition(condition: LogicCondition): string {
 
   if (condition.type === "healthBelow") {
     return `healthBelow ${condition.amount}`;
+  }
+
+  if (condition.type === "tycoonCashAtLeast") {
+    return `tycoonCashAtLeast ${condition.amount}`;
+  }
+
+  if (condition.type === "tycoonPurchaseCompleted") {
+    return `tycoonPurchaseCompleted ${condition.purchaseId}`;
+  }
+
+  if (condition.type === "tycoonUpgradeLevelAtLeast") {
+    return `tycoonUpgradeLevelAtLeast ${condition.upgradeId} ${condition.level}`;
+  }
+
+  if (condition.type === "tycoonClaimed") {
+    return `tycoonClaimed ${condition.tycoonId ?? ""}`;
   }
 
   return "once";
@@ -610,5 +797,25 @@ function describeAction(action: LogicAction): string {
     return `endRound ${action.result}`;
   }
 
+  if (action.type === "giveTycoonCash" || action.type === "removeTycoonCash") {
+    return `${action.type} ${action.amount}`;
+  }
+
+  if (action.type === "completeTycoonPurchase") {
+    return `completeTycoonPurchase ${action.purchaseId}`;
+  }
+
+  if (action.type === "enableTycoonGenerator" || action.type === "disableTycoonGenerator") {
+    return `${action.type} ${action.generatorId}`;
+  }
+
+  if (action.type === "unlockTycoonGroup") {
+    return `unlockTycoonGroup ${action.groupId}`;
+  }
+
   return "finishMap";
+}
+
+function matchesOptionalId(filter: string | undefined, value: string | undefined): boolean {
+  return !filter || filter === value;
 }

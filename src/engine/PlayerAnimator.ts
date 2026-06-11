@@ -30,6 +30,8 @@ export interface PlayerAnimationInput {
 }
 
 const DEFAULT_ATTACK_DURATION = 0.34;
+const FORWARD_ARM_X = 1;
+const BACKWARD_ARM_X = -1;
 
 export class PlayerAnimator {
   private walkCycle = 0;
@@ -90,8 +92,14 @@ export class PlayerAnimator {
       return;
     }
 
+    if (this.options.weaponSlot) {
+      this.options.weaponSlot.rotation.set(0, 0, 0);
+      this.options.weaponSlot.scale.set(1, 1, 1);
+    }
+
     applyWeaponAttachment(weapon, weaponId);
     (this.options.weaponSlot ?? this.options.rightArm)?.add(weapon);
+    weapon.updateMatrixWorld(true);
     this.weaponVisual = weapon;
   }
 
@@ -180,12 +188,12 @@ export class PlayerAnimator {
     if (state === "defeated") {
       return {
         ...getNeutralPose(),
-        body: { x: 0.18, y: 0, z: 0 },
-        head: { x: 0.08, y: 0, z: 0 },
-        leftArm: { x: 0.5, y: 0, z: -0.18 },
-        rightArm: { x: 0.5, y: 0, z: 0.18 },
-        leftLeg: { x: 0.18, y: 0, z: 0 },
-        rightLeg: { x: -0.18, y: 0, z: 0 },
+        body: { x: -0.28, y: 0, z: 0 },
+        head: { x: 0.16, y: 0, z: 0 },
+        leftArm: { x: 0.48 * FORWARD_ARM_X, y: 0, z: -0.18 },
+        rightArm: { x: 0.62 * FORWARD_ARM_X, y: 0, z: 0.18 },
+        leftLeg: { x: 0.16 * FORWARD_ARM_X, y: 0, z: 0 },
+        rightLeg: { x: 0.16 * BACKWARD_ARM_X, y: 0, z: 0 },
       };
     }
 
@@ -205,11 +213,11 @@ export class PlayerAnimator {
 
     if (airborne) {
       const falling = (input.verticalVelocity ?? 0) < -0.25;
-      pose.leftArm.x = falling ? -0.18 : -0.35;
-      pose.rightArm.x = falling ? -0.18 : -0.35;
+      pose.leftArm.x = falling ? 0.18 * FORWARD_ARM_X : 0.35 * FORWARD_ARM_X;
+      pose.rightArm.x = falling ? 0.18 * FORWARD_ARM_X : 0.35 * FORWARD_ARM_X;
       pose.leftLeg.x = falling ? 0.18 : 0.12;
       pose.rightLeg.x = falling ? -0.18 : -0.12;
-      pose.body.x = falling ? -0.02 : -0.06;
+      pose.body.x = falling ? 0.02 : -0.06;
     } else {
       pose.leftArm.x = -swing + idle;
       pose.rightArm.x = swing + idle;
@@ -336,41 +344,41 @@ function applyAttackPose(
 
   switch (options.attackType) {
     case "overhead":
-      pose.rightArm.x = -2.08 + arc * 0.9;
+      pose.rightArm.x = 2.08 - arc * 0.9;
       pose.rightArm.y = 0.04;
       pose.rightArm.z = -0.08 - arc * 0.16;
       pose.body.x = -0.05 + arc * 0.08;
-      pose.leftArm.x = -0.28;
+      pose.leftArm.x = 0.28;
       break;
     case "stab":
-      pose.rightArm.x = -1.0 - arc * 0.26;
+      pose.rightArm.x = 1.0 + arc * 0.26;
       pose.rightArm.y = -0.16;
       pose.rightArm.z = -0.12 - arc * 0.16;
       pose.body.y = -0.04 + arc * 0.08;
-      pose.leftArm.x = -0.16;
+      pose.leftArm.x = 0.16;
       break;
     case "shoot":
-      pose.rightArm.x = -1.22 - windup * 0.08;
+      pose.rightArm.x = 1.22 + windup * 0.08;
       pose.rightArm.y = -0.06 + arc * 0.06;
       pose.rightArm.z = -0.06;
-      pose.leftArm.x = -0.55;
+      pose.leftArm.x = 0.55;
       pose.leftArm.z = -0.18;
       break;
     case "slash":
     default:
-      pose.rightArm.x = -1.12 - arc * 0.68;
+      pose.rightArm.x = 1.12 + arc * 0.68;
       pose.rightArm.y = -0.22 + arc * 0.24;
       pose.rightArm.z = -0.32 - arc * 0.2;
       pose.body.y = -0.08 + arc * 0.18;
-      pose.leftArm.x = -0.12;
+      pose.leftArm.x = 0.12;
       break;
   }
 
   if (attachment.kind === "dagger") {
-    pose.rightArm.x += 0.2;
+    pose.rightArm.x -= 0.2;
     pose.rightArm.z += 0.08;
   } else if (attachment.kind === "hammer") {
-    pose.rightArm.x -= 0.18;
+    pose.rightArm.x += 0.18;
     pose.body.x += 0.06 * arc;
   }
 }

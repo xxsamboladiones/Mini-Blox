@@ -75,6 +75,8 @@ export function validateEditorMap(map: GameMap): EditorMapValidationIssue[] {
     validateObject(object, objectIds, issues);
   }
 
+  validateTycoonObjects(map, objectIds, issues);
+
   if (!Array.isArray(map.assets ?? [])) {
     issues.push({
       level: "warning",
@@ -258,4 +260,246 @@ function requiresFinishWarning(map: GameMap): boolean {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function validateTycoonObjects(
+  map: GameMap,
+  objectIds: Set<string>,
+  issues: EditorMapValidationIssue[]
+): void {
+  const tycoonObjects = map.objects.filter((object) => String(object.type).startsWith("tycoon"));
+
+  if (tycoonObjects.length === 0) {
+    return;
+  }
+
+  const purchaseIds = new Set<string>();
+  const generatorIds = new Set<string>();
+  const collectorIds = new Set<string>();
+
+  for (const object of tycoonObjects) {
+    if (!isNonEmptyString(object.properties?.tycoonId)) {
+      issues.push({
+        level: "error",
+        code: "tycoon.id.missing",
+        message: `O objeto Tycoon "${object.id}" precisa de Tycoon ID.`,
+        objectId: object.id,
+      });
+    }
+
+    if (
+      (object.type === "tycoonBuyButton" || object.type === "tycoonBarrier") &&
+      isNonEmptyString(object.properties?.purchaseId)
+    ) {
+      purchaseIds.add(object.properties.purchaseId);
+    }
+
+    if (object.type === "tycoonUpgrade" && isNonEmptyString(object.properties?.upgradeId)) {
+      purchaseIds.add(object.properties.upgradeId);
+    }
+
+    if (object.type === "tycoonGenerator" && isNonEmptyString(object.properties?.generatorId)) {
+      generatorIds.add(object.properties.generatorId);
+    }
+
+    if (object.type === "tycoonCollector" && isNonEmptyString(object.properties?.collectorId)) {
+      collectorIds.add(object.properties.collectorId);
+    }
+  }
+
+  for (const object of tycoonObjects) {
+    if (object.type === "tycoonGenerator") {
+      validateRequiredString(object, "generatorId", "tycoon.generator.id", "gerador", issues);
+      validateNonNegativeNumber(object, "incomePerTick", "tycoon.generator.income", issues);
+      validatePositiveNumber(object, "tickInterval", "tycoon.generator.interval", issues);
+
+      const collectorId = getString(object.properties?.targetCollectorId);
+      if (collectorId && !collectorIds.has(collectorId)) {
+        issues.push({
+          level: "warning",
+          code: "tycoon.generator.collectorMissing",
+          message: `O gerador "${object.id}" aponta para coletor inexistente: ${collectorId}.`,
+          objectId: object.id,
+        });
+      }
+
+      const requiredPurchaseId = getString(object.properties?.purchaseId);
+      if (object.properties?.requiresPurchase && requiredPurchaseId && !purchaseIds.has(requiredPurchaseId)) {
+        issues.push({
+          level: "error",
+          code: "tycoon.generator.purchaseMissing",
+          message: `O gerador "${object.id}" exige uma compra inexistente: ${requiredPurchaseId}.`,
+          objectId: object.id,
+        });
+      }
+    } else if (object.type === "tycoonCollector") {
+      validateRequiredString(object, "collectorId", "tycoon.collector.id", "coletor", issues);
+      validatePositiveNumber(object, "collectRadius", "tycoon.collector.radius", issues);
+      validateNonNegativeNumber(object, "capacity", "tycoon.collector.capacity", issues);
+    } else if (object.type === "tycoonBuyButton") {
+      validateRequiredString(object, "purchaseId", "tycoon.purchase.id", "compra", issues);
+      validateNonNegativeNumber(object, "cost", "tycoon.purchase.cost", issues);
+      validatePurchaseRefs(object, purchaseIds, issues);
+      validateUnlockRefs(object, objectIds, purchaseIds, issues);
+    } else if (object.type === "tycoonUpgrade") {
+      validateRequiredString(object, "upgradeId", "tycoon.upgrade.id", "upgrade", issues);
+      validateNonNegativeNumber(object, "cost", "tycoon.upgrade.cost", issues);
+      validatePurchaseRefs(object, purchaseIds, issues);
+      for (const generatorId of getStringArray(object.properties?.targetGeneratorIds)) {
+        if (!generatorIds.has(generatorId)) {
+          issues.push({
+            level: "warning",
+            code: "tycoon.upgrade.generatorMissing",
+            message: `O upgrade "${object.id}" aponta para gerador inexistente: ${generatorId}.`,
+            objectId: object.id,
+          });
+        }
+      }
+    } else if (object.type === "tycoonBarrier") {
+      validateRequiredString(object, "purchaseId", "tycoon.barrier.purchase", "compra", issues);
+    }
+  }
+
+  if (map.gameModeSettings?.mode === "tycoon") {
+    if (!tycoonObjects.some((object) => object.type === "tycoonGenerator")) {
+      issues.push({
+        level: "warning",
+        code: "tycoon.generator.missing",
+        message: "Modo Tycoon sem gerador de dinheiro.",
+      });
+    }
+
+    if (!tycoonObjects.some((object) => object.type === "tycoonCollector")) {
+      issues.push({
+        level: "warning",
+        code: "tycoon.collector.missing",
+        message: "Modo Tycoon sem coletor de dinheiro.",
+      });
+    }
+
+    if (!tycoonObjects.some((object) => object.type === "tycoonBuyButton")) {
+      issues.push({
+        level: "warning",
+        code: "tycoon.button.missing",
+        message: "Modo Tycoon sem botao de compra.",
+      });
+    }
+
+    for (const purchaseId of map.gameModeSettings?.tycoonSettings?.winPurchaseIds ?? []) {
+      if (!purchaseIds.has(purchaseId)) {
+        issues.push({
+          level: "error",
+          code: "tycoon.win.purchaseMissing",
+          message: `A condicao de vitoria Tycoon aponta compra inexistente: ${purchaseId}.`,
+        });
+      }
+    }
+  }
+}
+
+function validateRequiredString(
+  object: MapObject,
+  property: string,
+  code: string,
+  label: string,
+  issues: EditorMapValidationIssue[]
+): void {
+  if (!isNonEmptyString(object.properties?.[property])) {
+    issues.push({
+      level: "error",
+      code,
+      message: `O objeto "${object.id}" precisa de ID de ${label}.`,
+      objectId: object.id,
+    });
+  }
+}
+
+function validateNonNegativeNumber(
+  object: MapObject,
+  property: string,
+  code: string,
+  issues: EditorMapValidationIssue[]
+): void {
+  const value = object.properties?.[property];
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    issues.push({
+      level: "error",
+      code,
+      message: `O objeto "${object.id}" precisa de ${property} maior ou igual a zero.`,
+      objectId: object.id,
+    });
+  }
+}
+
+function validatePositiveNumber(
+  object: MapObject,
+  property: string,
+  code: string,
+  issues: EditorMapValidationIssue[]
+): void {
+  const value = object.properties?.[property];
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    issues.push({
+      level: "error",
+      code,
+      message: `O objeto "${object.id}" precisa de ${property} maior que zero.`,
+      objectId: object.id,
+    });
+  }
+}
+
+function validatePurchaseRefs(
+  object: MapObject,
+  purchaseIds: Set<string>,
+  issues: EditorMapValidationIssue[]
+): void {
+  for (const purchaseId of getStringArray(object.properties?.requiredPurchaseIds)) {
+    if (!purchaseIds.has(purchaseId)) {
+      issues.push({
+        level: "error",
+        code: "tycoon.purchase.requiredMissing",
+        message: `O objeto "${object.id}" exige compra inexistente: ${purchaseId}.`,
+        objectId: object.id,
+      });
+    }
+  }
+}
+
+function validateUnlockRefs(
+  object: MapObject,
+  objectIds: Set<string>,
+  purchaseIds: Set<string>,
+  issues: EditorMapValidationIssue[]
+): void {
+  for (const objectId of getStringArray(object.properties?.unlockObjectIds)) {
+    if (!objectIds.has(objectId)) {
+      issues.push({
+        level: "error",
+        code: "tycoon.unlock.objectMissing",
+        message: `O botao "${object.id}" libera objeto inexistente: ${objectId}.`,
+        objectId: object.id,
+      });
+    }
+  }
+
+  for (const buttonId of getStringArray(object.properties?.unlockButtonIds)) {
+    if (!objectIds.has(buttonId) && !purchaseIds.has(buttonId)) {
+      issues.push({
+        level: "error",
+        code: "tycoon.unlock.buttonMissing",
+        message: `O botao "${object.id}" libera botao/compra inexistente: ${buttonId}.`,
+        objectId: object.id,
+      });
+    }
+  }
+}
+
+function getString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
 }

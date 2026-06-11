@@ -20,6 +20,7 @@ const MODE_OPTIONS: Array<{ mode: GameMode; label: string }> = [
   { mode: "objectiveRun", label: "Corrida de objetivos" },
   { mode: "teamBattle", label: "Batalha local de times" },
   { mode: "capturePoint", label: "Capture Point" },
+  { mode: "tycoon", label: "Tycoon" },
 ];
 
 const WIN_OPTIONS: Array<{ type: WinConditionType; label: string }> = [
@@ -30,6 +31,7 @@ const WIN_OPTIONS: Array<{ type: WinConditionType; label: string }> = [
   { type: "completeObjectives", label: "Completar objetivos" },
   { type: "score", label: "Pontuacao" },
   { type: "capturePoint", label: "Capture Point" },
+  { type: "completeTycoon", label: "Completar Tycoon" },
 ];
 
 export class GameModePanel {
@@ -123,6 +125,8 @@ export class GameModePanel {
         ${this.renderScoreInput("deathPenalty", "Morte", settings.scoring?.deathPenalty ?? 25)}
       </fieldset>
 
+      ${settings.mode === "tycoon" ? this.renderTycoonSettings(settings) : ""}
+
       <div class="logic-section-heading">
         <strong>Times</strong>
         <button class="property-action compact-action" type="button" data-add-team>
@@ -161,6 +165,44 @@ export class GameModePanel {
       <label>
         <span>${label}</span>
         <input data-score="${property}" type="number" step="1" value="${value}" />
+      </label>
+    `;
+  }
+
+  private renderTycoonSettings(settings: GameModeSettings): string {
+    const tycoon = settings.tycoonSettings ?? {};
+
+    return `
+      <fieldset class="game-mode-score-grid">
+        <legend>Tycoon</legend>
+        <label>
+          <span>Dinheiro inicial</span>
+          <input data-tycoon-setting="startingCash" type="number" min="0" step="1" value="${tycoon.startingCash ?? 0}" />
+        </label>
+        <label>
+          <span>Escala de geradores</span>
+          <input data-tycoon-setting="generatorTickRateScale" type="number" min="0.1" step="0.1" value="${tycoon.generatorTickRateScale ?? 1}" />
+        </label>
+        <label class="checkbox-field game-mode-check">
+          <input data-tycoon-flag="sharedCash" type="checkbox" ${tycoon.sharedCash ? "checked" : ""} />
+          <span>Dinheiro compartilhado</span>
+        </label>
+        <label class="checkbox-field game-mode-check">
+          <input data-tycoon-flag="requireAllPurchasesToWin" type="checkbox" ${tycoon.requireAllPurchasesToWin !== false ? "checked" : ""} />
+          <span>Comprar tudo para vencer</span>
+        </label>
+        <label class="checkbox-field game-mode-check">
+          <input data-tycoon-flag="autoClaimInSolo" type="checkbox" ${tycoon.autoClaimInSolo !== false ? "checked" : ""} />
+          <span>Auto claim no solo</span>
+        </label>
+        <label class="checkbox-field game-mode-check">
+          <input data-tycoon-flag="allowStealing" type="checkbox" ${tycoon.allowStealing ? "checked" : ""} />
+          <span>Permitir roubo</span>
+        </label>
+      </fieldset>
+      <label class="field">
+        <span>Compras para vencer</span>
+        <input data-tycoon-win-purchases type="text" value="${escapeAttribute((tycoon.winPurchaseIds ?? []).join(", "))}" placeholder="purchase_1, upgrade_1" />
       </label>
     `;
   }
@@ -218,6 +260,16 @@ export class GameModePanel {
           };
           settings.teamsEnabled =
             mode === "teamBattle" || mode === "capturePoint" ? true : settings.teamsEnabled;
+          settings.tycoonSettings = {
+            startingCash: 0,
+            sharedCash: false,
+            requireAllPurchasesToWin: true,
+            winPurchaseIds: [],
+            allowStealing: false,
+            autoClaimInSolo: true,
+            generatorTickRateScale: 1,
+            ...(settings.tycoonSettings ?? {}),
+          };
         });
       });
 
@@ -314,6 +366,54 @@ export class GameModePanel {
         }, false);
       });
     });
+
+    this.root.querySelectorAll<HTMLInputElement>("[data-tycoon-setting]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const property = input.dataset.tycoonSetting as
+          | "startingCash"
+          | "generatorTickRateScale";
+        this.updateSettings((settings) => {
+          settings.tycoonSettings = {
+            ...(settings.tycoonSettings ?? {}),
+            [property]:
+              property === "startingCash"
+                ? Math.max(0, Math.floor(Number(input.value) || 0))
+                : Math.max(0.1, Number(input.value) || 1),
+          };
+        }, false);
+      });
+    });
+
+    this.root.querySelectorAll<HTMLInputElement>("[data-tycoon-flag]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const property = input.dataset.tycoonFlag as
+          | "sharedCash"
+          | "requireAllPurchasesToWin"
+          | "allowStealing"
+          | "autoClaimInSolo";
+        this.updateSettings((settings) => {
+          settings.tycoonSettings = {
+            ...(settings.tycoonSettings ?? {}),
+            [property]: input.checked,
+          };
+        });
+      });
+    });
+
+    this.root
+      .querySelector<HTMLInputElement>("[data-tycoon-win-purchases]")
+      ?.addEventListener("change", (event) => {
+        const values = (event.currentTarget as HTMLInputElement).value
+          .split(",")
+          .map((value) => value.trim())
+          .filter((value) => value.length > 0);
+        this.updateSettings((settings) => {
+          settings.tycoonSettings = {
+            ...(settings.tycoonSettings ?? {}),
+            winPurchaseIds: values,
+          };
+        }, false);
+      });
 
     this.root.querySelector<HTMLButtonElement>("[data-add-team]")?.addEventListener("click", () => {
       this.updateTeams((teams) => {
@@ -453,6 +553,20 @@ export class GameModePanel {
       warnings.push("Vitoria por objetivos sem objetivos obrigatorios.");
     }
 
+    if (settings.mode === "tycoon") {
+      if (!map.objects.some((object) => object.type === "tycoonGenerator")) {
+        warnings.push("Tycoon sem gerador de dinheiro.");
+      }
+
+      if (!map.objects.some((object) => object.type === "tycoonCollector")) {
+        warnings.push("Tycoon sem coletor de dinheiro.");
+      }
+
+      if (!map.objects.some((object) => object.type === "tycoonBuyButton")) {
+        warnings.push("Tycoon sem botao de compra.");
+      }
+    }
+
     const teamIds = new Set<string>();
 
     for (const team of teams) {
@@ -505,6 +619,16 @@ function resolveSettings(map: GameMap | null): GameModeSettings {
       ...base.scoring,
       ...(map?.gameModeSettings?.scoring ?? {}),
     },
+    tycoonSettings: {
+      startingCash: 0,
+      sharedCash: false,
+      requireAllPurchasesToWin: true,
+      winPurchaseIds: [],
+      allowStealing: false,
+      autoClaimInSolo: true,
+      generatorTickRateScale: 1,
+      ...(map?.gameModeSettings?.tycoonSettings ?? {}),
+    },
   };
 }
 
@@ -531,6 +655,10 @@ function getDefaultWinConditionForMode(mode: GameMode, map: GameMap | null): Win
 
   if (mode === "capturePoint") {
     return "capturePoint";
+  }
+
+  if (mode === "tycoon") {
+    return "completeTycoon";
   }
 
   return map?.objects.some((object) => object.type === "finish" || object.type === "goal")

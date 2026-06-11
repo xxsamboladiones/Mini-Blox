@@ -12,6 +12,7 @@ import type {
 } from "../shared/types/MapSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
 import type { GameModeSummary, RuntimeHud } from "./RuntimeHud";
+import type { TycoonProgressSummary } from "./mechanics/TycoonSystem";
 
 type GameModeRuntimeOptions = {
   onWin: (message: string, summary: GameModeSummary) => void;
@@ -46,6 +47,10 @@ export class GameModeRuntime {
   private enemiesDefeated = 0;
   private deaths = 0;
   private objectivesCompleted = 0;
+  private tycoonCash = 0;
+  private tycoonPendingCash = 0;
+  private tycoonPurchasesCompleted = 0;
+  private tycoonPurchasesTotal = 0;
   private roundTimeRemaining: number | null = null;
   private currentTeamId: string | null = null;
   private won = false;
@@ -67,6 +72,10 @@ export class GameModeRuntime {
     this.enemiesDefeated = 0;
     this.deaths = 0;
     this.objectivesCompleted = 0;
+    this.tycoonCash = 0;
+    this.tycoonPendingCash = 0;
+    this.tycoonPurchasesCompleted = 0;
+    this.tycoonPurchasesTotal = 0;
     this.roundTimeRemaining = this.settings.roundEnabled
       ? Math.max(0, this.settings.roundTimeLimit ?? 180)
       : null;
@@ -129,6 +138,15 @@ export class GameModeRuntime {
     this.addScore(score, false);
     this.addCurrentTeamScore(score, false);
     this.checkVictory(summary);
+    this.updateHud();
+  }
+
+  onTycoonProgress(summary: TycoonProgressSummary): void {
+    this.tycoonCash = summary.cash;
+    this.tycoonPendingCash = summary.pendingCash;
+    this.tycoonPurchasesCompleted = summary.purchasedCount;
+    this.tycoonPurchasesTotal = summary.totalPurchases;
+    this.checkVictory();
     this.updateHud();
   }
 
@@ -266,6 +284,11 @@ export class GameModeRuntime {
       capturePointsOwned: [...this.capturePoints.values()].filter(
         (point) => point.ownerTeamId === (this.currentTeamId ?? "player")
       ).length,
+      tycoonCash: this.tycoonPurchasesTotal > 0 ? this.tycoonCash : undefined,
+      tycoonPendingCash: this.tycoonPurchasesTotal > 0 ? this.tycoonPendingCash : undefined,
+      tycoonPurchasesCompleted:
+        this.tycoonPurchasesTotal > 0 ? this.tycoonPurchasesCompleted : undefined,
+      tycoonPurchasesTotal: this.tycoonPurchasesTotal > 0 ? this.tycoonPurchasesTotal : undefined,
     };
   }
 
@@ -432,6 +455,10 @@ export class GameModeRuntime {
       return this.getBestScore() >= target;
     }
 
+    if (winCondition.type === "completeTycoon") {
+      return this.tycoonPurchasesTotal > 0 && this.tycoonPurchasesCompleted >= target;
+    }
+
     return false;
   }
 
@@ -459,6 +486,10 @@ export class GameModeRuntime {
         objectiveSummary?.total ??
           (this.map.objectives ?? []).filter((objective) => objective.required !== false).length
       );
+    }
+
+    if (winCondition.type === "completeTycoon") {
+      return Math.max(1, this.tycoonPurchasesTotal);
     }
 
     return configured > 0 ? configured : DEFAULT_SCORE_TARGET;
@@ -491,6 +522,10 @@ export class GameModeRuntime {
       return `Pontuacao necessaria: ${this.getBestScore()}/${target}.`;
     }
 
+    if (winCondition.type === "completeTycoon") {
+      return `Complete o tycoon: ${this.tycoonPurchasesCompleted}/${target}.`;
+    }
+
     return "Conclua a condicao de vitoria.";
   }
 
@@ -513,6 +548,10 @@ export class GameModeRuntime {
 
     if (winCondition.type === "score") {
       return "Meta de pontuacao atingida!";
+    }
+
+    if (winCondition.type === "completeTycoon") {
+      return "Tycoon completo!";
     }
 
     return "Vitoria!";
@@ -608,6 +647,10 @@ export class GameModeRuntime {
       return `Captura: ${this.getBestScore()}/${target}`;
     }
 
+    if (winCondition.type === "completeTycoon") {
+      return `Tycoon: ${this.tycoonPurchasesCompleted}/${target}`;
+    }
+
     if (winCondition.type === "finish") {
       return "Objetivo: chegar ao final";
     }
@@ -661,6 +704,16 @@ function resolveGameModeSettings(map: GameMap): GameModeSettings {
       deathPenalty: 25,
       ...(map.gameModeSettings?.scoring ?? {}),
     },
+    tycoonSettings: {
+      startingCash: 0,
+      sharedCash: false,
+      requireAllPurchasesToWin: true,
+      winPurchaseIds: [],
+      allowStealing: false,
+      autoClaimInSolo: true,
+      generatorTickRateScale: 1,
+      ...(map.gameModeSettings?.tycoonSettings ?? {}),
+    },
   };
 }
 
@@ -689,6 +742,10 @@ function getDefaultWinCondition(mode: GameMode, hasFinish: boolean): WinConditio
     return "capturePoint";
   }
 
+  if (mode === "tycoon") {
+    return "completeTycoon";
+  }
+
   return hasFinish ? "finish" : "none";
 }
 
@@ -715,6 +772,8 @@ function getModeLabel(mode: GameMode): string {
       return "Times";
     case "capturePoint":
       return "Capture Point";
+    case "tycoon":
+      return "Tycoon";
     case "freeplay":
     default:
       return "Livre";

@@ -30,6 +30,7 @@ async function main() {
   const multiplayerServer = new MultiplayerServer(httpServer, roomManager);
   const clients = [];
   let onlineId = null;
+  let authToken = null;
 
   await listen(httpServer);
   const { port } = httpServer.address();
@@ -37,7 +38,8 @@ async function main() {
   const wsBaseUrl = `ws://127.0.0.1:${port}`;
 
   try {
-    onlineId = await publishSmokeMap(baseUrl);
+    authToken = await registerSmokeUser(baseUrl);
+    onlineId = await publishSmokeMap(baseUrl, authToken);
     console.log(`Published smoke map: ${onlineId}`);
 
     const roomId = await createRoom(baseUrl, onlineId);
@@ -529,8 +531,8 @@ async function main() {
     console.log("\n=== Multiplayer smoke passed ===");
   } finally {
     await Promise.allSettled(clients.map((client) => client.close()));
-    if (onlineId) {
-      await deleteSmokeMap(baseUrl, onlineId).catch(() => undefined);
+    if (onlineId && authToken) {
+      await deleteSmokeMap(baseUrl, onlineId, authToken).catch(() => undefined);
     }
     await multiplayerServer.shutdown();
     roomManager.dispose();
@@ -538,10 +540,34 @@ async function main() {
   }
 }
 
-async function publishSmokeMap(baseUrl) {
-  const response = await fetch(`${baseUrl}/api/maps`, {
+async function registerSmokeUser(baseUrl) {
+  const suffix = Date.now().toString(36);
+  const response = await fetch(`${baseUrl}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: `mp_${suffix}`,
+      password: "senha-forte-123",
+      displayName: "Smoke Multiplayer",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to register smoke user: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (!data.ok || typeof data.token !== "string") {
+    throw new Error("Register smoke user returned an invalid response.");
+  }
+
+  return data.token;
+}
+
+async function publishSmokeMap(baseUrl, authToken) {
+  const response = await fetch(`${baseUrl}/api/maps`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
     body: JSON.stringify({
       map: createSmokeMap(),
       creatorName: "Smoke Creator",
@@ -561,10 +587,10 @@ async function publishSmokeMap(baseUrl) {
   return data.onlineId;
 }
 
-async function deleteSmokeMap(baseUrl, onlineId) {
+async function deleteSmokeMap(baseUrl, onlineId, authToken) {
   await fetch(`${baseUrl}/api/maps/${onlineId}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
     body: JSON.stringify({ clientId: OWNER_CLIENT_ID }),
   });
 }

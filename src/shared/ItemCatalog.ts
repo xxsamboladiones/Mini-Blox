@@ -1,4 +1,15 @@
 import type { CatalogItemDefinition, WeaponDefinition } from "./types/ItemSchema";
+import {
+  getWeaponRule,
+  normalizeWeaponId as normalizeSharedWeaponId,
+  WEAPON_ITEM_IDS,
+  type WeaponCombatId,
+} from "./WeaponRules";
+
+const basicSwordRule = requireWeaponRule("basic_sword");
+const heavyHammerRule = requireWeaponRule("heavy_hammer");
+const daggerRule = requireWeaponRule("dagger");
+const blasterRule = requireWeaponRule("blaster");
 
 export const ITEM_CATALOG: CatalogItemDefinition[] = [
   {
@@ -67,10 +78,10 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     icon: "swords",
     color: "#a855f7",
     stackable: false,
-    damage: 18,
-    cooldown: 0.65,
-    range: 1.85,
-    coneDot: 0.18,
+    damage: basicSwordRule.damage,
+    cooldown: basicSwordRule.cooldownSeconds,
+    range: basicSwordRule.range,
+    coneDot: basicSwordRule.minDot,
   },
   {
     id: "weapon_basic",
@@ -84,10 +95,10 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     icon: "swords",
     color: "#38bdf8",
     stackable: false,
-    damage: 18,
-    cooldown: 0.65,
-    range: 1.85,
-    coneDot: 0.18,
+    damage: basicSwordRule.damage,
+    cooldown: basicSwordRule.cooldownSeconds,
+    range: basicSwordRule.range,
+    coneDot: basicSwordRule.minDot,
   },
   {
     id: "weapon_heavy_hammer",
@@ -101,10 +112,10 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     icon: "hammer",
     color: "#f59e0b",
     stackable: false,
-    damage: 32,
-    cooldown: 1.15,
-    range: 1.65,
-    coneDot: 0.05,
+    damage: heavyHammerRule.damage,
+    cooldown: heavyHammerRule.cooldownSeconds,
+    range: heavyHammerRule.range,
+    coneDot: heavyHammerRule.minDot,
   },
   {
     id: "weapon_dagger",
@@ -118,10 +129,10 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     icon: "sword",
     color: "#22c55e",
     stackable: false,
-    damage: 10,
-    cooldown: 0.35,
-    range: 1.45,
-    coneDot: 0.42,
+    damage: daggerRule.damage,
+    cooldown: daggerRule.cooldownSeconds,
+    range: daggerRule.range,
+    coneDot: daggerRule.minDot,
   },
   {
     id: "weapon_blaster",
@@ -135,11 +146,11 @@ export const ITEM_CATALOG: CatalogItemDefinition[] = [
     icon: "zap",
     color: "#06b6d4",
     stackable: false,
-    damage: 14,
-    cooldown: 0.75,
-    range: 12,
-    projectileSpeed: 18,
-    coneDot: 0.58,
+    damage: blasterRule.damage,
+    cooldown: blasterRule.cooldownSeconds,
+    range: blasterRule.range,
+    projectileSpeed: blasterRule.projectileSpeed,
+    coneDot: blasterRule.minDot,
   },
   {
     id: "health_pack",
@@ -168,43 +179,13 @@ export const WEAPON_SPAWNER_OPTIONS = [
   { id: "weapon_blaster", label: "Blaster" },
 ] as const;
 
-const WEAPON_ALIASES: Record<string, string> = {
-  weapon_basic: "basic_sword",
-  weapon_basic_sword: "basic_sword",
-  basic_sword: "basic_sword",
-  sword: "basic_sword",
-  weapon_heavy_hammer: "heavy_hammer",
-  heavy_hammer: "heavy_hammer",
-  hammer: "heavy_hammer",
-  weapon_dagger: "dagger",
-  dagger: "dagger",
-  weapon_blaster: "blaster",
-  blaster: "blaster",
-};
-
-const WEAPON_ITEM_IDS: Record<string, string> = {
-  basic_sword: "weapon_basic",
-  heavy_hammer: "weapon_heavy_hammer",
-  dagger: "weapon_dagger",
-  blaster: "weapon_blaster",
-};
-
-export function normalizeWeaponId(weaponId: string | null | undefined): string | null {
-  if (typeof weaponId !== "string") {
-    return null;
-  }
-
-  const key = weaponId.trim();
-  if (!key) {
-    return null;
-  }
-
-  return WEAPON_ALIASES[key] ?? null;
-}
-
 export function getWeaponItemId(weaponId: string | null | undefined): string | null {
   const normalized = normalizeWeaponId(weaponId);
   return normalized ? (WEAPON_ITEM_IDS[normalized] ?? null) : null;
+}
+
+export function normalizeWeaponId(weaponId: string | null | undefined): WeaponCombatId | null {
+  return normalizeSharedWeaponId(weaponId);
 }
 
 export function getCatalogItemId(itemId: string | null | undefined): string | null {
@@ -249,4 +230,12 @@ function isWeaponDefinition(definition: CatalogItemDefinition): definition is We
     "cooldown" in definition &&
     "range" in definition
   );
+}
+
+function requireWeaponRule(weaponId: WeaponCombatId) {
+  const rule = getWeaponRule(weaponId);
+  if (!rule) {
+    throw new Error(`Missing weapon rule: ${weaponId}`);
+  }
+  return rule;
 }

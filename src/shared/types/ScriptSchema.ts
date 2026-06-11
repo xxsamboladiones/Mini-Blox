@@ -63,6 +63,29 @@ export type LogicTrigger =
       teamId?: string;
     }
   | {
+      type: "onTycoonClaimed";
+      tycoonId?: string;
+    }
+  | {
+      type: "onTycoonCashCollected";
+      tycoonId?: string;
+      amount?: number;
+    }
+  | {
+      type: "onTycoonPurchaseCompleted";
+      purchaseId: string;
+      tycoonId?: string;
+    }
+  | {
+      type: "onTycoonUpgradePurchased";
+      upgradeId: string;
+      tycoonId?: string;
+    }
+  | {
+      type: "onTycoonCompleted";
+      tycoonId?: string;
+    }
+  | {
       type: "onGameModeWon";
     }
   | {
@@ -97,6 +120,23 @@ export type LogicCondition =
   | {
       type: "healthBelow";
       amount: number;
+    }
+  | {
+      type: "tycoonCashAtLeast";
+      amount: number;
+    }
+  | {
+      type: "tycoonPurchaseCompleted";
+      purchaseId: string;
+    }
+  | {
+      type: "tycoonUpgradeLevelAtLeast";
+      upgradeId: string;
+      level: number;
+    }
+  | {
+      type: "tycoonClaimed";
+      tycoonId?: string;
     }
   | {
       type: "once";
@@ -179,6 +219,30 @@ export type LogicAction =
   | {
       type: "endRound";
       result: "win" | "lose" | "draw";
+    }
+  | {
+      type: "giveTycoonCash";
+      amount: number;
+    }
+  | {
+      type: "removeTycoonCash";
+      amount: number;
+    }
+  | {
+      type: "completeTycoonPurchase";
+      purchaseId: string;
+    }
+  | {
+      type: "enableTycoonGenerator";
+      generatorId: string;
+    }
+  | {
+      type: "disableTycoonGenerator";
+      generatorId: string;
+    }
+  | {
+      type: "unlockTycoonGroup";
+      groupId: string;
     };
 
 export type LogicRule = {

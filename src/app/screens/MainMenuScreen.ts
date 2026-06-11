@@ -2,10 +2,14 @@ import { createIcons, icons } from "lucide";
 import { LocalMapMetadataStorage } from "../../storage/LocalMapMetadataStorage";
 import { LocalProfileStorage, type AvatarColors } from "../../storage/LocalProfileStorage";
 import { MapStorage } from "../../storage/MapStorage";
+import { AuthModal } from "../AuthModal";
+import { AuthService } from "../../services/AuthService";
 import { MAP_TEMPLATES, type MapTemplateId } from "../../shared/MapTemplates";
 import type { MainMenuActions, Screen } from "../AppState";
 
 export class MainMenuScreen implements Screen {
+  private readonly authModal = new AuthModal();
+
   constructor(
     private readonly root: HTMLElement,
     private readonly actions: MainMenuActions
@@ -19,6 +23,7 @@ export class MainMenuScreen implements Screen {
     const lastPlayedMapId = LocalMapMetadataStorage.getLastPlayedMapId();
     const lastPlayedMap = lastPlayedMapId ? MapStorage.getMap(lastPlayedMapId) : null;
     const profile = LocalProfileStorage.getProfile();
+    const onlineUser = AuthService.getCurrentUser();
 
     this.root.innerHTML = `
       <main class="menu-screen">
@@ -35,11 +40,15 @@ export class MainMenuScreen implements Screen {
             ${renderMiniAvatar(profile.avatarColors)}
             <div class="menu-profile-copy">
               <strong>${escapeHtml(profile.displayName)}</strong>
-              <span>${escapeHtml(profile.bio || "Perfil local")}</span>
+              <span>${escapeHtml(onlineUser ? `Online: ${onlineUser.displayName}` : profile.bio || "Perfil local")}</span>
             </div>
             <button class="small-action" type="button" data-action="profile">
               <i data-lucide="user-round"></i>
               <span>Perfil</span>
+            </button>
+            <button class="small-action" type="button" data-action="${onlineUser ? "auth-logout" : "auth-login"}">
+              <i data-lucide="${onlineUser ? "log-out" : "log-in"}"></i>
+              <span>${onlineUser ? "Sair online" : "Entrar online"}</span>
             </button>
           </div>
 
@@ -117,6 +126,7 @@ export class MainMenuScreen implements Screen {
   }
 
   destroy(): void {
+    this.authModal.close();
     this.root.removeEventListener("click", this.handleClick);
     this.root
       .querySelector<HTMLInputElement>("#menu-map-import")
@@ -138,6 +148,10 @@ export class MainMenuScreen implements Screen {
       this.actions.onOpenMapList();
     } else if (action === "profile") {
       this.actions.onOpenProfile();
+    } else if (action === "auth-login") {
+      this.authModal.show(() => this.render());
+    } else if (action === "auth-logout") {
+      void AuthService.logout().finally(() => this.render());
     } else if (action === "continue") {
       this.actions.onContinueLastMap();
     } else if (action === "continue-playing") {

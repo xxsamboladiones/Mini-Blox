@@ -32,6 +32,7 @@ type TemplateStyle =
   | "neon"
   | "city"
   | "island"
+  | "tycoon"
   | "stress";
 
 type TemplateConfig = {
@@ -804,6 +805,33 @@ const TEMPLATE_CONFIGS = [
     decorations: 560,
   },
   {
+    id: "basicTycoon",
+    name: "Tycoon Basico",
+    description:
+      "Mini fabrica tycoon com geradores, coletor, botoes de compra, upgrade, barreira e vitoria por progresso.",
+    icon: "factory",
+    style: "tycoon",
+    theme: "grass",
+    ambientMusic: "calm",
+    tags: ["official", "tycoon", "economy", "progression", "beginner", "solo"],
+    minObjects: 34,
+    sections: 3,
+    areas: 2,
+    coins: 0,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 0,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 2,
+    logicRules: 2,
+    decorations: 14,
+  },
+  {
     id: "stressTest",
     name: "Stress Test Completo",
     description:
@@ -1010,6 +1038,10 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
     return createDesignedCompetitiveCoinMap(config);
   }
 
+  if (config.id === "basicTycoon") {
+    return createBasicTycoonMap(config);
+  }
+
   if (config.id === "objectiveArena") {
     return createDesignedObjectiveArenaMap(config);
   }
@@ -1028,6 +1060,323 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
   const final = createFinalArea(builder, config, route);
   generateLogicPuzzle(builder, config, route, final);
   ensureObjectCount(builder, config.minObjects, config.style, route);
+
+  return builder.map;
+}
+
+function createBasicTycoonMap(config: TemplateConfig): GameMap {
+  const builder = new TemplateBuilder(config);
+  const tycoonId = "factory_1";
+  const collectorId = "collector_main";
+  const gen1Id = "generator_basic";
+  const gen2Id = "generator_dual";
+  const gen3Id = "generator_pro";
+
+  addSpawn(builder, { x: -9, y: 1, z: 0 });
+  createPlatform(builder, { x: 0, y: 0, z: 0 }, {
+    id: "tycoon_floor",
+    name: "Base da Fabrica Tycoon",
+    scale: { x: 26, y: 0.35, z: 18 },
+    properties: { color: "#86efac", collision: true },
+  });
+  createPlatform(builder, { x: 7.5, y: 0.05, z: 0 }, {
+    id: "tycoon_final_lane",
+    name: "Corredor do item final",
+    scale: { x: 8, y: 0.25, z: 4 },
+    properties: { color: "#bbf7d0", collision: true },
+  });
+
+  builder.add("tycoonOwnerClaim", { x: -7, y: 0.35, z: 0 }, {
+    id: "claim_factory_1",
+    name: "Claim da Fabrica",
+    properties: { tycoonId, claimLabel: "Mini Fabrica", autoClaimInSolo: true },
+  });
+  builder.add("tycoonCollector", { x: -3.2, y: 0.35, z: 0 }, {
+    id: "collector_factory_1",
+    name: "Coletor Principal",
+    properties: {
+      tycoonId,
+      collectorId,
+      collectRadius: 2.2,
+      capacity: 1200,
+      autoCollect: true,
+      collectCooldown: 0.45,
+    },
+  });
+
+  builder.add("tycoonGenerator", { x: -5.4, y: 0.9, z: -4.2 }, {
+    id: "generator_basic",
+    name: "Gerador Inicial",
+    properties: {
+      tycoonId,
+      generatorId: gen1Id,
+      incomePerTick: 6,
+      tickInterval: 1.6,
+      targetCollectorId: collectorId,
+      startsEnabled: true,
+      maxStoredAmount: 600,
+      upgradeGroupId: "main_generators",
+    },
+  });
+  builder.add("tycoonGenerator", { x: -1.4, y: 0.9, z: -4.2 }, {
+    id: "generator_dual",
+    name: "Gerador Duplo",
+    properties: {
+      tycoonId,
+      generatorId: gen2Id,
+      incomePerTick: 12,
+      tickInterval: 1.4,
+      targetCollectorId: collectorId,
+      requiresPurchase: true,
+      purchaseId: "buy_gen_2",
+      startsEnabled: true,
+      maxStoredAmount: 800,
+      upgradeGroupId: "main_generators",
+    },
+  });
+  builder.add("tycoonGenerator", { x: 2.6, y: 0.9, z: -4.2 }, {
+    id: "generator_pro",
+    name: "Gerador Pro",
+    properties: {
+      tycoonId,
+      generatorId: gen3Id,
+      incomePerTick: 26,
+      tickInterval: 1.2,
+      targetCollectorId: collectorId,
+      requiresPurchase: true,
+      purchaseId: "buy_gen_3",
+      startsEnabled: true,
+      maxStoredAmount: 1400,
+      upgradeGroupId: "main_generators",
+    },
+  });
+
+  builder.add("tycoonBuyButton", { x: -4.9, y: 0.28, z: 4 }, {
+    id: "button_buy_gen_2",
+    name: "Comprar Gerador Duplo",
+    properties: {
+      tycoonId,
+      purchaseId: "buy_gen_2",
+      cost: 25,
+      unlockObjectIds: ["generator_dual"],
+      purchasedMessage: "Gerador duplo comprado!",
+    },
+  });
+  builder.add("tycoonBuyButton", { x: -2.5, y: 0.28, z: 4 }, {
+    id: "button_buy_walls",
+    name: "Comprar Paredes",
+    properties: {
+      tycoonId,
+      purchaseId: "buy_walls",
+      cost: 45,
+      requiredPurchaseIds: ["buy_gen_2"],
+      unlockGroupId: "factory_walls",
+      purchasedMessage: "Paredes liberadas!",
+    },
+  });
+  builder.add("tycoonUpgrade", { x: 0, y: 0.3, z: 4 }, {
+    id: "upgrade_income",
+    name: "Upgrade de Renda",
+    properties: {
+      tycoonId,
+      upgradeId: "upgrade_income",
+      cost: 80,
+      requiredPurchaseIds: ["buy_gen_2"],
+      targetGeneratorIds: [gen1Id, gen2Id, gen3Id],
+      incomeMultiplier: 1.75,
+      intervalMultiplier: 0.85,
+      collectorCapacityBonus: 500,
+      maxLevel: 1,
+      purchasedMessage: "Renda aumentada!",
+    },
+  });
+  builder.add("tycoonBuyButton", { x: 2.5, y: 0.28, z: 4 }, {
+    id: "button_buy_gen_3",
+    name: "Comprar Gerador Pro",
+    properties: {
+      tycoonId,
+      purchaseId: "buy_gen_3",
+      cost: 120,
+      requiredPurchaseIds: ["upgrade_income"],
+      unlockObjectIds: ["generator_pro"],
+      purchasedMessage: "Gerador pro comprado!",
+    },
+  });
+  builder.add("tycoonBuyButton", { x: 5, y: 0.28, z: 4 }, {
+    id: "button_final_barrier",
+    name: "Abrir Barreira Final",
+    properties: {
+      tycoonId,
+      purchaseId: "final_barrier",
+      cost: 180,
+      requiredPurchaseIds: ["buy_gen_3"],
+      purchasedMessage: "Barreira final aberta!",
+    },
+  });
+  builder.add("tycoonBuyButton", { x: 7.5, y: 0.28, z: 0 }, {
+    id: "button_final_trophy",
+    name: "Comprar Trofeu Final",
+    properties: {
+      tycoonId,
+      purchaseId: "final_trophy",
+      cost: 240,
+      requiredPurchaseIds: ["final_barrier"],
+      unlockObjectIds: ["final_trophy_display"],
+      purchasedMessage: "Tycoon completo!",
+    },
+  });
+
+  const wallPositions: Array<[string, Vector3, Vector3]> = [
+    ["north", { x: -0.5, y: 1.05, z: -7.9 }, { x: 12, y: 2.1, z: 0.35 }],
+    ["south", { x: -0.5, y: 1.05, z: 7.9 }, { x: 12, y: 2.1, z: 0.35 }],
+    ["west", { x: -6.5, y: 1.05, z: 0 }, { x: 0.35, y: 2.1, z: 16 }],
+    ["east_north", { x: 5.5, y: 1.05, z: -5.4 }, { x: 0.35, y: 2.1, z: 5 }],
+    ["east_south", { x: 5.5, y: 1.05, z: 5.4 }, { x: 0.35, y: 2.1, z: 5 }],
+  ];
+
+  for (const [suffix, position, scale] of wallPositions) {
+    builder.add("tycoonUnlockable", position, {
+      id: `factory_wall_${suffix}`,
+      name: `Parede da Fabrica ${suffix}`,
+      scale,
+      properties: {
+        tycoonId,
+        groupId: "factory_walls",
+        startsLocked: true,
+        lockedCollision: false,
+        color: "#a7f3d0",
+        collision: true,
+      },
+    });
+  }
+
+  builder.add("tycoonBarrier", { x: 6.2, y: 1.35, z: 0 }, {
+    id: "final_barrier",
+    name: "Barreira Final",
+    scale: { x: 0.35, y: 2.4, z: 4.2 },
+    properties: {
+      tycoonId,
+      purchaseId: "final_barrier",
+      startsLocked: true,
+      lockedCollision: true,
+      lockedColor: "#ef4444",
+      unlockedColor: "#22c55e",
+      material: "glass",
+      opacity: 0.55,
+    },
+  });
+  builder.add("tycoonUnlockable", { x: 9.5, y: 0.95, z: 0 }, {
+    id: "final_trophy_display",
+    name: "Trofeu Final",
+    scale: { x: 1.3, y: 1.6, z: 1.3 },
+    properties: {
+      tycoonId,
+      purchaseId: "final_trophy",
+      startsLocked: true,
+      lockedCollision: false,
+      color: "#facc15",
+      material: "metal",
+      collision: false,
+    },
+  });
+  createFinish(builder, { x: 11.4, y: 0.8, z: 0 }, {
+    id: "tycoon_finish",
+    name: "Portal de Conclusao",
+    properties: { message: "Tycoon completo!", requiresAllCoins: false, collision: false },
+  });
+
+  builder.add("messageZone", { x: -7.5, y: 1, z: -2.8 }, {
+    id: "tycoon_tip_start",
+    name: "Dica Inicial Tycoon",
+    properties: {
+      message: "Colete dinheiro no coletor e compre os botoes da fabrica.",
+      oneTime: true,
+      collision: false,
+    },
+  });
+  builder.add("messageZone", { x: 5.6, y: 1, z: 1.8 }, {
+    id: "tycoon_tip_final",
+    name: "Dica Final Tycoon",
+    properties: {
+      message: "Abra a barreira final e compre o trofeu para completar o Tycoon.",
+      oneTime: true,
+      collision: false,
+    },
+  });
+
+  for (let index = 0; index < 6; index += 1) {
+    createCrate(builder, { x: -9 + index * 3.2, y: 0.45, z: index % 2 === 0 ? -6.2 : 6.2 }, {
+      name: `Caixa decorativa Tycoon ${index + 1}`,
+      scale: scalar(0.65),
+      properties: { collision: false, color: "#a16207" },
+    });
+  }
+
+  createLamp(builder, { x: -9.5, y: 0, z: -6.8 }, "Luz da entrada Tycoon", true);
+  createLamp(builder, { x: 4.8, y: 0, z: -6.8 }, "Luz dos geradores", true);
+  createLamp(builder, { x: 10.8, y: 0, z: 3.2 }, "Luz do trofeu", true);
+  createSign(builder, { x: -7.2, y: 0.4, z: 3.1 }, "Mini Fabrica Tycoon", {
+    name: "Placa Tycoon",
+    properties: { collision: false },
+  });
+  createSign(builder, { x: -2.8, y: 0.4, z: 5.8 }, "Compre em ordem: gerador, paredes, upgrade.", {
+    name: "Placa de compras Tycoon",
+    properties: { collision: false },
+  });
+  createSign(builder, { x: 7.6, y: 0.4, z: -2.9 }, "A barreira final libera o caminho do trofeu.", {
+    name: "Placa final Tycoon",
+    properties: { collision: false },
+  });
+
+  builder.addObjective({
+    id: "tycoon_collect_cash",
+    title: "Colete $50",
+    description: "Espere o gerador produzir e passe pelo coletor.",
+    type: "collectTycoonCash",
+    targetAmount: 50,
+    targetTycoonId: tycoonId,
+    required: false,
+    visible: true,
+    completedMessage: "Primeiro dinheiro coletado.",
+  });
+  builder.addObjective({
+    id: "tycoon_buy_gen_2",
+    title: "Compre o gerador duplo",
+    type: "purchaseTycoonItem",
+    targetPurchaseId: "buy_gen_2",
+    required: true,
+    visible: true,
+    completedMessage: "Producao expandida.",
+  });
+  builder.addObjective({
+    id: "tycoon_complete",
+    title: "Complete a fabrica",
+    description: "Compre todos os itens principais do tycoon.",
+    type: "completeTycoon",
+    targetTycoonId: tycoonId,
+    required: true,
+    visible: true,
+    completedMessage: "Fabrica completa.",
+  });
+
+  builder.addLogic(
+    "Boas-vindas Tycoon",
+    { type: "onMapStart" },
+    [],
+    [{ type: "showMessage", message: "Tycoon iniciado: colete dinheiro e compre upgrades." }]
+  );
+  builder.addLogic(
+    "Mensagem apos primeiro gerador",
+    { type: "onTycoonPurchaseCompleted", purchaseId: "buy_gen_2", tycoonId },
+    [],
+    [{ type: "showMessage", message: "Novo gerador ativo. Junte dinheiro para o upgrade." }]
+  );
+  builder.addLogic(
+    "Mensagem de conclusao Tycoon",
+    { type: "onTycoonCompleted", tycoonId },
+    [],
+    [{ type: "showMessage", message: "Tycoon completo. Bom trabalho!" }]
+  );
 
   return builder.map;
 }
@@ -1283,6 +1632,19 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
     settings.teamsEnabled = true;
     settings.roundEnabled = true;
     settings.roundTimeLimit = 180;
+  } else if (config.id === "basicTycoon") {
+    settings = createGameModeSettings("tycoon", "completeTycoon", {
+      requireAll: true,
+    });
+    settings.tycoonSettings = {
+      startingCash: 0,
+      sharedCash: false,
+      requireAllPurchasesToWin: true,
+      winPurchaseIds: ["buy_gen_2", "buy_walls", "upgrade_income", "buy_gen_3", "final_barrier", "final_trophy"],
+      allowStealing: false,
+      autoClaimInSolo: true,
+      generatorTickRateScale: 1,
+    };
   } else if (config.id === "mechanics") {
     settings = createGameModeSettings("freeplay", "finish");
   }
@@ -1313,6 +1675,10 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
     scoring: {
       ...(existingSettings.scoring ?? {}),
       ...(settings.scoring ?? {}),
+    },
+    tycoonSettings: {
+      ...(existingSettings.tycoonSettings ?? {}),
+      ...(settings.tycoonSettings ?? {}),
     },
   };
 }
@@ -9903,6 +10269,7 @@ function getOptionalLabel(style: TemplateStyle, index: number): string {
     city: ["beco lateral", "predio bonus", "rua secundaria"],
     island: ["praia secreta", "ponte lateral", "tesouro da ilha"],
     stress: ["setor extra", "bateria tecnica", "rota de carga"],
+    tycoon: ["area de expansao", "decor comprado", "linha de producao"],
   };
 
   const list = labels[style];

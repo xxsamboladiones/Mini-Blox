@@ -304,11 +304,88 @@ export class PropertiesPanel {
           ${this.renderNumberField("scorePerSecond", "Pontos por segundo", Number(object.properties?.scorePerSecond ?? 1), 0.5)}
           ${this.renderNumberField("radius", "Raio de captura", Number(object.properties?.radius ?? 4), 0.5)}
         `;
+      case "tycoonOwnerClaim":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("claimLabel", "Nome da base", String(object.properties?.claimLabel ?? "Minha Fabrica"))}
+          ${this.renderCheckboxField("autoClaimInSolo", "Auto claim no solo", object.properties?.autoClaimInSolo !== false)}
+        `;
+      case "tycoonGenerator":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("generatorId", "Generator ID", String(object.properties?.generatorId ?? object.id))}
+          ${this.renderNumberField("incomePerTick", "Dinheiro por ciclo", Number(object.properties?.incomePerTick ?? 5), 1)}
+          ${this.renderNumberField("tickInterval", "Intervalo (s)", Number(object.properties?.tickInterval ?? 2), 0.1)}
+          ${this.renderTextField("targetCollectorId", "Collector alvo", String(object.properties?.targetCollectorId ?? ""))}
+          ${this.renderCheckboxField("requiresPurchase", "Exige compra", Boolean(object.properties?.requiresPurchase))}
+          ${this.renderTextField("purchaseId", "Purchase ID exigido", String(object.properties?.purchaseId ?? ""))}
+          ${this.renderCheckboxField("startsEnabled", "Comeca ativo", object.properties?.startsEnabled !== false)}
+          ${this.renderNumberField("maxStoredAmount", "Max armazenado", Number(object.properties?.maxStoredAmount ?? 500), 10)}
+          ${this.renderTextField("upgradeGroupId", "Grupo de upgrade", String(object.properties?.upgradeGroupId ?? ""))}
+        `;
+      case "tycoonCollector":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("collectorId", "Collector ID", String(object.properties?.collectorId ?? object.id))}
+          ${this.renderNumberField("collectRadius", "Raio de coleta", Number(object.properties?.collectRadius ?? 2), 0.25)}
+          ${this.renderNumberField("capacity", "Capacidade", Number(object.properties?.capacity ?? 1000), 10)}
+          ${this.renderCheckboxField("autoCollect", "Coletar ao tocar", object.properties?.autoCollect !== false)}
+          ${this.renderNumberField("collectCooldown", "Cooldown coleta", Number(object.properties?.collectCooldown ?? 0.5), 0.1)}
+        `;
+      case "tycoonBuyButton":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("purchaseId", "Purchase ID", String(object.properties?.purchaseId ?? object.id))}
+          ${this.renderNumberField("cost", "Custo", Number(object.properties?.cost ?? 25), 1)}
+          ${this.renderListField("unlockObjectIds", "Objetos liberados", getStringArrayProperty(object.properties?.unlockObjectIds, []).join(", "))}
+          ${this.renderTextField("unlockGroupId", "Grupo liberado", String(object.properties?.unlockGroupId ?? ""))}
+          ${this.renderListField("unlockButtonIds", "Botoes liberados", getStringArrayProperty(object.properties?.unlockButtonIds, []).join(", "))}
+          ${this.renderListField("requiredPurchaseIds", "Pre-requisitos", getStringArrayProperty(object.properties?.requiredPurchaseIds, []).join(", "))}
+          ${this.renderCheckboxField("hideAfterPurchase", "Sumir apos compra", object.properties?.hideAfterPurchase !== false)}
+          ${this.renderTextField("purchasedMessage", "Mensagem comprado", String(object.properties?.purchasedMessage ?? "Comprado!"))}
+          ${this.renderTextField("insufficientFundsMessage", "Mensagem sem dinheiro", String(object.properties?.insufficientFundsMessage ?? "Dinheiro insuficiente."))}
+          ${this.renderCheckboxField("oneTime", "Comprar uma vez", object.properties?.oneTime !== false)}
+        `;
+      case "tycoonUnlockable":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("purchaseId", "Purchase ID", String(object.properties?.purchaseId ?? ""))}
+          ${this.renderTextField("groupId", "Group ID", String(object.properties?.groupId ?? ""))}
+          ${this.renderCheckboxField("startsLocked", "Comeca bloqueado", object.properties?.startsLocked !== false)}
+          ${this.renderCheckboxField("lockedCollision", "Colisao bloqueado", Boolean(object.properties?.lockedCollision))}
+          ${this.renderTextField("unlockedMessage", "Mensagem liberado", String(object.properties?.unlockedMessage ?? "Item desbloqueado!"))}
+        `;
+      case "tycoonUpgrade":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("upgradeId", "Upgrade ID", String(object.properties?.upgradeId ?? object.id))}
+          ${this.renderNumberField("cost", "Custo", Number(object.properties?.cost ?? 80), 1)}
+          ${this.renderListField("targetGeneratorIds", "Geradores alvo", getStringArrayProperty(object.properties?.targetGeneratorIds, []).join(", "))}
+          ${this.renderNumberField("incomeMultiplier", "Multiplicador renda", Number(object.properties?.incomeMultiplier ?? 1.5), 0.1)}
+          ${this.renderNumberField("intervalMultiplier", "Multiplicador intervalo", Number(object.properties?.intervalMultiplier ?? 1), 0.05)}
+          ${this.renderNumberField("collectorCapacityBonus", "Bonus capacidade", Number(object.properties?.collectorCapacityBonus ?? 0), 10)}
+          ${this.renderListField("requiredPurchaseIds", "Pre-requisitos", getStringArrayProperty(object.properties?.requiredPurchaseIds, []).join(", "))}
+          ${this.renderNumberField("maxLevel", "Nivel maximo", Number(object.properties?.maxLevel ?? 1), 1)}
+          ${this.renderCheckboxField("hideAfterPurchase", "Sumir ao maximo", object.properties?.hideAfterPurchase !== false)}
+        `;
+      case "tycoonBarrier":
+        return `
+          ${this.renderTycoonBaseFields(object)}
+          ${this.renderTextField("purchaseId", "Purchase ID", String(object.properties?.purchaseId ?? object.id))}
+          ${this.renderCheckboxField("startsLocked", "Comeca bloqueada", object.properties?.startsLocked !== false)}
+          ${this.renderCheckboxField("lockedCollision", "Colisao bloqueada", object.properties?.lockedCollision !== false)}
+          ${this.renderColorPropertyField("lockedColor", "Cor bloqueada", String(object.properties?.lockedColor ?? "#ef4444"))}
+          ${this.renderColorPropertyField("unlockedColor", "Cor liberada", String(object.properties?.unlockedColor ?? "#22c55e"))}
+        `;
       case "itemPickup":
         return this.renderTextField("itemId", "Item ID", String(object.properties?.itemId ?? ""));
       default:
         return "";
     }
+  }
+
+  private renderTycoonBaseFields(object: MapObject): string {
+    return this.renderTextField("tycoonId", "Tycoon ID", String(object.properties?.tycoonId ?? "tycoon_1"));
   }
 
   private renderCollisionField(object: MapObject): string {

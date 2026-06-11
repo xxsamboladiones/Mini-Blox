@@ -2,6 +2,7 @@ import { GameRoom } from "./Room.js";
 import { createEmptyRoomMapIndex, type RoomMapIndex } from "./RoomMapIndex.js";
 import type { RoomSummary } from "./types.js";
 import { createId } from "../utils/createId.js";
+import { logger } from "../logger.js";
 
 export class RoomManager {
   private readonly rooms = new Map<string, GameRoom>();
@@ -23,6 +24,12 @@ export class RoomManager {
       mapIndex ?? createEmptyRoomMapIndex(onlineMapId)
     );
     this.rooms.set(room.roomId, room);
+    logger.info("room created", {
+      roomId: room.roomId,
+      onlineMapId,
+      mapId,
+      maxPlayers: this.maxPlayers,
+    });
     return room;
   }
 
@@ -43,7 +50,11 @@ export class RoomManager {
   }
 
   deleteRoom(roomId: string): boolean {
-    return this.rooms.delete(roomId);
+    const deleted = this.rooms.delete(roomId);
+    if (deleted) {
+      logger.info("room deleted", { roomId });
+    }
+    return deleted;
   }
 
   updateRoomActivity(roomId: string): void {
@@ -76,6 +87,7 @@ export class RoomManager {
       const lastActivity = new Date(room.lastActivityAt).getTime();
       if (now - lastActivity > this.emptyRoomTimeout) {
         this.rooms.delete(roomId);
+        logger.info("room expired", { roomId, lastActivityAt: room.lastActivityAt });
       }
     }
   }

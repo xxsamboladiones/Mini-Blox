@@ -149,11 +149,7 @@ export class RemotePlayerView {
     const lerpFactor = Math.min(1, 10 * safeDelta);
 
     this.mesh.position.lerp(this.targetPosition, lerpFactor);
-    this.mesh.rotation.y = THREE.MathUtils.lerp(
-      this.mesh.rotation.y,
-      this.targetRotationY,
-      lerpFactor
-    );
+    this.mesh.rotation.y = dampAngle(this.mesh.rotation.y, this.targetRotationY, 10, safeDelta);
     const horizontalStep = Math.hypot(
       this.mesh.position.x - previousPosition.x,
       this.mesh.position.z - previousPosition.z
@@ -241,4 +237,12 @@ export class RemotePlayerView {
   getPlayerId(): string {
     return this.playerId;
   }
+}
+
+function dampAngle(current: number, target: number, lambda: number, deltaSeconds: number): number {
+  return current + normalizeAngle(target - current) * (1 - Math.exp(-lambda * deltaSeconds));
+}
+
+function normalizeAngle(angle: number): number {
+  return Math.atan2(Math.sin(angle), Math.cos(angle));
 }

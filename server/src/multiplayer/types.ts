@@ -91,6 +91,8 @@ export type SharedWorldState = {
   activatedButtonIds: string[];
   collectedCoinObjectIds: string[];
   collectedItemObjectIds: string[];
+  tycoonPurchasedIds: string[];
+  tycoonUpgradeIds: string[];
 };
 
 export type WorldEvent =
@@ -98,7 +100,9 @@ export type WorldEvent =
   | { type: "doorClosed"; doorId: string; objectId?: string }
   | { type: "buttonActivated"; objectId: string; doorId?: string }
   | { type: "coinCollected"; objectId: string; doorId?: string }
-  | { type: "itemCollected"; objectId: string; doorId?: string };
+  | { type: "itemCollected"; objectId: string; doorId?: string }
+  | { type: "tycoonPurchase"; objectId: string; purchaseId: string; tycoonId?: string }
+  | { type: "tycoonUpgrade"; objectId: string; upgradeId: string; tycoonId?: string };
 
 export type Room = {
   roomId: string;

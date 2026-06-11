@@ -19,6 +19,9 @@ const OBJECTIVE_TYPES: Array<{ type: ObjectiveType; label: string }> = [
   { type: "activateButton", label: "Ativar botao" },
   { type: "openDoor", label: "Abrir porta" },
   { type: "defeatEnemies", label: "Derrotar inimigos" },
+  { type: "collectTycoonCash", label: "Coletar dinheiro Tycoon" },
+  { type: "purchaseTycoonItem", label: "Comprar item Tycoon" },
+  { type: "completeTycoon", label: "Completar Tycoon" },
   { type: "customLogic", label: "Completar por logica" },
 ];
 
@@ -113,13 +116,22 @@ export class ObjectivesPanel {
   }
 
   private renderTargetFields(objective: MapObjective, index: number): string {
-    if (objective.type === "collectCoins" || objective.type === "defeatEnemies") {
-      const fallback = objective.type === "collectCoins" ? 5 : 1;
+    if (
+      objective.type === "collectCoins" ||
+      objective.type === "defeatEnemies" ||
+      objective.type === "collectTycoonCash"
+    ) {
+      const fallback = objective.type === "defeatEnemies" ? 1 : objective.type === "collectTycoonCash" ? 100 : 5;
       return `
         <label class="field">
           <span>Quantidade</span>
           <input type="number" min="1" step="1" value="${objective.targetAmount ?? fallback}" data-objective-amount data-index="${index}" />
         </label>
+        ${
+          objective.type === "collectTycoonCash"
+            ? this.renderTycoonIdField(objective.targetTycoonId ?? "", index)
+            : ""
+        }
       `;
     }
 
@@ -150,7 +162,24 @@ export class ObjectivesPanel {
       return this.renderDoorSelect(objective.targetDoorId ?? "", index);
     }
 
+    if (objective.type === "purchaseTycoonItem") {
+      return this.renderPurchaseSelect(objective.targetPurchaseId ?? "", index);
+    }
+
+    if (objective.type === "completeTycoon") {
+      return this.renderTycoonIdField(objective.targetTycoonId ?? "", index);
+    }
+
     return `<div class="logic-note">Conclua este objetivo usando a acao completeObjective na logica visual.</div>`;
+  }
+
+  private renderTycoonIdField(value: string, index: number): string {
+    return `
+      <label class="field">
+        <span>Tycoon ID</span>
+        <input type="text" value="${escapeAttribute(value)}" data-objective-target-tycoon data-index="${index}" placeholder="tycoon_1" />
+      </label>
+    `;
   }
 
   private renderObjectSelect(
@@ -222,6 +251,30 @@ export class ObjectivesPanel {
               (door) => `
             <option value="${escapeAttribute(door.id)}" ${door.id === value ? "selected" : ""}>
               ${escapeHtml(`${door.label} (${door.id})`)}
+            </option>
+          `
+            )
+            .join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderPurchaseSelect(value: string, index: number): string {
+    const purchases = this.getPurchaseOptions();
+    const exists = value.length === 0 || purchases.some((purchase) => purchase.id === value);
+
+    return `
+      <label class="field">
+        <span>Compra alvo</span>
+        <select data-objective-target-purchase data-index="${index}">
+          <option value="">Escolha uma compra</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Compra nao encontrada (${escapeHtml(value)})</option>` : ""}
+          ${purchases
+            .map(
+              (purchase) => `
+            <option value="${escapeAttribute(purchase.id)}" ${purchase.id === value ? "selected" : ""}>
+              ${escapeHtml(`${purchase.label} (${purchase.id})`)}
             </option>
           `
             )
@@ -328,6 +381,22 @@ export class ObjectivesPanel {
       });
 
     this.root
+      .querySelectorAll<HTMLSelectElement>("[data-objective-target-purchase]")
+      .forEach((select) => {
+        select.addEventListener("change", () =>
+          this.updateObjective(getIndex(select), { targetPurchaseId: select.value }, false)
+        );
+      });
+
+    this.root
+      .querySelectorAll<HTMLInputElement>("[data-objective-target-tycoon]")
+      .forEach((input) => {
+        input.addEventListener("change", () =>
+          this.updateObjective(getIndex(input), { targetTycoonId: input.value.trim() }, false)
+        );
+      });
+
+    this.root
       .querySelectorAll<HTMLInputElement>("[data-objective-completed-message]")
       .forEach((input) => {
         input.addEventListener("change", () =>
@@ -402,6 +471,33 @@ export class ObjectivesPanel {
         label: door.name ?? door.id,
       }));
   }
+
+  private getPurchaseOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter(
+        (object) =>
+          object.type === "tycoonBuyButton" ||
+          object.type === "tycoonBarrier" ||
+          object.type === "tycoonUpgrade"
+      )
+      .map((object) => {
+        const purchaseId =
+          object.type === "tycoonUpgrade"
+            ? typeof object.properties?.upgradeId === "string" &&
+              object.properties.upgradeId.length > 0
+              ? object.properties.upgradeId
+              : object.id
+            : typeof object.properties?.purchaseId === "string" &&
+                object.properties.purchaseId.length > 0
+              ? object.properties.purchaseId
+              : object.id;
+
+        return {
+          id: purchaseId,
+          label: object.name ?? object.id,
+        };
+      });
+  }
 }
 
 function createDefaultObjective(index: number, objects: MapObject[]): MapObjective {
@@ -433,6 +529,9 @@ function resetObjectiveTarget(objective: MapObjective, objects: MapObject[]): Ma
 
   if (objective.type === "collectCoins") {
     next.targetAmount = Math.max(1, objective.targetAmount ?? 5);
+  } else if (objective.type === "collectTycoonCash") {
+    next.targetAmount = Math.max(1, objective.targetAmount ?? 100);
+    next.targetTycoonId = objective.targetTycoonId ?? "tycoon_1";
   } else if (objective.type === "defeatEnemies") {
     next.targetAmount = Math.max(1, objective.targetAmount ?? 1);
   } else if (objective.type === "reachObject") {
@@ -450,6 +549,23 @@ function resetObjectiveTarget(objective: MapObjective, objects: MapObject[]): Ma
       typeof door?.properties?.doorId === "string" && door.properties.doorId.length > 0
         ? door.properties.doorId
         : (door?.id ?? "");
+  } else if (objective.type === "purchaseTycoonItem") {
+    const purchase = objects.find(
+      (object) =>
+        object.type === "tycoonBuyButton" ||
+        object.type === "tycoonBarrier" ||
+        object.type === "tycoonUpgrade"
+    );
+    next.targetPurchaseId =
+      purchase?.type === "tycoonUpgrade"
+        ? typeof purchase.properties?.upgradeId === "string"
+          ? purchase.properties.upgradeId
+          : (purchase?.id ?? "")
+        : typeof purchase?.properties?.purchaseId === "string"
+          ? purchase.properties.purchaseId
+          : (purchase?.id ?? "");
+  } else if (objective.type === "completeTycoon") {
+    next.targetTycoonId = objective.targetTycoonId ?? "tycoon_1";
   }
 
   return next;

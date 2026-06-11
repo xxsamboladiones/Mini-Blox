@@ -279,6 +279,35 @@ export class LogicPanel {
       `;
     }
 
+    if (
+      rule.trigger.type === "onTycoonClaimed" ||
+      rule.trigger.type === "onTycoonCashCollected" ||
+      rule.trigger.type === "onTycoonCompleted"
+    ) {
+      return `
+        ${this.renderTextInput("Tycoon ID opcional", rule.trigger.tycoonId ?? "", "data-trigger-tycoon", rule.id)}
+        ${
+          rule.trigger.type === "onTycoonCashCollected"
+            ? this.renderAmountInput("Valor minimo", rule.trigger.amount ?? 1, "data-trigger-amount", rule.id)
+            : ""
+        }
+      `;
+    }
+
+    if (rule.trigger.type === "onTycoonPurchaseCompleted") {
+      return `
+        ${this.renderPurchaseSelect("Compra", rule.trigger.purchaseId, "data-trigger-purchase", rule.id)}
+        ${this.renderTextInput("Tycoon ID opcional", rule.trigger.tycoonId ?? "", "data-trigger-tycoon", rule.id)}
+      `;
+    }
+
+    if (rule.trigger.type === "onTycoonUpgradePurchased") {
+      return `
+        ${this.renderUpgradeSelect("Upgrade", rule.trigger.upgradeId, "data-trigger-upgrade", rule.id)}
+        ${this.renderTextInput("Tycoon ID opcional", rule.trigger.tycoonId ?? "", "data-trigger-tycoon", rule.id)}
+      `;
+    }
+
     return "";
   }
 
@@ -310,7 +339,7 @@ export class LogicPanel {
       return this.renderKeySelect("Key ID", condition.keyId, "data-condition-key", rule.id, index);
     }
 
-    if (condition.type === "coinsAtLeast") {
+    if (condition.type === "coinsAtLeast" || condition.type === "tycoonCashAtLeast") {
       return `
         <label class="field">
           <span>Quantidade</span>
@@ -367,6 +396,36 @@ export class LogicPanel {
       `;
     }
 
+    if (condition.type === "tycoonPurchaseCompleted") {
+      return this.renderPurchaseSelect(
+        "Compra",
+        condition.purchaseId,
+        "data-condition-purchase",
+        rule.id,
+        index
+      );
+    }
+
+    if (condition.type === "tycoonUpgradeLevelAtLeast") {
+      return `
+        ${this.renderUpgradeSelect("Upgrade", condition.upgradeId, "data-condition-upgrade", rule.id, index)}
+        <label class="field">
+          <span>Nivel minimo</span>
+          <input type="number" min="1" step="1" value="${condition.level}" data-condition-level data-rule-id="${escapeAttribute(rule.id)}" data-index="${index}" />
+        </label>
+      `;
+    }
+
+    if (condition.type === "tycoonClaimed") {
+      return this.renderTextInput(
+        "Tycoon ID opcional",
+        condition.tycoonId ?? "",
+        "data-condition-tycoon",
+        rule.id,
+        index
+      );
+    }
+
     return `<div class="logic-note">Executa uma vez por sessao.</div>`;
   }
 
@@ -417,7 +476,12 @@ export class LogicPanel {
       );
     }
 
-    if (action.type === "giveCoins" || action.type === "addScore") {
+    if (
+      action.type === "giveCoins" ||
+      action.type === "addScore" ||
+      action.type === "giveTycoonCash" ||
+      action.type === "removeTycoonCash"
+    ) {
       return `
         <label class="field">
           <span>Quantidade</span>
@@ -510,6 +574,30 @@ export class LogicPanel {
       `;
     }
 
+    if (action.type === "completeTycoonPurchase") {
+      return this.renderPurchaseSelect(
+        "Compra",
+        action.purchaseId,
+        "data-action-purchase",
+        rule.id,
+        index
+      );
+    }
+
+    if (action.type === "enableTycoonGenerator" || action.type === "disableTycoonGenerator") {
+      return this.renderGeneratorSelect(
+        "Gerador",
+        action.generatorId,
+        "data-action-generator",
+        rule.id,
+        index
+      );
+    }
+
+    if (action.type === "unlockTycoonGroup") {
+      return this.renderTextInput("Group ID", action.groupId, "data-action-group", rule.id, index);
+    }
+
     return `<div class="logic-note">Finaliza o mapa imediatamente.</div>`;
   }
 
@@ -523,6 +611,116 @@ export class LogicPanel {
       <label class="field">
         <span>${label}</span>
         <input ${attribute} data-rule-id="${escapeAttribute(ruleId)}" type="number" min="0" step="1" value="${value}" />
+      </label>
+    `;
+  }
+
+  private renderTextInput(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <input ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute} type="text" value="${escapeAttribute(value)}" />
+      </label>
+    `;
+  }
+
+  private renderPurchaseSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const purchases = this.getPurchaseOptions();
+    const exists = value.length === 0 || purchases.some((purchase) => purchase.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">Escolha uma compra</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Compra nao encontrada (${escapeHtml(value)})</option>` : ""}
+          ${purchases
+            .map(
+              (purchase) => `
+            <option value="${escapeAttribute(purchase.id)}" ${purchase.id === value ? "selected" : ""}>
+              ${escapeHtml(`${purchase.label} (${purchase.id})`)}
+            </option>
+          `
+            )
+            .join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderUpgradeSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const upgrades = this.getUpgradeOptions();
+    const exists = value.length === 0 || upgrades.some((upgrade) => upgrade.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">Escolha um upgrade</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Upgrade nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${upgrades
+            .map(
+              (upgrade) => `
+            <option value="${escapeAttribute(upgrade.id)}" ${upgrade.id === value ? "selected" : ""}>
+              ${escapeHtml(`${upgrade.label} (${upgrade.id})`)}
+            </option>
+          `
+            )
+            .join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private renderGeneratorSelect(
+    label: string,
+    value: string,
+    attribute: string,
+    ruleId: string,
+    index?: number
+  ): string {
+    const generators = this.getGeneratorOptions();
+    const exists = value.length === 0 || generators.some((generator) => generator.id === value);
+    const indexAttribute = index === undefined ? "" : ` data-index="${index}"`;
+
+    return `
+      <label class="field">
+        <span>${label}</span>
+        <select ${attribute} data-rule-id="${escapeAttribute(ruleId)}"${indexAttribute}>
+          <option value="">Escolha um gerador</option>
+          ${!exists ? `<option value="${escapeAttribute(value)}" selected>Gerador nao encontrado (${escapeHtml(value)})</option>` : ""}
+          ${generators
+            .map(
+              (generator) => `
+            <option value="${escapeAttribute(generator.id)}" ${generator.id === value ? "selected" : ""}>
+              ${escapeHtml(`${generator.label} (${generator.id})`)}
+            </option>
+          `
+            )
+            .join("")}
+        </select>
       </label>
     `;
   }
@@ -1023,7 +1221,8 @@ export class LogicPanel {
         this.updateRule(input.dataset.ruleId, (rule) => {
           if (
             rule.trigger.type === "onScoreReached" ||
-            rule.trigger.type === "onTeamScoreReached"
+            rule.trigger.type === "onTeamScoreReached" ||
+            rule.trigger.type === "onTycoonCashCollected"
           ) {
             rule.trigger.amount = Math.max(0, Math.floor(Number(input.value) || 0));
           }
@@ -1048,6 +1247,42 @@ export class LogicPanel {
         this.updateRule(select.dataset.ruleId, (rule) => {
           if (rule.trigger.type === "onCapturePointCaptured") {
             rule.trigger.pointId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLInputElement>("[data-trigger-tycoon]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this.updateRule(input.dataset.ruleId, (rule) => {
+          if (
+            rule.trigger.type === "onTycoonClaimed" ||
+            rule.trigger.type === "onTycoonCashCollected" ||
+            rule.trigger.type === "onTycoonPurchaseCompleted" ||
+            rule.trigger.type === "onTycoonUpgradePurchased" ||
+            rule.trigger.type === "onTycoonCompleted"
+          ) {
+            rule.trigger.tycoonId = input.value.trim() || undefined;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-purchase]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onTycoonPurchaseCompleted") {
+            rule.trigger.purchaseId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-trigger-upgrade]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          if (rule.trigger.type === "onTycoonUpgradePurchased") {
+            rule.trigger.upgradeId = select.value;
           }
         });
       });
@@ -1105,7 +1340,11 @@ export class LogicPanel {
         this.updateRule(input.dataset.ruleId, (rule) => {
           const condition = rule.conditions[getIndex(input)];
 
-          if (condition?.type === "coinsAtLeast" || condition?.type === "enemiesDefeatedAtLeast") {
+          if (
+            condition?.type === "coinsAtLeast" ||
+            condition?.type === "enemiesDefeatedAtLeast" ||
+            condition?.type === "tycoonCashAtLeast"
+          ) {
             condition.amount = Math.max(0, Math.floor(Number(input.value) || 0));
           } else if (condition?.type === "healthBelow") {
             condition.amount = Math.max(1, Math.floor(Number(input.value) || 1));
@@ -1145,6 +1384,54 @@ export class LogicPanel {
 
           if (condition?.type === "hasWeapon") {
             condition.weaponId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-condition-purchase]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const condition = rule.conditions[getIndex(select)];
+
+          if (condition?.type === "tycoonPurchaseCompleted") {
+            condition.purchaseId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-condition-upgrade]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const condition = rule.conditions[getIndex(select)];
+
+          if (condition?.type === "tycoonUpgradeLevelAtLeast") {
+            condition.upgradeId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLInputElement>("[data-condition-level]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this.updateRule(input.dataset.ruleId, (rule) => {
+          const condition = rule.conditions[getIndex(input)];
+
+          if (condition?.type === "tycoonUpgradeLevelAtLeast") {
+            condition.level = Math.max(1, Math.floor(Number(input.value) || 1));
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLInputElement>("[data-condition-tycoon]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this.updateRule(input.dataset.ruleId, (rule) => {
+          const condition = rule.conditions[getIndex(input)];
+
+          if (condition?.type === "tycoonClaimed") {
+            condition.tycoonId = input.value.trim() || undefined;
           }
         });
       });
@@ -1222,7 +1509,12 @@ export class LogicPanel {
         this.updateRule(input.dataset.ruleId, (rule) => {
           const action = rule.actions[getIndex(input)];
 
-          if (action?.type === "giveCoins" || action?.type === "addScore") {
+          if (
+            action?.type === "giveCoins" ||
+            action?.type === "addScore" ||
+            action?.type === "giveTycoonCash" ||
+            action?.type === "removeTycoonCash"
+          ) {
             action.amount = Math.floor(Number(input.value) || 0);
           } else if (action?.type === "addTeamScore") {
             action.amount = Math.floor(Number(input.value) || 0);
@@ -1318,6 +1610,42 @@ export class LogicPanel {
 
           if (action?.type === "endRound") {
             action.result = toRoundResult(select.value);
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-purchase]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "completeTycoonPurchase") {
+            action.purchaseId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLSelectElement>("[data-action-generator]").forEach((select) => {
+      select.addEventListener("change", () => {
+        this.updateRule(select.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(select)];
+
+          if (action?.type === "enableTycoonGenerator" || action?.type === "disableTycoonGenerator") {
+            action.generatorId = select.value;
+          }
+        });
+      });
+    });
+
+    this.root.querySelectorAll<HTMLInputElement>("[data-action-group]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this.updateRule(input.dataset.ruleId, (rule) => {
+          const action = rule.actions[getIndex(input)];
+
+          if (action?.type === "unlockTycoonGroup") {
+            action.groupId = input.value.trim();
           }
         });
       });
@@ -1455,6 +1783,18 @@ export class LogicPanel {
       ];
     }
 
+    if (trigger.type === "onTycoonPurchaseCompleted" && !this.hasPurchase(trigger.purchaseId)) {
+      return [
+        `Trigger onTycoonPurchaseCompleted aponta compra inexistente: ${trigger.purchaseId || "(vazio)"}`,
+      ];
+    }
+
+    if (trigger.type === "onTycoonUpgradePurchased" && !this.hasUpgrade(trigger.upgradeId)) {
+      return [
+        `Trigger onTycoonUpgradePurchased aponta upgrade inexistente: ${trigger.upgradeId || "(vazio)"}`,
+      ];
+    }
+
     return [];
   }
 
@@ -1477,6 +1817,18 @@ export class LogicPanel {
 
     if (condition.type === "hasWeapon" && !isValidWeaponId(condition.weaponId)) {
       return [`Condicao hasWeapon usa arma invalida: ${condition.weaponId || "(vazio)"}`];
+    }
+
+    if (condition.type === "tycoonPurchaseCompleted" && !this.hasPurchase(condition.purchaseId)) {
+      return [
+        `Condicao tycoonPurchaseCompleted aponta compra inexistente: ${condition.purchaseId || "(vazio)"}`,
+      ];
+    }
+
+    if (condition.type === "tycoonUpgradeLevelAtLeast" && !this.hasUpgrade(condition.upgradeId)) {
+      return [
+        `Condicao tycoonUpgradeLevelAtLeast aponta upgrade inexistente: ${condition.upgradeId || "(vazio)"}`,
+      ];
     }
 
     return [];
@@ -1545,6 +1897,23 @@ export class LogicPanel {
       !this.hasTeam(action.teamId)
     ) {
       return [`Acao ${action.type} aponta time inexistente: ${action.teamId || "(vazio)"}`];
+    }
+
+    if (action.type === "completeTycoonPurchase" && !this.hasPurchase(action.purchaseId)) {
+      return [
+        `Acao completeTycoonPurchase aponta compra inexistente: ${action.purchaseId || "(vazio)"}`,
+      ];
+    }
+
+    if (
+      (action.type === "enableTycoonGenerator" || action.type === "disableTycoonGenerator") &&
+      !this.hasGenerator(action.generatorId)
+    ) {
+      return [`Acao ${action.type} aponta gerador inexistente: ${action.generatorId || "(vazio)"}`];
+    }
+
+    if (action.type === "unlockTycoonGroup" && action.groupId.trim().length === 0) {
+      return ["Acao unlockTycoonGroup precisa de Group ID."];
     }
 
     return [];
@@ -1650,6 +2019,47 @@ export class LogicPanel {
       }));
   }
 
+  private getPurchaseOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter(
+        (object) =>
+          object.type === "tycoonBuyButton" ||
+          object.type === "tycoonBarrier" ||
+          object.type === "tycoonUpgrade"
+      )
+      .map((object) => ({
+        id: getTycoonPurchaseId(object),
+        label: object.name ?? object.id,
+      }))
+      .filter((option) => option.id.length > 0);
+  }
+
+  private getUpgradeOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter((object) => object.type === "tycoonUpgrade")
+      .map((object) => ({
+        id:
+          typeof object.properties?.upgradeId === "string" &&
+          object.properties.upgradeId.length > 0
+            ? object.properties.upgradeId
+            : object.id,
+        label: object.name ?? object.id,
+      }));
+  }
+
+  private getGeneratorOptions(): Array<{ id: string; label: string }> {
+    return this.getObjects()
+      .filter((object) => object.type === "tycoonGenerator")
+      .map((object) => ({
+        id:
+          typeof object.properties?.generatorId === "string" &&
+          object.properties.generatorId.length > 0
+            ? object.properties.generatorId
+            : object.id,
+        label: object.name ?? object.id,
+      }));
+  }
+
   private hasObject(objectId: string): boolean {
     return objectId.length > 0 && this.getObjects().some((object) => object.id === objectId);
   }
@@ -1699,6 +2109,26 @@ export class LogicPanel {
       pointId.length > 0 && this.getCapturePointOptions().some((point) => point.id === pointId)
     );
   }
+
+  private hasPurchase(purchaseId: string): boolean {
+    return (
+      purchaseId.length > 0 &&
+      this.getPurchaseOptions().some((purchase) => purchase.id === purchaseId)
+    );
+  }
+
+  private hasUpgrade(upgradeId: string): boolean {
+    return (
+      upgradeId.length > 0 && this.getUpgradeOptions().some((upgrade) => upgrade.id === upgradeId)
+    );
+  }
+
+  private hasGenerator(generatorId: string): boolean {
+    return (
+      generatorId.length > 0 &&
+      this.getGeneratorOptions().some((generator) => generator.id === generatorId)
+    );
+  }
 }
 
 const TRIGGER_OPTIONS: Array<{ type: TriggerType; label: string }> = [
@@ -1717,6 +2147,11 @@ const TRIGGER_OPTIONS: Array<{ type: TriggerType; label: string }> = [
   { type: "onScoreReached", label: "Pontuacao atingida" },
   { type: "onTeamScoreReached", label: "Pontuacao do time atingida" },
   { type: "onCapturePointCaptured", label: "Capture point capturado" },
+  { type: "onTycoonClaimed", label: "Tycoon reivindicado" },
+  { type: "onTycoonCashCollected", label: "Dinheiro Tycoon coletado" },
+  { type: "onTycoonPurchaseCompleted", label: "Compra Tycoon concluida" },
+  { type: "onTycoonUpgradePurchased", label: "Upgrade Tycoon comprado" },
+  { type: "onTycoonCompleted", label: "Tycoon completo" },
   { type: "onGameModeWon", label: "Modo vencido" },
 ];
 
@@ -1729,6 +2164,10 @@ const CONDITION_OPTIONS: Array<{ type: ConditionType; label: string }> = [
   { type: "enemiesDefeatedAtLeast", label: "Inimigos derrotados pelo menos" },
   { type: "hasWeapon", label: "Tem arma" },
   { type: "healthBelow", label: "Vida abaixo" },
+  { type: "tycoonCashAtLeast", label: "Dinheiro Tycoon pelo menos" },
+  { type: "tycoonPurchaseCompleted", label: "Compra Tycoon concluida" },
+  { type: "tycoonUpgradeLevelAtLeast", label: "Nivel de upgrade Tycoon" },
+  { type: "tycoonClaimed", label: "Tycoon reivindicado" },
 ];
 
 const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
@@ -1751,6 +2190,12 @@ const ACTION_OPTIONS: Array<{ type: ActionType; label: string }> = [
   { type: "addTeamScore", label: "Adicionar pontos ao time" },
   { type: "setTeam", label: "Definir time" },
   { type: "endRound", label: "Encerrar rodada" },
+  { type: "giveTycoonCash", label: "Dar dinheiro Tycoon" },
+  { type: "removeTycoonCash", label: "Remover dinheiro Tycoon" },
+  { type: "completeTycoonPurchase", label: "Completar compra Tycoon" },
+  { type: "enableTycoonGenerator", label: "Ativar gerador Tycoon" },
+  { type: "disableTycoonGenerator", label: "Desativar gerador Tycoon" },
+  { type: "unlockTycoonGroup", label: "Liberar grupo Tycoon" },
 ];
 
 const ITEM_TYPE_OPTIONS = [
@@ -1935,6 +2380,30 @@ function createDefaultTrigger(
     return { type, pointId: getPreferredCapturePointId(objects) };
   }
 
+  if (type === "onTycoonClaimed" || type === "onTycoonCompleted") {
+    return { type, tycoonId: getPreferredTycoonId(objects) || undefined };
+  }
+
+  if (type === "onTycoonCashCollected") {
+    return { type, tycoonId: getPreferredTycoonId(objects) || undefined, amount: 25 };
+  }
+
+  if (type === "onTycoonPurchaseCompleted") {
+    return {
+      type,
+      purchaseId: getPreferredPurchaseId(objects),
+      tycoonId: getPreferredTycoonId(objects) || undefined,
+    };
+  }
+
+  if (type === "onTycoonUpgradePurchased") {
+    return {
+      type,
+      upgradeId: getPreferredUpgradeId(objects),
+      tycoonId: getPreferredTycoonId(objects) || undefined,
+    };
+  }
+
   if (
     type === "onAnyEnemyDefeated" ||
     type === "onAllEnemiesDefeated" ||
@@ -1978,6 +2447,22 @@ function createDefaultCondition(
 
   if (type === "healthBelow") {
     return { type, amount: 50 };
+  }
+
+  if (type === "tycoonCashAtLeast") {
+    return { type, amount: 100 };
+  }
+
+  if (type === "tycoonPurchaseCompleted") {
+    return { type, purchaseId: getPreferredPurchaseId(objects) };
+  }
+
+  if (type === "tycoonUpgradeLevelAtLeast") {
+    return { type, upgradeId: getPreferredUpgradeId(objects), level: 1 };
+  }
+
+  if (type === "tycoonClaimed") {
+    return { type, tycoonId: getPreferredTycoonId(objects) || undefined };
   }
 
   return { type: "once" };
@@ -2044,6 +2529,22 @@ function createDefaultAction(type: ActionType, objects: MapObject[]): LogicActio
     return { type, result: "win" };
   }
 
+  if (type === "giveTycoonCash" || type === "removeTycoonCash") {
+    return { type, amount: 25 };
+  }
+
+  if (type === "completeTycoonPurchase") {
+    return { type, purchaseId: getPreferredPurchaseId(objects) };
+  }
+
+  if (type === "enableTycoonGenerator" || type === "disableTycoonGenerator") {
+    return { type, generatorId: getPreferredGeneratorId(objects) };
+  }
+
+  if (type === "unlockTycoonGroup") {
+    return { type, groupId: "group_1" };
+  }
+
   if (type === "finishMap") {
     return { type };
   }
@@ -2085,9 +2586,49 @@ function getPreferredDoorId(objects: MapObject[]): string {
   return door ? getDoorId(door) : "";
 }
 
+function getPreferredTycoonId(objects: MapObject[]): string {
+  const object = objects.find((candidate) => String(candidate.type).startsWith("tycoon"));
+  const tycoonId = object?.properties?.tycoonId;
+  return typeof tycoonId === "string" && tycoonId.length > 0 ? tycoonId : "tycoon_1";
+}
+
+function getPreferredPurchaseId(objects: MapObject[]): string {
+  const object = objects.find(
+    (candidate) =>
+      candidate.type === "tycoonBuyButton" ||
+      candidate.type === "tycoonBarrier" ||
+      candidate.type === "tycoonUpgrade"
+  );
+  return object ? getTycoonPurchaseId(object) : "";
+}
+
+function getPreferredUpgradeId(objects: MapObject[]): string {
+  const object = objects.find((candidate) => candidate.type === "tycoonUpgrade");
+  const upgradeId = object?.properties?.upgradeId;
+  return typeof upgradeId === "string" && upgradeId.length > 0 ? upgradeId : (object?.id ?? "");
+}
+
+function getPreferredGeneratorId(objects: MapObject[]): string {
+  const object = objects.find((candidate) => candidate.type === "tycoonGenerator");
+  const generatorId = object?.properties?.generatorId;
+  return typeof generatorId === "string" && generatorId.length > 0 ? generatorId : (object?.id ?? "");
+}
+
 function getDoorId(object: MapObject): string {
   return typeof object.properties?.doorId === "string" && object.properties.doorId.length > 0
     ? object.properties.doorId
+    : object.id;
+}
+
+function getTycoonPurchaseId(object: MapObject): string {
+  if (object.type === "tycoonUpgrade") {
+    return typeof object.properties?.upgradeId === "string" && object.properties.upgradeId.length > 0
+      ? object.properties.upgradeId
+      : object.id;
+  }
+
+  return typeof object.properties?.purchaseId === "string" && object.properties.purchaseId.length > 0
+    ? object.properties.purchaseId
     : object.id;
 }
 

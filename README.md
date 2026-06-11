@@ -17,8 +17,30 @@ The current alpha focuses on a playable creator loop: build maps, test them in t
 - Chat/lobby social flow with room list and host migration
 - HUD with multiplayer state, chat, objectives, session timer, score, health and weapons
 - Character and weapon visuals with stable attachment, attack and respawn poses
-- Official templates for basic, platform, puzzle, collect, combat, PvP and coop examples
+- Tycoon creation/gameplay with generators, collectors, buy buttons, upgrades and unlockables
+- SQLite-backed online catalog with simple username/password auth
+- Server rate limits, structured JSON logs and WebSocket heartbeat cleanup
+- Official templates for basic, platform, puzzle, collect, combat, Tycoon, PvP and coop examples
 - Basic logic/objective/game-mode panels
+
+## Alpha 0.1.7 Tycoon Mode
+
+- Added a Tycoon game mode with local cash, collectors, generators, buy buttons, unlockables, upgrades, barriers and completion progress
+- Added Tycoon objects to the editor object palette and property panel, plus Tycoon-specific game-mode settings and objectives
+- Added Tycoon runtime integration for HUD status, interaction hints, feedback, objective progress, visual logic events and restart/reset behavior
+- Added the official `Tycoon Basico` template with a small factory progression loop
+- Online map validation and template validation now understand Tycoon fields and references
+- Multiplayer support syncs Tycoon purchase/upgrade world events, while cash and ownership remain intentionally basic
+
+## Alpha 0.1.6 Backend Hardening
+
+- Online catalog now uses SQLite through Node's built-in `node:sqlite` adapter; legacy `server/data/maps.json` maps are imported on startup when present
+- Added migrations and repository boundaries for users, auth sessions, maps and likes
+- Added username/password auth with bcryptjs password hashes and hashed bearer tokens
+- Publish, update, delete and like now require auth; legacy client ownership can be claimed only after login with the matching old `clientId`
+- HTTP rate limits and structured logs were added to the backend
+- Multiplayer rooms remain in memory, but now have configurable TTL, structured lifecycle logs and WebSocket heartbeat/payload checks
+- Weapon combat rules were moved to `shared/weapon-rules.json` and are reused by frontend catalog/runtime and server PvP/enemy validation
 
 ## Alpha 0.1.6 Character & Weapon Animation Fix
 
@@ -112,7 +134,14 @@ Run backend only:
 
 ```bash
 cd server
+npm run db:migrate
 npm run dev
+```
+
+Create a local backend `.env` from `server/.env.example`. The default database is:
+
+```env
+DATABASE_URL=file:./data/miniblox.sqlite
 ```
 
 ## Validation Commands
@@ -150,10 +179,12 @@ node smoke-multiplayer.mjs
 - Enemy AI is still host-authoritative, with server validation around movement and damage.
 - Player physics remain mostly client-side with server sanity checks.
 - Rooms are in memory and are removed by cleanup.
+- Postgres is planned behind the repository interface, but SQLite is the implemented adapter in this alpha.
 - Chat has length/rate limits, but no advanced moderation.
-- Online catalog storage is local JSON on the backend.
-- Editor collaboration, login, ranking and matchmaking are not part of Alpha 0.1.6.
+- Editor collaboration, ranking and matchmaking are not part of Alpha 0.1.6.
 
 ## More Docs
 
 See [README_ONLINE.md](README_ONLINE.md) for online catalog, room flow, protocol notes and multiplayer test steps.
+
+See [docs/TYCOON.md](docs/TYCOON.md) for Tycoon object setup, runtime behavior, validation rules and current multiplayer limits.

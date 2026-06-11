@@ -83,6 +83,43 @@ export type MapObjectProperties = Record<string, unknown> & {
   lightColor?: string;
   lightIntensity?: number;
   lightRange?: number;
+  tycoonId?: string;
+  claimLabel?: string;
+  autoClaimInSolo?: boolean;
+  generatorId?: string;
+  incomePerTick?: number;
+  tickInterval?: number;
+  targetCollectorId?: string;
+  requiresPurchase?: boolean;
+  purchaseId?: string;
+  startsEnabled?: boolean;
+  maxStoredAmount?: number;
+  upgradeGroupId?: string;
+  collectorId?: string;
+  collectRadius?: number;
+  capacity?: number;
+  autoCollect?: boolean;
+  collectCooldown?: number;
+  cost?: number;
+  unlockObjectIds?: string[];
+  unlockGroupId?: string;
+  unlockButtonIds?: string[];
+  requiredPurchaseIds?: string[];
+  hideAfterPurchase?: boolean;
+  purchasedMessage?: string;
+  insufficientFundsMessage?: string;
+  groupId?: string;
+  startsLocked?: boolean;
+  lockedCollision?: boolean;
+  unlockedMessage?: string;
+  upgradeId?: string;
+  targetGeneratorIds?: string[];
+  incomeMultiplier?: number;
+  intervalMultiplier?: number;
+  collectorCapacityBonus?: number;
+  maxLevel?: number;
+  unlockedColor?: string;
+  lockedColor?: string;
 };
 
 export type MapObject = {
@@ -141,7 +178,8 @@ export type GameMode =
   | "combatArena"
   | "objectiveRun"
   | "teamBattle"
-  | "capturePoint";
+  | "capturePoint"
+  | "tycoon";
 
 export type WinConditionType =
   | "none"
@@ -150,7 +188,8 @@ export type WinConditionType =
   | "defeatEnemies"
   | "completeObjectives"
   | "score"
-  | "capturePoint";
+  | "capturePoint"
+  | "completeTycoon";
 
 export type GameModeWinCondition = {
   type: WinConditionType;
@@ -165,6 +204,16 @@ export type ScoringSettings = {
   deathPenalty?: number;
 };
 
+export type TycoonSettings = {
+  startingCash?: number;
+  sharedCash?: boolean;
+  requireAllPurchasesToWin?: boolean;
+  winPurchaseIds?: string[];
+  allowStealing?: boolean;
+  autoClaimInSolo?: boolean;
+  generatorTickRateScale?: number;
+};
+
 export type GameModeSettings = {
   mode: GameMode;
   roundEnabled?: boolean;
@@ -174,6 +223,7 @@ export type GameModeSettings = {
   requireObjectivesToFinish?: boolean;
   winCondition?: GameModeWinCondition;
   scoring?: ScoringSettings;
+  tycoonSettings?: TycoonSettings;
 };
 
 export type TeamDefinition = {
@@ -190,6 +240,9 @@ export type ObjectiveType =
   | "activateButton"
   | "openDoor"
   | "defeatEnemies"
+  | "completeTycoon"
+  | "purchaseTycoonItem"
+  | "collectTycoonCash"
   | "customLogic";
 
 export type MapObjective = {
@@ -200,6 +253,8 @@ export type MapObjective = {
   targetObjectId?: string;
   targetKeyId?: string;
   targetDoorId?: string;
+  targetPurchaseId?: string;
+  targetTycoonId?: string;
   targetAmount?: number;
   required?: boolean;
   visible?: boolean;

@@ -1,4 +1,5 @@
 import { LocalClientStorage } from "../storage/LocalClientStorage.js";
+import { AuthService } from "./AuthService.js";
 import type { GameMap } from "../shared/types/MapSchema.js";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -18,6 +19,9 @@ export type OnlineMapSummary = {
   publishedAt: string;
   playCount: number;
   likeCount: number;
+  ownerUserId?: string | null;
+  isOwner?: boolean;
+  likedByCurrentUser?: boolean;
 };
 
 export type OnlineMapEntry = {
@@ -48,7 +52,9 @@ export const OnlineMapService = {
 
   async listOnlineMaps(): Promise<OnlineMapSummary[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/maps`);
+      const response = await fetch(`${API_BASE_URL}/api/maps`, {
+        headers: AuthService.getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new OnlineServiceError(`Failed to list maps: ${response.statusText}`);
@@ -90,18 +96,16 @@ export const OnlineMapService = {
   ): Promise<{ onlineId: string; summary: OnlineMapSummary }> {
     try {
       const clientId = LocalClientStorage.getClientId();
+      const token = AuthService.requireAuthToken();
 
       const response = await fetch(`${API_BASE_URL}/api/maps`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ map, creatorName, clientId }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new OnlineServiceError(
-          error.error || `Failed to publish map: ${response.statusText}`
-        );
+        throw new OnlineServiceError(await readServiceError(response, "Failed to publish map"));
       }
 
       const data = await response.json();
@@ -117,19 +121,16 @@ export const OnlineMapService = {
   async updateOnlineMap(onlineId: string, map: GameMap): Promise<OnlineMapSummary | null> {
     try {
       const clientId = LocalClientStorage.getClientId();
+      const token = AuthService.requireAuthToken();
 
       const response = await fetch(`${API_BASE_URL}/api/maps/${onlineId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ map, clientId }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        if (response.status === 403) {
-          throw new OnlineServiceError("You do not have permission to update this map");
-        }
-        throw new OnlineServiceError(error.error || `Failed to update map: ${response.statusText}`);
+        throw new OnlineServiceError(await readServiceError(response, "Failed to update map"));
       }
 
       const data = await response.json();
@@ -145,19 +146,16 @@ export const OnlineMapService = {
   async deleteOnlineMap(onlineId: string): Promise<boolean> {
     try {
       const clientId = LocalClientStorage.getClientId();
+      const token = AuthService.requireAuthToken();
 
       const response = await fetch(`${API_BASE_URL}/api/maps/${onlineId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ clientId }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        if (response.status === 403) {
-          throw new OnlineServiceError("You do not have permission to delete this map");
-        }
-        throw new OnlineServiceError(error.error || `Failed to delete map: ${response.statusText}`);
+        throw new OnlineServiceError(await readServiceError(response, "Failed to delete map"));
       }
 
       const data = await response.json();
@@ -192,16 +190,16 @@ export const OnlineMapService = {
 
   async toggleOnlineLike(onlineId: string): Promise<{ liked: boolean; likeCount: number }> {
     try {
-      const clientId = LocalClientStorage.getClientId();
+      const token = AuthService.requireAuthToken();
 
       const response = await fetch(`${API_BASE_URL}/api/maps/${onlineId}/like`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
-        throw new OnlineServiceError(`Failed to toggle like: ${response.statusText}`);
+        throw new OnlineServiceError(await readServiceError(response, "Failed to toggle like"));
       }
 
       return await response.json();
@@ -237,3 +235,32 @@ export const OnlineMapService = {
     return `map-${timestamp}-${random}`;
   },
 };
+
+async function readServiceError(response: Response, fallback: string): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: unknown };
+    if (typeof data.error === "string" && data.error.trim()) {
+      return translateHttpError(response.status, data.error);
+    }
+  } catch {
+    // Resposta sem JSON.
+  }
+
+  return translateHttpError(response.status, `${fallback}: ${response.statusText}`);
+}
+
+function translateHttpError(status: number, message: string): string {
+  if (status === 401) {
+    return "Entre na sua conta online para fazer essa acao.";
+  }
+
+  if (status === 403) {
+    return "Sua conta nao tem permissao para alterar este mapa.";
+  }
+
+  if (status === 429) {
+    return "Muitas tentativas em pouco tempo. Aguarde um momento e tente de novo.";
+  }
+
+  return message;
+}

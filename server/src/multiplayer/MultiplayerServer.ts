@@ -3,6 +3,7 @@ import type { IncomingMessage } from "http";
 import type { Server } from "http";
 import type { GameRoom } from "./Room.js";
 import type { RoomManager } from "./RoomManager.js";
+import { logger } from "../logger.js";
 import type {
   ChatMessage,
   EnemyNetState,
@@ -20,12 +21,14 @@ type ClientConnection = {
   roomId: string;
   clientId: string;
   playerId: string | null;
+  isAlive: boolean;
 };
 
 export class MultiplayerServer {
   private readonly wss: WebSocketServer;
   private readonly connections = new Map<WebSocket, ClientConnection>();
   private readonly closingSockets = new WeakSet<WebSocket>();
+  private readonly heartbeatInterval: ReturnType<typeof setInterval>;
   private isShuttingDown = false;
   private shutdownPromise: Promise<void> | null = null;
 
@@ -35,6 +38,7 @@ export class MultiplayerServer {
   ) {
     this.wss = new WebSocketServer({ server: httpServer, path: "/ws" });
     this.setupWebSocketServer();
+    this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), HEARTBEAT_INTERVAL_MS);
   }
 
   private setupWebSocketServer(): void {
@@ -43,8 +47,7 @@ export class MultiplayerServer {
     });
 
     this.wss.on("error", (error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error("WebSocket server error:", error);
+      logger.error("websocket server error", { error });
     });
   }
 
@@ -77,6 +80,7 @@ export class MultiplayerServer {
       roomId,
       clientId,
       playerId: null,
+      isAlive: true,
     };
 
     this.connections.set(ws, connection);
@@ -89,9 +93,16 @@ export class MultiplayerServer {
       this.handleDisconnection(ws);
     });
 
+    ws.on("pong", () => {
+      const activeConnection = this.connections.get(ws);
+      if (activeConnection) {
+        activeConnection.isAlive = true;
+        this.roomManager.updateRoomActivity(activeConnection.roomId);
+      }
+    });
+
     ws.on("error", (error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error("WebSocket connection error:", error);
+      logger.error("websocket connection error", { error });
       this.handleDisconnection(ws);
     });
   }
@@ -99,13 +110,23 @@ export class MultiplayerServer {
   private handleMessage(ws: WebSocket, data: Buffer): void {
     const connection = this.connections.get(ws);
     if (!connection) return;
+    connection.isAlive = true;
+
+    if (data.byteLength > MAX_WEBSOCKET_PAYLOAD_BYTES) {
+      this.sendError(ws, "Payload too large");
+      this.closeSocket(ws, 1009, "Payload too large");
+      return;
+    }
 
     try {
-      const message: MultiplayerClientMessage = JSON.parse(data.toString());
+      const message = JSON.parse(data.toString()) as MultiplayerClientMessage;
+      if (!isClientMessage(message)) {
+        this.sendError(ws, "Invalid message");
+        return;
+      }
       this.processMessage(connection, message);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to parse message:", error);
+      logger.warn("failed to parse websocket message", { error });
     }
   }
 
@@ -160,7 +181,11 @@ export class MultiplayerServer {
         this.handleChatMessage(connection, room, message.text);
         break;
       case "ping":
+        this.roomManager.updateRoomActivity(connection.roomId);
         this.sendPong(connection.ws);
+        break;
+      default:
+        this.sendError(connection.ws, "Unknown message type");
         break;
     }
   }
@@ -701,8 +726,7 @@ export class MultiplayerServer {
       try {
         ws.send(JSON.stringify(message));
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to send WebSocket message:", error);
+        logger.error("failed to send websocket message", { error });
       }
     }
   }
@@ -718,6 +742,7 @@ export class MultiplayerServer {
 
   private async performShutdown(timeoutMs: number): Promise<void> {
     this.isShuttingDown = true;
+    clearInterval(this.heartbeatInterval);
 
     const sockets = new Set<WebSocket>([...this.connections.keys(), ...this.wss.clients]);
     for (const ws of sockets) {
@@ -773,6 +798,31 @@ export class MultiplayerServer {
       ws.once("close", () => resolve());
     });
   }
+
+  private checkHeartbeat(): void {
+    if (this.isShuttingDown) {
+      return;
+    }
+
+    for (const [ws, connection] of this.connections.entries()) {
+      if (ws.readyState !== WebSocket.OPEN) {
+        continue;
+      }
+
+      if (!connection.isAlive) {
+        logger.warn("terminating stale websocket", {
+          roomId: connection.roomId,
+          playerId: connection.playerId,
+        });
+        ws.terminate();
+        this.handleDisconnection(ws);
+        continue;
+      }
+
+      connection.isAlive = false;
+      ws.ping();
+    }
+  }
 }
 
 function delay(ms: number): Promise<void> {
@@ -780,3 +830,15 @@ function delay(ms: number): Promise<void> {
     setTimeout(resolve, ms);
   });
 }
+
+function isClientMessage(value: unknown): value is MultiplayerClientMessage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "type" in value &&
+    typeof (value as { type?: unknown }).type === "string"
+  );
+}
+
+const HEARTBEAT_INTERVAL_MS = 30_000;
+const MAX_WEBSOCKET_PAYLOAD_BYTES = 32 * 1024;

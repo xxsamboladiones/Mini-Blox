@@ -1,28 +1,29 @@
-import type { Request, Response } from "express";
-import { onlineMapStorage } from "../storage/OnlineMapStorage.js";
+import type { Response } from "express";
+import type { AuthenticatedRequest } from "../middleware/auth.js";
+import { logger } from "../logger.js";
+import { mapRepository } from "../repositories/MapRepository.js";
 import { validateOnlineMap } from "../validation/validateOnlineMap.js";
 import { createId } from "../utils/createId.js";
 import type {
   ErrorResponse,
-  LikeMapRequest,
   LikeMapResponse,
-  OnlineMapSummary,
   PublishMapRequest,
   PublishMapResponse,
   UpdateMapRequest,
 } from "../types/OnlineMapSchema.js";
 
-export async function publishMapRoute(req: Request, res: Response): Promise<void> {
+export async function publishMapRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    const user = req.user;
     const body = req.body as PublishMapRequest;
 
-    if (!body.map || !body.creatorName || !body.clientId) {
-      res
-        .status(400)
-        .json({
-          ok: false,
-          error: "Missing required fields: map, creatorName, clientId",
-        } as ErrorResponse);
+    if (!user) {
+      res.status(401).json({ ok: false, error: "Authentication required" } as ErrorResponse);
+      return;
+    }
+
+    if (!body.map) {
+      res.status(400).json({ ok: false, error: "Missing required field: map" } as ErrorResponse);
       return;
     }
 
@@ -32,25 +33,27 @@ export async function publishMapRoute(req: Request, res: Response): Promise<void
       return;
     }
 
-    await onlineMapStorage.load();
-
     const onlineId = createId("online");
     const now = new Date().toISOString();
-
-    const entry = {
-      id: onlineId,
-      ownerClientId: body.clientId,
-      map: body.map,
-      createdAt: now,
-      updatedAt: now,
+    const map = {
+      ...body.map,
+      creatorName: body.creatorName || user.displayName,
       publishedAt: now,
-      playCount: 0,
-      likedBy: [],
+      updatedAt: now,
+      isPublished: true,
     };
 
-    await onlineMapStorage.addMap(entry);
+    mapRepository.createMap({
+      id: onlineId,
+      ownerUserId: user.id,
+      legacyOwnerClientId: body.clientId ?? null,
+      map,
+      creatorName: user.displayName,
+      now,
+    });
 
-    const summary = toSummary(entry);
+    const summary = mapRepository.getMapSummary(onlineId, user.id);
+    logger.info("map published", { mapId: onlineId, userId: user.id });
 
     res.json({
       ok: true,
@@ -58,38 +61,29 @@ export async function publishMapRoute(req: Request, res: Response): Promise<void
       map: summary,
     } as PublishMapResponse);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error publishing map:", error);
+    logger.error("error publishing map", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-export async function listMapsRoute(_req: Request, res: Response): Promise<void> {
+export async function listMapsRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    await onlineMapStorage.load();
-    const summaries = onlineMapStorage.getMapSummaries();
-    res.json(summaries);
+    res.json(mapRepository.listMapSummaries(req.user?.id));
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error listing maps:", error);
+    logger.error("error listing maps", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-export async function getMapRoute(req: Request, res: Response): Promise<void> {
+export async function getMapRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const { id } = req.params;
-
-    if (!id) {
+    const mapId = getRouteId(req.params.id);
+    if (!mapId) {
       res.status(400).json({ ok: false, error: "Missing map id" } as ErrorResponse);
       return;
     }
 
-    const mapId = Array.isArray(id) ? id[0] : id;
-
-    await onlineMapStorage.load();
-    const entry = onlineMapStorage.getMap(mapId);
-
+    const entry = mapRepository.getMap(mapId);
     if (!entry) {
       res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
       return;
@@ -97,28 +91,29 @@ export async function getMapRoute(req: Request, res: Response): Promise<void> {
 
     res.json(entry.map);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error getting map:", error);
+    logger.error("error getting map", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-export async function updateMapRoute(req: Request, res: Response): Promise<void> {
+export async function updateMapRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const { id } = req.params;
+    const user = req.user;
+    const mapId = getRouteId(req.params.id);
     const body = req.body as UpdateMapRequest;
 
-    if (!id) {
+    if (!user) {
+      res.status(401).json({ ok: false, error: "Authentication required" } as ErrorResponse);
+      return;
+    }
+
+    if (!mapId) {
       res.status(400).json({ ok: false, error: "Missing map id" } as ErrorResponse);
       return;
     }
 
-    const mapId = Array.isArray(id) ? id[0] : id;
-
-    if (!body.map || !body.clientId) {
-      res
-        .status(400)
-        .json({ ok: false, error: "Missing required fields: map, clientId" } as ErrorResponse);
+    if (!body.map) {
+      res.status(400).json({ ok: false, error: "Missing required field: map" } as ErrorResponse);
       return;
     }
 
@@ -128,106 +123,88 @@ export async function updateMapRoute(req: Request, res: Response): Promise<void>
       return;
     }
 
-    await onlineMapStorage.load();
-    const entry = onlineMapStorage.getMap(mapId);
-
+    const entry = mapRepository.getMap(mapId);
     if (!entry) {
       res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
       return;
     }
 
-    if (entry.ownerClientId !== body.clientId) {
-      res
-        .status(403)
-        .json({
-          ok: false,
-          error: "You do not have permission to update this map",
-        } as ErrorResponse);
+    if (!canWriteMap(entry.ownerUserId, user.id, entry.legacyOwnerClientId, body.clientId)) {
+      res.status(403).json({
+        ok: false,
+        error: "You do not have permission to update this map",
+      } as ErrorResponse);
       return;
     }
 
-    const updated = await onlineMapStorage.updateMap(mapId, { map: body.map });
-
-    if (!updated) {
-      res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
-      return;
+    if (!entry.ownerUserId) {
+      mapRepository.claimLegacyMap(mapId, user.id);
     }
 
-    const updatedEntry = onlineMapStorage.getMap(mapId);
-    const summary = updatedEntry ? toSummary(updatedEntry) : null;
+    const map = {
+      ...body.map,
+      creatorName: body.map.creatorName || user.displayName,
+      isPublished: true,
+    };
+    const updated = mapRepository.updateMap(mapId, map, user.displayName);
+    const summary = updated ? mapRepository.getMapSummary(mapId, user.id) : null;
+    logger.info("map updated", { mapId, userId: user.id });
 
     res.json({ ok: true, map: summary });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error updating map:", error);
+    logger.error("error updating map", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-export async function deleteMapRoute(req: Request, res: Response): Promise<void> {
+export async function deleteMapRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const { id } = req.params;
-    const { clientId } = req.body;
+    const user = req.user;
+    const mapId = getRouteId(req.params.id);
+    const clientId = getBodyClientId(req.body);
 
-    if (!id) {
+    if (!user) {
+      res.status(401).json({ ok: false, error: "Authentication required" } as ErrorResponse);
+      return;
+    }
+
+    if (!mapId) {
       res.status(400).json({ ok: false, error: "Missing map id" } as ErrorResponse);
       return;
     }
 
-    if (!clientId) {
-      res.status(400).json({ ok: false, error: "Missing clientId" } as ErrorResponse);
-      return;
-    }
-
-    const mapId = Array.isArray(id) ? id[0] : id;
-
-    await onlineMapStorage.load();
-    const entry = onlineMapStorage.getMap(mapId);
-
+    const entry = mapRepository.getMap(mapId);
     if (!entry) {
       res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
       return;
     }
 
-    if (entry.ownerClientId !== clientId) {
-      res
-        .status(403)
-        .json({
-          ok: false,
-          error: "You do not have permission to delete this map",
-        } as ErrorResponse);
+    if (!canWriteMap(entry.ownerUserId, user.id, entry.legacyOwnerClientId, clientId)) {
+      res.status(403).json({
+        ok: false,
+        error: "You do not have permission to delete this map",
+      } as ErrorResponse);
       return;
     }
 
-    const deleted = await onlineMapStorage.deleteMap(mapId);
-
-    if (!deleted) {
-      res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
-      return;
-    }
-
+    mapRepository.deleteMap(mapId);
+    logger.info("map deleted", { mapId, userId: user.id });
     res.json({ ok: true });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error deleting map:", error);
+    logger.error("error deleting map", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-export async function registerPlayRoute(req: Request, res: Response): Promise<void> {
+export async function registerPlayRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const { id } = req.params;
-
-    if (!id) {
+    const mapId = getRouteId(req.params.id);
+    if (!mapId) {
       res.status(400).json({ ok: false, error: "Missing map id" } as ErrorResponse);
       return;
     }
 
-    const mapId = Array.isArray(id) ? id[0] : id;
-
-    await onlineMapStorage.load();
-    const updated = await onlineMapStorage.incrementPlayCount(mapId);
-
+    const updated = mapRepository.incrementPlayCount(mapId);
     if (!updated) {
       res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
       return;
@@ -235,64 +212,65 @@ export async function registerPlayRoute(req: Request, res: Response): Promise<vo
 
     res.json({ ok: true });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error registering play:", error);
+    logger.error("error registering play", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-export async function likeMapRoute(req: Request, res: Response): Promise<void> {
+export async function likeMapRoute(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const { id } = req.params;
-    const body = req.body as LikeMapRequest;
+    const user = req.user;
+    const mapId = getRouteId(req.params.id);
 
-    if (!id) {
+    if (!user) {
+      res.status(401).json({ ok: false, error: "Authentication required" } as ErrorResponse);
+      return;
+    }
+
+    if (!mapId) {
       res.status(400).json({ ok: false, error: "Missing map id" } as ErrorResponse);
       return;
     }
 
-    if (!body.clientId) {
-      res.status(400).json({ ok: false, error: "Missing clientId" } as ErrorResponse);
-      return;
+    try {
+      const result = mapRepository.toggleLike(mapId, user.id);
+      res.json(result as LikeMapResponse);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Map not found") {
+        res.status(404).json({ ok: false, error: "Map not found" } as ErrorResponse);
+        return;
+      }
+      throw error;
     }
-
-    const mapId = Array.isArray(id) ? id[0] : id;
-
-    await onlineMapStorage.load();
-    const result = await onlineMapStorage.toggleLike(mapId, body.clientId);
-
-    res.json(result as LikeMapResponse);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error toggling like:", error);
+    logger.error("error toggling like", { error });
     res.status(500).json({ ok: false, error: "Internal server error" } as ErrorResponse);
   }
 }
 
-function toSummary(entry: {
-  id: string;
-  map: any;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  playCount: number;
-  likedBy: string[];
-}): OnlineMapSummary {
-  const { map } = entry;
-  return {
-    id: entry.id,
-    name: map.name,
-    description: map.description ?? "",
-    creatorName: map.creatorName ?? "Unknown",
-    thumbnail: map.thumbnail ?? null,
-    tags: map.tags ?? [],
-    theme: map.visualSettings?.theme ?? "classic",
-    objectCount: map.objects.length,
-    mode: map.gameModeSettings?.mode ?? "freeplay",
-    createdAt: entry.createdAt,
-    updatedAt: entry.updatedAt,
-    publishedAt: entry.publishedAt,
-    playCount: entry.playCount,
-    likeCount: entry.likedBy.length,
-  };
+function canWriteMap(
+  ownerUserId: string | null,
+  userId: string,
+  legacyOwnerClientId: string | null,
+  requestClientId: string | null
+): boolean {
+  if (ownerUserId) {
+    return ownerUserId === userId;
+  }
+
+  return Boolean(legacyOwnerClientId && requestClientId && legacyOwnerClientId === requestClientId);
+}
+
+function getRouteId(id: string | string[] | undefined): string | null {
+  const value = Array.isArray(id) ? id[0] : id;
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function getBodyClientId(body: unknown): string | null {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return null;
+  }
+
+  const value = (body as { clientId?: unknown }).clientId;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }

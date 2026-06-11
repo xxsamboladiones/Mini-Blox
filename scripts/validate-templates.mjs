@@ -33,6 +33,7 @@ const MIN_OBJECTS = {
   testCity: 1000,
   adventureIsland: 900,
   stressTest: 1500,
+  basicTycoon: 34,
 };
 
 const REQUIRED_MINIMUMS = {
@@ -199,6 +200,18 @@ const REQUIRED_MINIMUMS = {
     messageZones: 30,
     logic: 50,
   },
+  basicTycoon: {
+    tycoonClaims: 1,
+    tycoonGenerators: 3,
+    tycoonCollectors: 1,
+    tycoonBuyButtons: 5,
+    tycoonUpgrades: 1,
+    tycoonBarriers: 1,
+    tycoonUnlockables: 5,
+    objectives: 3,
+    signs: 3,
+    logic: 3,
+  },
 };
 
 const TAG_PATTERN = /^[a-z0-9-]+$/;
@@ -223,6 +236,7 @@ const PRIMARY_TEMPLATE_TAGS = new Set([
   "exploration",
   "stress",
   "city",
+  "tycoon",
 ]);
 
 const SHOWCASE_TEMPLATE_IDS = new Set([
@@ -262,6 +276,7 @@ const REQUIRED_TEMPLATE_TAGS = {
   testCity: ["official", "city", "scale", "experimental"],
   adventureIsland: ["official", "exploration", "adventure"],
   stressTest: ["official", "stress", "experimental", "validation"],
+  basicTycoon: ["official", "tycoon", "economy", "progression", "beginner", "solo"],
 };
 
 async function main() {
@@ -323,6 +338,10 @@ async function main() {
         somem: summary.disappearingBlocks,
         mensagens: summary.messageZones,
         placas: summary.signs,
+        tycoonBases: summary.tycoonClaims,
+        tycoonGen: summary.tycoonGenerators,
+        tycoonBotoes: summary.tycoonBuyButtons,
+        tycoonUp: summary.tycoonUpgrades,
         tags: summary.tags,
         logica: summary.logic,
         void: summary.voidDeath,
@@ -381,6 +400,13 @@ function summarizeMap(template, map) {
     disappearingBlocks: count("disappearingBlock"),
     messageZones: count("messageZone"),
     signs: count("sign"),
+    tycoonClaims: count("tycoonOwnerClaim"),
+    tycoonGenerators: count("tycoonGenerator"),
+    tycoonCollectors: count("tycoonCollector"),
+    tycoonBuyButtons: count("tycoonBuyButton"),
+    tycoonUnlockables: count("tycoonUnlockable"),
+    tycoonUpgrades: count("tycoonUpgrade"),
+    tycoonBarriers: count("tycoonBarrier"),
     tags: normalizeTags(map.tags).length,
     logic: Array.isArray(map.logic) ? map.logic.length : 0,
     voidDeath: map.gameplaySettings?.voidDeathEnabled === false ? "off" : "on",
@@ -482,6 +508,11 @@ function validateTemplate(template, map, summary) {
   const objectiveIds = new Set();
   const teamIds = new Set();
   const capturePointIds = new Set();
+  const tycoonIds = new Set();
+  const tycoonPurchaseIds = new Set();
+  const tycoonGeneratorIds = new Set();
+  const tycoonCollectorIds = new Set();
+  const tycoonUpgradeIds = new Set();
   const expectedMin = MIN_OBJECTS[template.id];
   const templateTags = normalizeTags(template.tags);
   const templateTagSet = new Set(templateTags);
@@ -619,6 +650,18 @@ function validateTemplate(template, map, summary) {
 
     validateGameplayPropertyBounds(errors, template.id, object);
 
+    if (String(object.type).startsWith("tycoon")) {
+      errors.push(
+        ...validateTycoonObject(template.id, object, {
+          tycoonIds,
+          tycoonPurchaseIds,
+          tycoonGeneratorIds,
+          tycoonCollectorIds,
+          tycoonUpgradeIds,
+        })
+      );
+    }
+
     if (object.type === "door") {
       const doorId = getString(object.properties?.doorId, object.id);
 
@@ -698,6 +741,15 @@ function validateTemplate(template, map, summary) {
     }
   }
 
+  errors.push(
+    ...validateTycoonReferences(template.id, map, {
+      objectIds,
+      tycoonPurchaseIds,
+      tycoonGeneratorIds,
+      tycoonCollectorIds,
+    })
+  );
+
   const requirements = REQUIRED_MINIMUMS[template.id] ?? {};
 
   for (const [key, min] of Object.entries(requirements)) {
@@ -713,6 +765,7 @@ function validateTemplate(template, map, summary) {
       keyIds,
       enemyIds,
       objectiveIds,
+      tycoonPurchaseIds,
     })
   );
 
@@ -779,6 +832,22 @@ function validateObjectives(templateId, map, refs) {
     }
 
     if (
+      objective.type === "collectTycoonCash" &&
+      (!Number.isFinite(objective.targetAmount) || objective.targetAmount < 1)
+    ) {
+      errors.push(`${templateId}: objetivo ${objective.id} precisa de targetAmount positivo.`);
+    }
+
+    if (
+      objective.type === "purchaseTycoonItem" &&
+      !refs.tycoonPurchaseIds.has(objective.targetPurchaseId)
+    ) {
+      errors.push(
+        `${templateId}: objetivo ${objective.id} aponta compra tycoon inexistente ${objective.targetPurchaseId}.`
+      );
+    }
+
+    if (
       (objective.type === "reachObject" || objective.type === "activateButton") &&
       !refs.objectIds.has(objective.targetObjectId)
     ) {
@@ -823,6 +892,7 @@ function validateGameMode(templateId, map, summary, refs) {
     "objectiveRun",
     "teamBattle",
     "capturePoint",
+    "tycoon",
   ]);
   const validWinConditions = new Set([
     "none",
@@ -832,6 +902,7 @@ function validateGameMode(templateId, map, summary, refs) {
     "completeObjectives",
     "score",
     "capturePoint",
+    "completeTycoon",
   ]);
   const requiredObjectives = Array.isArray(map.objectives)
     ? map.objectives.filter((objective) => objective.required !== false).length
@@ -891,6 +962,20 @@ function validateGameMode(templateId, map, summary, refs) {
     errors.push(`${templateId}: objectiveRun sem objetivos obrigatorios.`);
   }
 
+  if (settings.mode === "tycoon") {
+    if (summary.tycoonGenerators < 1) {
+      errors.push(`${templateId}: tycoon sem gerador.`);
+    }
+
+    if (summary.tycoonCollectors < 1) {
+      errors.push(`${templateId}: tycoon sem coletor.`);
+    }
+
+    if (summary.tycoonBuyButtons < 1) {
+      errors.push(`${templateId}: tycoon sem botao de compra.`);
+    }
+  }
+
   if (settings.requireObjectivesToFinish && requiredObjectives < 1) {
     errors.push(`${templateId}: requireObjectivesToFinish sem objetivos obrigatorios.`);
   }
@@ -930,6 +1015,10 @@ function validateGameMode(templateId, map, summary, refs) {
     validatePositiveTarget(errors, templateId, winCondition, winCondition.type);
   }
 
+  if (winCondition.type === "completeTycoon" && summary.tycoonBuyButtons + summary.tycoonUpgrades < 1) {
+    errors.push(`${templateId}: completeTycoon sem compras ou upgrades tycoon.`);
+  }
+
   if (winCondition.type === "capturePoint" && refs.capturePointIds.size < 1) {
     errors.push(`${templateId}: winCondition capturePoint sem capturePoint.`);
   }
@@ -941,6 +1030,254 @@ function validatePositiveTarget(errors, templateId, winCondition, label) {
   if (!Number.isFinite(winCondition.targetAmount) || winCondition.targetAmount < 1) {
     errors.push(`${templateId}: ${label} precisa de targetAmount positivo.`);
   }
+}
+
+function validateTycoonObject(templateId, object, refs) {
+  const errors = [];
+  const properties = object.properties ?? {};
+  const tycoonId = getString(properties.tycoonId, "");
+
+  if (!tycoonId) {
+    errors.push(`${templateId}: ${object.id} tycoon sem tycoonId.`);
+  } else {
+    refs.tycoonIds.add(tycoonId);
+  }
+
+  if (object.type === "tycoonGenerator") {
+    const generatorId = getString(properties.generatorId, "");
+
+    if (!generatorId) {
+      errors.push(`${templateId}: ${object.id} gerador tycoon sem generatorId.`);
+    } else if (refs.tycoonGeneratorIds.has(generatorId)) {
+      errors.push(`${templateId}: generatorId tycoon duplicado ${generatorId}.`);
+    } else {
+      refs.tycoonGeneratorIds.add(generatorId);
+    }
+
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "incomePerTick",
+      properties.incomePerTick,
+      0,
+      500
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "tickInterval",
+      properties.tickInterval,
+      0.1,
+      120
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "maxStoredAmount",
+      properties.maxStoredAmount,
+      0,
+      100000
+    );
+  }
+
+  if (object.type === "tycoonCollector") {
+    const collectorId = getString(properties.collectorId, "");
+
+    if (!collectorId) {
+      errors.push(`${templateId}: ${object.id} coletor tycoon sem collectorId.`);
+    } else if (refs.tycoonCollectorIds.has(collectorId)) {
+      errors.push(`${templateId}: collectorId tycoon duplicado ${collectorId}.`);
+    } else {
+      refs.tycoonCollectorIds.add(collectorId);
+    }
+
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "collectRadius",
+      properties.collectRadius,
+      0.1,
+      20
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "capacity",
+      properties.capacity,
+      0,
+      100000
+    );
+  }
+
+  if (object.type === "tycoonBuyButton") {
+    const purchaseId = getString(properties.purchaseId, "");
+
+    if (!purchaseId) {
+      errors.push(`${templateId}: ${object.id} compra tycoon sem purchaseId.`);
+    } else if (refs.tycoonPurchaseIds.has(purchaseId)) {
+      errors.push(`${templateId}: purchaseId tycoon duplicado ${purchaseId}.`);
+    } else {
+      refs.tycoonPurchaseIds.add(purchaseId);
+    }
+
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "cost",
+      properties.cost,
+      0,
+      100000
+    );
+  }
+
+  if (object.type === "tycoonBarrier") {
+    const purchaseId = getString(properties.purchaseId, "");
+
+    if (!purchaseId) {
+      errors.push(`${templateId}: ${object.id} barreira tycoon sem purchaseId.`);
+    }
+  }
+
+  if (object.type === "tycoonUpgrade") {
+    const upgradeId = getString(properties.upgradeId, "");
+
+    if (!upgradeId) {
+      errors.push(`${templateId}: ${object.id} upgrade tycoon sem upgradeId.`);
+    } else {
+      if (refs.tycoonUpgradeIds.has(upgradeId)) {
+        errors.push(`${templateId}: upgradeId tycoon duplicado ${upgradeId}.`);
+      }
+
+      if (refs.tycoonPurchaseIds.has(upgradeId)) {
+        errors.push(`${templateId}: purchaseId tycoon duplicado ${upgradeId}.`);
+      }
+
+      refs.tycoonUpgradeIds.add(upgradeId);
+      refs.tycoonPurchaseIds.add(upgradeId);
+    }
+
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "cost",
+      properties.cost,
+      0,
+      100000
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "incomeMultiplier",
+      properties.incomeMultiplier,
+      0.1,
+      20
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "intervalMultiplier",
+      properties.intervalMultiplier,
+      0.05,
+      5
+    );
+    validateOptionalNumberRange(
+      errors,
+      templateId,
+      object.id,
+      "maxLevel",
+      properties.maxLevel,
+      1,
+      20
+    );
+  }
+
+  return errors;
+}
+
+function validateTycoonReferences(templateId, map, refs) {
+  const errors = [];
+
+  for (const object of map.objects) {
+    const properties = object.properties ?? {};
+
+    if (!String(object.type).startsWith("tycoon")) {
+      continue;
+    }
+
+    for (const purchaseId of getStringArray(properties.requiredPurchaseIds)) {
+      if (!refs.tycoonPurchaseIds.has(purchaseId)) {
+        errors.push(`${templateId}: ${object.id} exige compra inexistente ${purchaseId}.`);
+      }
+    }
+
+    for (const objectId of getStringArray(properties.unlockObjectIds)) {
+      if (!refs.objectIds.has(objectId)) {
+        errors.push(`${templateId}: ${object.id} libera objeto inexistente ${objectId}.`);
+      }
+    }
+
+    for (const purchaseId of getStringArray(properties.unlockButtonIds)) {
+      if (!refs.tycoonPurchaseIds.has(purchaseId) && !refs.objectIds.has(purchaseId)) {
+        errors.push(`${templateId}: ${object.id} libera botao/compra inexistente ${purchaseId}.`);
+      }
+    }
+
+    if (object.type === "tycoonGenerator") {
+      const collectorId = getString(properties.targetCollectorId, "");
+      const purchaseId = getString(properties.purchaseId, "");
+
+      if (collectorId && !refs.tycoonCollectorIds.has(collectorId)) {
+        errors.push(`${templateId}: ${object.id} aponta coletor inexistente ${collectorId}.`);
+      }
+
+      if (purchaseId && !refs.tycoonPurchaseIds.has(purchaseId)) {
+        errors.push(`${templateId}: ${object.id} exige purchaseId inexistente ${purchaseId}.`);
+      }
+    }
+
+    if (object.type === "tycoonUnlockable") {
+      const purchaseId = getString(properties.purchaseId, "");
+
+      if (purchaseId && !refs.tycoonPurchaseIds.has(purchaseId)) {
+        errors.push(`${templateId}: ${object.id} usa purchaseId inexistente ${purchaseId}.`);
+      }
+    }
+
+    if (object.type === "tycoonBarrier") {
+      const purchaseId = getString(properties.purchaseId, "");
+
+      if (purchaseId && !refs.tycoonPurchaseIds.has(purchaseId)) {
+        errors.push(`${templateId}: ${object.id} usa purchaseId inexistente ${purchaseId}.`);
+      }
+    }
+
+    if (object.type === "tycoonUpgrade") {
+      for (const generatorId of getStringArray(properties.targetGeneratorIds)) {
+        if (!refs.tycoonGeneratorIds.has(generatorId)) {
+          errors.push(`${templateId}: ${object.id} aponta gerador inexistente ${generatorId}.`);
+        }
+      }
+    }
+  }
+
+  const winPurchaseIds = getStringArray(map.gameModeSettings?.tycoonSettings?.winPurchaseIds);
+
+  for (const purchaseId of winPurchaseIds) {
+    if (!refs.tycoonPurchaseIds.has(purchaseId)) {
+      errors.push(`${templateId}: winPurchaseIds aponta compra inexistente ${purchaseId}.`);
+    }
+  }
+
+  return errors;
 }
 
 function validateLevelDesign(template, map, summary, refs) {
@@ -1940,6 +2277,9 @@ function isValidObjectiveType(value) {
     value === "activateButton" ||
     value === "openDoor" ||
     value === "defeatEnemies" ||
+    value === "completeTycoon" ||
+    value === "purchaseTycoonItem" ||
+    value === "collectTycoonCash" ||
     value === "customLogic"
   );
 }
@@ -1954,6 +2294,12 @@ function isPositiveScale(value) {
 
 function getString(value, fallback) {
   return typeof value === "string" ? value : fallback;
+}
+
+function getStringArray(value) {
+  return Array.isArray(value)
+    ? value.filter((entry) => typeof entry === "string" && entry.trim().length > 0)
+    : [];
 }
 
 await main();

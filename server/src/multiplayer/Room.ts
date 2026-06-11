@@ -9,11 +9,11 @@ import type {
   RoomPlayer,
   SharedWorldState,
   Vector3,
-  WeaponAttackType,
   WorldEvent,
 } from "./types.js";
 import type { RoomMapIndex } from "./RoomMapIndex.js";
 import { createEmptyRoomMapIndex } from "./RoomMapIndex.js";
+import { getServerWeaponRule, normalizeWeaponId } from "../shared/WeaponRules.js";
 import { createId } from "../utils/createId.js";
 
 const MAX_HEALTH = 100;
@@ -55,50 +55,6 @@ type HealResult = {
   sourceObjectId?: string;
 };
 
-type WeaponRule = {
-  damage: number;
-  range: number;
-  cooldownMs: number;
-  attackType: WeaponAttackType;
-  weaponClass: "melee" | "ranged";
-  minDot: number;
-};
-
-const WEAPON_RULES: Record<string, WeaponRule> = {
-  basic_sword: {
-    damage: 18,
-    range: 1.85,
-    cooldownMs: 650,
-    attackType: "slash",
-    weaponClass: "melee",
-    minDot: 0.18,
-  },
-  heavy_hammer: {
-    damage: 32,
-    range: 1.65,
-    cooldownMs: 1150,
-    attackType: "overhead",
-    weaponClass: "melee",
-    minDot: 0.05,
-  },
-  dagger: {
-    damage: 10,
-    range: 1.45,
-    cooldownMs: 350,
-    attackType: "stab",
-    weaponClass: "melee",
-    minDot: 0.42,
-  },
-  blaster: {
-    damage: 14,
-    range: 12,
-    cooldownMs: 750,
-    attackType: "shoot",
-    weaponClass: "ranged",
-    minDot: 0.58,
-  },
-};
-
 export type PlayerAttackVisualEvent = PlayerAttackVisualPayload & {
   playerId: string;
 };
@@ -120,6 +76,8 @@ export class GameRoom {
     activatedButtonIds: [],
     collectedCoinObjectIds: [],
     collectedItemObjectIds: [],
+    tycoonPurchasedIds: [],
+    tycoonUpgradeIds: [],
   };
   private readonly maxPlayers: number;
   public readonly createdAt: string;
@@ -288,6 +246,8 @@ export class GameRoom {
       activatedButtonIds: [...this.sharedState.activatedButtonIds],
       collectedCoinObjectIds: [...this.sharedState.collectedCoinObjectIds],
       collectedItemObjectIds: [...this.sharedState.collectedItemObjectIds],
+      tycoonPurchasedIds: [...this.sharedState.tycoonPurchasedIds],
+      tycoonUpgradeIds: [...this.sharedState.tycoonUpgradeIds],
     };
   }
 
@@ -326,6 +286,10 @@ export class GameRoom {
       addUnique(this.sharedState.collectedCoinObjectIds, normalized.objectId);
     } else if (normalized.type === "itemCollected") {
       addUnique(this.sharedState.collectedItemObjectIds, normalized.objectId);
+    } else if (normalized.type === "tycoonPurchase") {
+      addUnique(this.sharedState.tycoonPurchasedIds, normalized.purchaseId);
+    } else if (normalized.type === "tycoonUpgrade") {
+      addUnique(this.sharedState.tycoonUpgradeIds, normalized.upgradeId);
     }
 
     this.updateActivity();
@@ -350,7 +314,7 @@ export class GameRoom {
     }
 
     const normalizedWeaponId = normalizeWeaponId(weaponId);
-    const weaponRule = normalizedWeaponId ? WEAPON_RULES[normalizedWeaponId] : null;
+    const weaponRule = getServerWeaponRule(normalizedWeaponId);
     if (!weaponRule || !Number.isFinite(damage) || damage <= 0) {
       return null;
     }
@@ -442,7 +406,7 @@ export class GameRoom {
     }
 
     const weaponId = normalizeWeaponId(payload.weaponId);
-    const weaponRule = weaponId ? WEAPON_RULES[weaponId] : null;
+    const weaponRule = getServerWeaponRule(weaponId);
     if (!weaponRule || !payload.targetPlayerId) {
       return null;
     }
@@ -516,7 +480,7 @@ export class GameRoom {
     }
 
     const weaponId = normalizeWeaponId(payload.weaponId);
-    const weaponRule = weaponId ? WEAPON_RULES[weaponId] : null;
+    const weaponRule = getServerWeaponRule(weaponId);
     if (
       !weaponId ||
       !weaponRule ||
@@ -882,7 +846,7 @@ export class GameRoom {
     }
 
     const objectId = normalizeWorldEventId(event.objectId);
-    const doorId = normalizeWorldEventId(event.doorId);
+    const doorId = "doorId" in event ? normalizeWorldEventId(event.doorId) : "";
 
     if (event.type === "doorOpened" || event.type === "doorClosed") {
       if (!doorId || !this.mapIndex.doorIds.has(doorId)) {
@@ -951,6 +915,48 @@ export class GameRoom {
       return { type: event.type, objectId };
     }
 
+    if (event.type === "tycoonPurchase") {
+      const purchaseId = normalizeWorldEventId(event.purchaseId);
+      const tycoonId = normalizeWorldEventId(event.tycoonId);
+
+      if (!objectId || !purchaseId || !this.mapIndex.objectIds.has(objectId)) {
+        return null;
+      }
+
+      if (
+        !this.mapIndex.tycoonPurchaseIds.has(purchaseId) ||
+        this.sharedState.tycoonPurchasedIds.includes(purchaseId) ||
+        !this.isPlayerNearObject(player, objectId, WORLD_EVENT_INTERACTION_RANGE)
+      ) {
+        return null;
+      }
+
+      return tycoonId
+        ? { type: event.type, objectId, purchaseId, tycoonId }
+        : { type: event.type, objectId, purchaseId };
+    }
+
+    if (event.type === "tycoonUpgrade") {
+      const upgradeId = normalizeWorldEventId(event.upgradeId);
+      const tycoonId = normalizeWorldEventId(event.tycoonId);
+
+      if (!objectId || !upgradeId || !this.mapIndex.objectIds.has(objectId)) {
+        return null;
+      }
+
+      if (
+        !this.mapIndex.tycoonUpgradeIds.has(upgradeId) ||
+        this.sharedState.tycoonUpgradeIds.includes(upgradeId) ||
+        !this.isPlayerNearObject(player, objectId, WORLD_EVENT_INTERACTION_RANGE)
+      ) {
+        return null;
+      }
+
+      return tycoonId
+        ? { type: event.type, objectId, upgradeId, tycoonId }
+        : { type: event.type, objectId, upgradeId };
+    }
+
     return null;
   }
 }
@@ -980,31 +986,6 @@ function normalizeChatText(value: string): string | null {
     .replace(/\s+/g, " ")
     .slice(0, MAX_CHAT_TEXT_LENGTH);
   return text.length > 0 ? text : null;
-}
-
-function normalizeWeaponId(value: string | null | undefined): string | null {
-  if (
-    value === "weapon_basic" ||
-    value === "weapon_basic_sword" ||
-    value === "sword" ||
-    value === "basic_sword"
-  ) {
-    return "basic_sword";
-  }
-
-  if (value === "weapon_heavy_hammer" || value === "heavy_hammer" || value === "hammer") {
-    return "heavy_hammer";
-  }
-
-  if (value === "weapon_dagger" || value === "dagger") {
-    return "dagger";
-  }
-
-  if (value === "weapon_blaster" || value === "blaster") {
-    return "blaster";
-  }
-
-  return null;
 }
 
 function normalizeDirection(direction: Vector3): Vector3 {

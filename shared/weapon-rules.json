@@ -1,0 +1,39 @@
+{
+  "basic_sword": {
+    "label": "Espada Basica",
+    "damage": 18,
+    "range": 1.85,
+    "cooldownSeconds": 0.65,
+    "attackType": "slash",
+    "weaponClass": "melee",
+    "minDot": 0.18
+  },
+  "heavy_hammer": {
+    "label": "Martelo Pesado",
+    "damage": 32,
+    "range": 1.65,
+    "cooldownSeconds": 1.15,
+    "attackType": "overhead",
+    "weaponClass": "melee",
+    "minDot": 0.05
+  },
+  "dagger": {
+    "label": "Adaga",
+    "damage": 10,
+    "range": 1.45,
+    "cooldownSeconds": 0.35,
+    "attackType": "stab",
+    "weaponClass": "melee",
+    "minDot": 0.42
+  },
+  "blaster": {
+    "label": "Blaster",
+    "damage": 14,
+    "range": 12,
+    "cooldownSeconds": 0.75,
+    "attackType": "shoot",
+    "weaponClass": "ranged",
+    "minDot": 0.58,
+    "projectileSpeed": 18
+  }
+}

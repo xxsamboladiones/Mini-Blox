@@ -35,6 +35,13 @@ export const BUILT_IN_OBJECT_TYPES = [
   "lamp",
   "arch",
   "pillar",
+  "tycoonOwnerClaim",
+  "tycoonGenerator",
+  "tycoonCollector",
+  "tycoonBuyButton",
+  "tycoonUnlockable",
+  "tycoonUpgrade",
+  "tycoonBarrier",
 ] as const;
 
 export type BuiltInObjectType = (typeof BUILT_IN_OBJECT_TYPES)[number];
@@ -127,6 +134,43 @@ export type MapObjectProperties = Record<string, unknown> & {
   lightColor?: string;
   lightIntensity?: number;
   lightRange?: number;
+  tycoonId?: string;
+  claimLabel?: string;
+  autoClaimInSolo?: boolean;
+  generatorId?: string;
+  incomePerTick?: number;
+  tickInterval?: number;
+  targetCollectorId?: string;
+  requiresPurchase?: boolean;
+  purchaseId?: string;
+  startsEnabled?: boolean;
+  maxStoredAmount?: number;
+  upgradeGroupId?: string;
+  collectorId?: string;
+  collectRadius?: number;
+  capacity?: number;
+  autoCollect?: boolean;
+  collectCooldown?: number;
+  cost?: number;
+  unlockObjectIds?: string[];
+  unlockGroupId?: string;
+  unlockButtonIds?: string[];
+  requiredPurchaseIds?: string[];
+  hideAfterPurchase?: boolean;
+  purchasedMessage?: string;
+  insufficientFundsMessage?: string;
+  groupId?: string;
+  startsLocked?: boolean;
+  lockedCollision?: boolean;
+  unlockedMessage?: string;
+  upgradeId?: string;
+  targetGeneratorIds?: string[];
+  incomeMultiplier?: number;
+  intervalMultiplier?: number;
+  collectorCapacityBonus?: number;
+  maxLevel?: number;
+  unlockedColor?: string;
+  lockedColor?: string;
 };
 
 export type MapObject = {

@@ -31,6 +31,18 @@ const PALETTE_CATEGORIES: PaletteCategory[] = [
     ],
   },
   {
+    title: "Tycoon",
+    types: [
+      "tycoonOwnerClaim",
+      "tycoonGenerator",
+      "tycoonCollector",
+      "tycoonBuyButton",
+      "tycoonUnlockable",
+      "tycoonUpgrade",
+      "tycoonBarrier",
+    ],
+  },
+  {
     title: "Decoracao",
     types: ["tree", "rock", "crate", "barrel", "sign", "lamp", "arch", "pillar"],
   },
