@@ -4,6 +4,7 @@ import {
   type HttpTestServer,
 } from "../testing/createHttpTestServer";
 import { createOnlineTestMap } from "../testing/createOnlineTestMap";
+import type { GameMap } from "../types/OnlineMapSchema";
 
 type AuthResponse = {
   ok: boolean;
@@ -19,6 +20,17 @@ type PublishResponse = {
 type LikeResponse = {
   liked: boolean;
   likeCount: number;
+};
+
+type OnlineMapSummary = {
+  id: string;
+  name: string;
+  playCount: number;
+  likeCount: number;
+  ownerUserId?: string | null;
+  isOwner?: boolean;
+  passwordHash?: string;
+  token?: string;
 };
 
 describe("map routes and repositories", () => {
@@ -49,6 +61,71 @@ describe("map routes and repositories", () => {
 
     expect(response.status).toBe(401);
     expect(response.body.ok).toBe(false);
+  });
+
+  it("publica com auth, incrementa play count, lista metadata e carrega o mapa", async () => {
+    const map = createOnlineTestMap({ id: "query-map", name: "Mapa Consultavel" });
+    const published = await server.requestJson<PublishResponse>("/api/maps", {
+      method: "POST",
+      token: ownerToken,
+      body: {
+        map,
+        creatorName: "Owner",
+        clientId: "legacy-owner",
+      },
+    });
+
+    expect(published.status).toBe(200);
+    const onlineId = published.body.onlineId;
+    expect(onlineId).toEqual(expect.any(String));
+
+    const getMap = await server.requestJson<GameMap>(`/api/maps/${onlineId}`);
+    expect(getMap.status).toBe(200);
+    expect(getMap.body.name).toBe("Mapa Consultavel");
+
+    const play = await server.requestJson<{ ok: boolean }>(`/api/maps/${onlineId}/play`, {
+      method: "POST",
+    });
+    expect(play.status).toBe(200);
+    expect(play.body.ok).toBe(true);
+
+    const list = await server.requestJson<OnlineMapSummary[]>("/api/maps", {
+      token: ownerToken,
+    });
+    const summary = list.body.find((candidate) => candidate.id === onlineId);
+    expect(summary).toMatchObject({
+      id: onlineId,
+      name: "Mapa Consultavel",
+      playCount: 1,
+      isOwner: true,
+    });
+    expect(summary).not.toHaveProperty("passwordHash");
+    expect(summary).not.toHaveProperty("token");
+  });
+
+  it("exige auth para like", async () => {
+    const published = await server.requestJson<PublishResponse>("/api/maps", {
+      method: "POST",
+      token: ownerToken,
+      body: {
+        map: createOnlineTestMap({ id: "like-auth-map" }),
+        creatorName: "Owner",
+        clientId: "legacy-owner",
+      },
+    });
+    const onlineId = published.body.onlineId;
+    expect(onlineId).toEqual(expect.any(String));
+
+    const like = await server.requestJson<{ ok: boolean; error?: string }>(
+      `/api/maps/${onlineId}/like`,
+      {
+        method: "POST",
+        body: { clientId: "anonymous" },
+      }
+    );
+
+    expect(like.status).toBe(401);
+    expect(like.body.ok).toBe(false);
   });
 
   it("permite publicar, protege update/delete por dono real e alterna like/unlike", async () => {

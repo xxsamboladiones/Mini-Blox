@@ -1,7 +1,4 @@
-import { EditorScreen } from "./screens/EditorScreen";
 import { MainMenuScreen } from "./screens/MainMenuScreen";
-import { MapListScreen } from "./screens/MapListScreen";
-import { PlayScreen } from "./screens/PlayScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import type { Screen } from "./AppState";
 import { LocalMapMetadataStorage } from "../storage/LocalMapMetadataStorage";
@@ -23,30 +20,32 @@ export class App {
   private showMainMenu(): void {
     this.replaceScreen(
       new MainMenuScreen(this.root, {
-        onCreateMap: (templateId) => this.showEditor(this.createProfileMap(templateId)),
-        onOpenMapList: () => this.showMapList(),
+        onCreateMap: (templateId) => void this.showEditor(this.createProfileMap(templateId)),
+        onOpenMapList: () => void this.showMapList(),
         onOpenProfile: () => this.showProfile(),
         onContinueLastMap: () =>
-          this.showEditor(MapStorage.getLastMap() ?? this.createProfileMap("empty")),
+          void this.showEditor(MapStorage.getLastMap() ?? this.createProfileMap("empty")),
         onContinueLastPlayed: () => {
           const mapId = LocalMapMetadataStorage.getLastPlayedMapId();
           const map = mapId ? MapStorage.getMap(mapId) : null;
-          this.showPlay(map ?? MapStorage.getLastMap() ?? this.createProfileMap("empty"));
+          void this.showPlay(map ?? MapStorage.getLastMap() ?? this.createProfileMap("empty"));
         },
         onImportMap: (file) => void this.importMap(file),
       })
     );
   }
 
-  private showMapList(): void {
+  private async showMapList(): Promise<void> {
+    this.showLoading("Carregando catalogo...");
+    const { MapListScreen } = await import("./screens/MapListScreen");
     this.replaceScreen(
       new MapListScreen(this.root, {
         onBackToMenu: () => this.showMainMenu(),
-        onCreateMap: () => this.showEditor(this.createProfileMap("empty")),
-        onEditMap: (map) => this.showEditor(map),
-        onPlayMap: (map) => this.showPlay(map),
+        onCreateMap: () => void this.showEditor(this.createProfileMap("empty")),
+        onEditMap: (map) => void this.showEditor(map),
+        onPlayMap: (map) => void this.showPlay(map),
         onPlayMultiplayer: async (map, roomId, onlineMapId) => {
-          this.showPlayMultiplayer(map, roomId, onlineMapId ?? map.onlineMetadata?.onlineId);
+          await this.showPlayMultiplayer(map, roomId, onlineMapId ?? map.onlineMetadata?.onlineId);
         },
         onCreateMultiplayerRoom: async (map, onlineMapId) => {
           await this.createAndJoinMultiplayerRoom(map, onlineMapId);
@@ -63,7 +62,9 @@ export class App {
     );
   }
 
-  private showEditor(map: GameMap): void {
+  private async showEditor(map: GameMap): Promise<void> {
+    this.showLoading("Carregando editor...");
+    const { EditorScreen } = await import("./screens/EditorScreen");
     this.replaceScreen(
       new EditorScreen(this.root, map, {
         onBackToMenu: (currentMap) => {
@@ -72,29 +73,37 @@ export class App {
         },
         onPlayMap: (currentMap) => {
           MapStorage.saveMap(currentMap);
-          this.showPlay(currentMap);
+          void this.showPlay(currentMap);
         },
       })
     );
   }
 
-  private showPlay(map: GameMap): void {
+  private async showPlay(map: GameMap): Promise<void> {
+    this.showLoading("Carregando runtime...");
+    const { PlayScreen } = await import("./screens/PlayScreen");
     this.replaceScreen(
       new PlayScreen(this.root, map, {
         onBackToMenu: () => this.showMainMenu(),
-        onEditMap: (currentMap) => this.showEditor(currentMap),
+        onEditMap: (currentMap) => void this.showEditor(currentMap),
       })
     );
   }
 
-  private showPlayMultiplayer(map: GameMap, roomId: string, onlineMapId?: string): void {
+  private async showPlayMultiplayer(
+    map: GameMap,
+    roomId: string,
+    onlineMapId?: string
+  ): Promise<void> {
+    this.showLoading("Entrando na sala...");
+    const { PlayScreen } = await import("./screens/PlayScreen");
     this.replaceScreen(
       new PlayScreen(this.root, map, {
         onBackToMenu: () => {
           multiplayerService.disconnect();
           this.showMainMenu();
         },
-        onEditMap: (currentMap) => this.showEditor(currentMap),
+        onEditMap: (currentMap) => void this.showEditor(currentMap),
         mode: "multiplayer",
         roomId,
         onlineMapId,
@@ -114,13 +123,31 @@ export class App {
     }
 
     const response = await multiplayerService.createRoom(onlineMapId, playerName);
-    this.showPlayMultiplayer(map, response.roomId, onlineMapId);
+    await this.showPlayMultiplayer(map, response.roomId, onlineMapId);
   }
 
   private replaceScreen(screen: Screen): void {
     this.activeScreen?.destroy?.();
     this.activeScreen = screen;
     screen.render();
+  }
+
+  private showLoading(label: string): void {
+    this.activeScreen?.destroy?.();
+    this.activeScreen = null;
+    this.root.innerHTML = `
+      <main class="menu-screen">
+        <section class="menu-platform app-loading-screen" aria-live="polite">
+          <div class="menu-identity">
+            <div class="menu-brand-mark">MB</div>
+            <div>
+              <h1>Mini Blox</h1>
+              <span>${label}</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    `;
   }
 
   private createProfileMap(templateId: MapTemplateId = "empty"): GameMap {
@@ -136,7 +163,7 @@ export class App {
         return;
       }
       MapStorage.saveMap(importedMap);
-      this.showEditor(importedMap);
+      void this.showEditor(importedMap);
     } catch {
       window.alert("Nao foi possivel importar. Escolha um JSON valido de GameMap do Mini Blox.");
     }

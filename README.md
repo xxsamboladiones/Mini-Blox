@@ -193,4 +193,4 @@ See [README_ONLINE.md](README_ONLINE.md) for online catalog, room flow, protocol
 
 See [docs/TYCOON.md](docs/TYCOON.md) for Tycoon object setup, runtime behavior, validation rules and current multiplayer limits.
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TESTING.md](docs/TESTING.md), [docs/ADDING_OBJECT_TYPES.md](docs/ADDING_OBJECT_TYPES.md) and [docs/ADDING_GAME_MODES.md](docs/ADDING_GAME_MODES.md) for development rules, test harness usage and extension checklists.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TESTING.md](docs/TESTING.md), [docs/PERFORMANCE.md](docs/PERFORMANCE.md), [docs/RUNTIME_SYSTEMS.md](docs/RUNTIME_SYSTEMS.md), [docs/ADDING_OBJECT_TYPES.md](docs/ADDING_OBJECT_TYPES.md) and [docs/ADDING_GAME_MODES.md](docs/ADDING_GAME_MODES.md) for development rules, performance notes, runtime-system architecture, test harness usage and extension checklists.

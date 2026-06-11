@@ -28,11 +28,12 @@ Every new object type should be visible in the object panel, editable in the pro
 
 - `GameRuntime.ts` wires scene, camera, input, HUD, physics, network and mechanics.
 - `RuntimeMechanics.ts` is an orchestrator. Do not add large new gameplay systems directly into it.
+- `runtime/core/*` defines the `RuntimeSystem` lifecycle and `RuntimeSystemManager` used for incremental system extraction.
 - New feature domains should live in focused systems such as `src/engine/runtime/*` or `src/engine/mechanics/*`.
 - `ObjectFactory.ts` builds the visual representation for map objects.
 - `GameModeRuntime.ts`, `ObjectiveRuntime.ts`, `LogicRuntime.ts`, `RuntimeHud.ts`, `AudioSystem.ts` and `FeedbackSystem.ts` consume system state and events.
 
-The Tycoon mode follows this direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while the runtime delegates interaction/update/HUD integration to it.
+The Tycoon mode follows this direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
 
 ## Backend
 
@@ -50,6 +51,7 @@ SQLite is the implemented adapter. Postgres is reserved for future repository ad
 ## Change Rules
 
 - Do not add new gameplay logic directly inside `RuntimeMechanics`.
+- New runtime mechanics should be registered through `RuntimeSystemManager` or documented as a temporary bridge.
 - Every new object type needs schema, catalog, ObjectFactory visual, editor properties, normalization, local validation, online validation and tests.
 - Every new game mode needs schema, editor settings, runtime system, HUD/objective integration, validation and tests.
 - Every `GameMap` schema change needs explicit normalization or migration documentation.

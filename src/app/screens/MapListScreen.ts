@@ -9,7 +9,7 @@ import type { MapListActions, Screen } from "../AppState";
 import { OnlineMapsTab } from "./map-list/OnlineMapsTab.js";
 import { OnlineMapDetailsModal } from "./map-list/OnlineMapDetailsModal.js";
 import { MultiplayerLobbyModal } from "./map-list/MultiplayerLobbyModal.js";
-import type { OnlineMapSummary } from "../../services/OnlineMapService.js";
+import { OnlineMapService, type OnlineMapSummary } from "../../services/OnlineMapService.js";
 
 type CatalogStatusFilter = "all" | "published" | "draft";
 type CatalogSort = "recent" | "oldest" | "name" | "favorites" | "likes";
@@ -282,9 +282,6 @@ export class MapListScreen implements Screen {
   }
 
   private async handleDownloadOnlineCopy(summary: OnlineMapSummary): Promise<void> {
-    const { OnlineMapService } = await import("../../services/OnlineMapService.js");
-    const { MapStorage } = await import("../../storage/MapStorage.js");
-
     try {
       const localCopy = await OnlineMapService.downloadOnlineMapAsLocalCopy(summary.id);
       MapStorage.saveMap(localCopy);

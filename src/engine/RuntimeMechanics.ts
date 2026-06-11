@@ -72,6 +72,9 @@ import {
 } from "./mechanics/ProjectileMechanics";
 import { RuntimeCombatSystem } from "./runtime/RuntimeCombatSystem";
 import { RuntimeInventorySystem } from "./runtime/RuntimeInventorySystem";
+import { RuntimeTycoonSystem } from "./runtime/RuntimeTycoonSystem";
+import { RUNTIME_INTERACTION_PRIORITIES } from "./runtime/core/RuntimeInteraction";
+import { RuntimeSystemManager } from "./runtime/core/RuntimeSystemManager";
 import type { GameMap } from "../shared/types/MapSchema";
 import type {
   EnemyNetState,
@@ -233,6 +236,7 @@ export class RuntimeMechanics {
   private readonly defeatedEnemyIds = new Set<string>();
   private readonly inventorySystem = new RuntimeInventorySystem();
   private readonly combatSystem = new RuntimeCombatSystem();
+  private readonly runtimeSystems = new RuntimeSystemManager();
   private readonly activeProjectiles = new Map<string, ActiveProjectile<EquippedWeapon>>();
   private projectileSequence = 0;
   private readonly itemSpawnerStates = new Map<string, ItemSpawnerRuntimeState>();
@@ -346,7 +350,7 @@ export class RuntimeMechanics {
       onLogicEvent: (event) => this.logicRuntime.dispatch(event),
       onTeamChanged: (team) => this.player.setTeamColor(team?.color ?? null),
     });
-    this.tycoonSystem = new TycoonSystem(
+    const tycoonSystem = new TycoonSystem(
       this.map,
       this.objectViews,
       this.physicsSystem,
@@ -365,6 +369,19 @@ export class RuntimeMechanics {
         onProgressChanged: (summary) => this.gameModeRuntime.onTycoonProgress(summary),
       }
     );
+    this.tycoonSystem = tycoonSystem;
+    this.runtimeSystems.register(
+      new RuntimeTycoonSystem(
+        tycoonSystem,
+        () => this.player.getBounds(),
+        () => this.player.getPosition()
+      ),
+      {
+        interactionPriority: RUNTIME_INTERACTION_PRIORITIES.tycoon,
+        worldEventPriority: RUNTIME_INTERACTION_PRIORITIES.tycoon,
+      }
+    );
+    this.runtimeSystems.start();
     this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint(this.currentRespawnPoint);
     this.player.setPosition(this.currentRespawnPoint);
     this.player.resetVelocity();
@@ -381,7 +398,7 @@ export class RuntimeMechanics {
     this.jumpPadCooldowns.clear();
     this.teleporterCooldowns.clear();
     this.activeDialogue = null;
-    this.tycoonSystem?.dispose();
+    this.runtimeSystems.dispose();
   }
 
   update(deltaSeconds: number): void {
@@ -408,7 +425,7 @@ export class RuntimeMechanics {
     this.updateItemPickups(playerBounds);
     this.updateEnemies(deltaSeconds, playerBounds);
     this.updateLogicObjectEntryEvents(playerBounds);
-    this.tycoonSystem?.update(deltaSeconds, playerBounds, this.player.getPosition());
+    this.runtimeSystems.update(deltaSeconds);
     this.gameModeRuntime.update(deltaSeconds, playerBounds, this.player.getPosition());
 
     if (this.isGameFinished) {
@@ -453,9 +470,9 @@ export class RuntimeMechanics {
       return null;
     }
 
-    const tycoonHint = this.tycoonSystem?.getInteractionHint(objectId);
-    if (tycoonHint) {
-      return tycoonHint;
+    const runtimeHint = this.runtimeSystems.getInteractionHint(objectId);
+    if (runtimeHint) {
+      return runtimeHint;
     }
 
     if (isButtonObject(target)) {
@@ -496,7 +513,7 @@ export class RuntimeMechanics {
       return false;
     }
 
-    if (this.tycoonSystem?.interactWithObject(objectId)) {
+    if (this.runtimeSystems.interactWithObject(objectId)) {
       return true;
     }
 
@@ -701,7 +718,7 @@ export class RuntimeMechanics {
     this.initializeBehaviorStates();
     this.physicsSystem.setCollidersFromObjects(this.map, this.objectViews);
     this.applyInitialDoorState();
-    this.tycoonSystem?.reset();
+    this.runtimeSystems.reset();
     this.initializeItemSpawners();
     this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint({ ...this.map.spawnPoint });
     this.player.setPosition(this.currentRespawnPoint);
@@ -847,7 +864,7 @@ export class RuntimeMechanics {
       }
 
       if (event.type === "tycoonPurchase" || event.type === "tycoonUpgrade") {
-        return this.tycoonSystem?.applyWorldEvent(event) ?? false;
+        return this.runtimeSystems.applyWorldEvent(event);
       }
 
       return false;

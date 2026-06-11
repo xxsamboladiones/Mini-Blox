@@ -39,9 +39,6 @@ jobs:
       - name: Validate templates
         run: node scripts/validate-templates.mjs
 
-      - name: Verify render
-        run: node scripts/verify-render.mjs
-
   backend:
     name: Backend
     runs-on: ubuntu-latest

@@ -3,11 +3,20 @@ import {
   getBlockingValidationIssues,
   validateEditorMap,
 } from "../editor/EditorMapValidator";
-import { createMapFromTemplate } from "./MapTemplates";
+import { MAP_TEMPLATES, createMapFromTemplate } from "./MapTemplates";
 import { normalizeGameMap } from "./normalizeGameMap";
 import { createEmptyGameMap, type GameMap } from "./types/MapSchema";
 
 describe("Map validation", () => {
+  it("aceita todos os templates oficiais", () => {
+    for (const template of MAP_TEMPLATES) {
+      const map = createMapFromTemplate(template.id);
+      const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
+
+      expect(blockingIssues, template.id).toHaveLength(0);
+    }
+  });
+
   it("aceita o template Tycoon Basico", () => {
     const map = createMapFromTemplate("basicTycoon");
     const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
@@ -26,6 +35,21 @@ describe("Map validation", () => {
     const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
 
     expect(blockingIssues.some((issue) => issue.code === "tycoon.purchase.requiredMissing")).toBe(
+      true
+    );
+  });
+
+  it("falha quando unlockObjectIds aponta para objeto inexistente", () => {
+    const map = createMapFromTemplate("basicTycoon");
+    const button = findTycoonObject(map, "tycoonBuyButton");
+    button.properties = {
+      ...button.properties,
+      unlockObjectIds: ["missing_unlockable"],
+    };
+
+    const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
+
+    expect(blockingIssues.some((issue) => issue.code === "tycoon.unlock.objectMissing")).toBe(
       true
     );
   });
@@ -79,6 +103,13 @@ describe("Map validation", () => {
     expect(normalized.gameModeSettings?.mode).toBe("freeplay");
     expect(normalized.gameModeSettings?.tycoonSettings?.startingCash).toBe(0);
     expect(normalized.objects[0]?.scale).toEqual({ x: 1, y: 1, z: 1 });
+  });
+
+  it("createEmptyGameMap cria mapa local valido", () => {
+    const map = createEmptyGameMap("Novo teste");
+    const blockingIssues = getBlockingValidationIssues(validateEditorMap(map));
+
+    expect(blockingIssues).toHaveLength(0);
   });
 });
 

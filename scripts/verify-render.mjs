@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { inflateSync } from "node:zlib";
 
-const EDGE_PATH = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 const DEBUG_PORT = 9223;
 const APP_URL = "http://127.0.0.1:5173/";
 
@@ -13,8 +13,9 @@ async function main() {
 
   await mkdir(userDataDir, { recursive: true });
 
+  const browserPath = resolveBrowserPath();
   const browser = spawn(
-    EDGE_PATH,
+    browserPath,
     [
       "--headless=new",
       "--disable-gpu",
@@ -44,6 +45,43 @@ async function main() {
     await stopBrowser(browser);
     await rmWithRetry(userDataDir);
   }
+}
+
+function resolveBrowserPath() {
+  const configuredPath = process.env.MINIBLOX_BROWSER_PATH ?? process.env.BROWSER_PATH;
+  if (configuredPath && existsSync(configuredPath)) {
+    return configuredPath;
+  }
+
+  const candidates =
+    process.platform === "win32"
+      ? [
+          "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+          "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+          "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+        ]
+      : process.platform === "darwin"
+        ? [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+          ]
+        : [
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/chromium",
+          ];
+
+  const browserPath = candidates.find((candidate) => existsSync(candidate));
+  if (!browserPath) {
+    throw new Error(
+      "No Chromium-based browser found. Set MINIBLOX_BROWSER_PATH to run verify-render."
+    );
+  }
+
+  return browserPath;
 }
 
 async function inspectViewport(client, width, height, mobile, name) {

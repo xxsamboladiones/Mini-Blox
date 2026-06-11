@@ -1,0 +1,30 @@
+import type * as THREE from "three";
+import type { GameMap } from "../../../shared/types/MapSchema";
+import type { WorldEvent } from "../../../shared/types/MultiplayerSchema";
+import type { Vector3 } from "../../../shared/types/ObjectSchema";
+import type { AudioSystem } from "../../AudioSystem";
+import type { FeedbackSystem } from "../../FeedbackSystem";
+import type { GameModeRuntime } from "../../GameModeRuntime";
+import type { LogicRuntime } from "../../LogicRuntime";
+import type { ObjectiveRuntime } from "../../ObjectiveRuntime";
+import type { PhysicsSystem } from "../../PhysicsSystem";
+import type { PlayerController } from "../../PlayerController";
+import type { RuntimeHud } from "../../RuntimeHud";
+
+export type RuntimeContext = {
+  map: GameMap;
+  world: THREE.Group;
+  objectViews: Map<string, THREE.Object3D>;
+  player: PlayerController;
+  hud: RuntimeHud;
+  physicsSystem: PhysicsSystem;
+  audio: AudioSystem;
+  feedback: FeedbackSystem;
+  logicRuntime: LogicRuntime;
+  objectiveRuntime: ObjectiveRuntime;
+  gameModeRuntime: GameModeRuntime;
+  emitWorldEvent: (event: WorldEvent) => void;
+  isMultiplayerEnabled: () => boolean;
+  getPlayerBounds: () => THREE.Box3;
+  getPlayerPosition: () => Vector3;
+};

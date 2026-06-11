@@ -19,6 +19,7 @@ Use this checklist whenever a new `MapObject.type` is added.
 ## Runtime Rules
 
 - Put behavior in a focused runtime system, not directly in `RuntimeMechanics`.
+- Register interactive/runtime behavior through `RuntimeSystemManager` when the object needs lifecycle hooks, interaction priority or synchronized world events.
 - Keep reset behavior explicit: visibility, collision, timers, counters and HUD state must return to initial state.
 - Avoid creating materials, geometries or expensive lookup structures every frame.
 - If the object interacts with multiplayer, update shared message types and server validation together.

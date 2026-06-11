@@ -1,0 +1,84 @@
+name: Smoke
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Runtime and Multiplayer Smokes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PORT: 3001
+      RATE_LIMIT_ENABLED: "false"
+      LOG_LEVEL: info
+      CORS_ORIGIN: http://127.0.0.1:5173
+      VITE_API_URL: http://127.0.0.1:3001
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Build backend
+        run: npm run build
+        working-directory: server
+
+      - name: Start backend for HTTP smoke
+        run: |
+          cd server
+          DATABASE_URL=file:./data/ci-smoke.sqlite npm run start > ../server-smoke.log 2>&1 &
+          echo $! > ../server.pid
+
+      - name: Wait for backend
+        run: node scripts/wait-for-url.mjs http://127.0.0.1:3001/health 30000
+
+      - name: HTTP smoke
+        run: node server/scripts/smoke-server.mjs
+
+      - name: Stop HTTP smoke backend
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill "$(cat server.pid)" || true
+          fi
+
+      - name: Multiplayer smoke
+        run: DATABASE_URL=file:./server/data/ci-multiplayer.sqlite node server/scripts/smoke-multiplayer.mjs
+
+      - name: Start frontend for render smoke
+        run: |
+          npm run dev -- --host 127.0.0.1 > vite-smoke.log 2>&1 &
+          echo $! > vite.pid
+
+      - name: Wait for frontend
+        run: node scripts/wait-for-url.mjs http://127.0.0.1:5173/ 30000
+
+      - name: Render smoke
+        run: node scripts/verify-render.mjs
+
+      - name: Root multiplayer smoke
+        run: DATABASE_URL=file:./server/data/ci-root-multiplayer.sqlite node smoke-multiplayer.mjs
+
+      - name: Stop frontend
+        if: always()
+        run: |
+          if [ -f vite.pid ]; then
+            kill "$(cat vite.pid)" || true
+          fi

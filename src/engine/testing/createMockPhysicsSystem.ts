@@ -6,6 +6,7 @@ export type MockPhysicsSystem = PhysicsSystem & {
   activeColliderIds: Set<string>;
   colliderUpdates: Array<{ objectId: string; solid: boolean }>;
   colliderRemovals: string[];
+  hasCollider: (objectId: string) => boolean;
 };
 
 export function createMockPhysicsSystem(): MockPhysicsSystem {
@@ -46,6 +47,7 @@ export function createMockPhysicsSystem(): MockPhysicsSystem {
       colliders.delete(objectId);
     },
     getSolidColliders: () => [...colliders.values()],
+    hasCollider: (objectId: string) => activeColliderIds.has(objectId),
   };
 
   return mock as unknown as MockPhysicsSystem;

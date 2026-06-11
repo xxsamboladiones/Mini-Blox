@@ -11,6 +11,7 @@ import {
 } from "../testing/createRuntimeTestMap";
 import { simulateRuntimeTicks } from "../testing/simulateRuntimeTicks";
 import type { GameMap } from "../../shared/types/MapSchema";
+import type { WorldEvent } from "../../shared/types/MultiplayerSchema";
 import type { MapObject, MapObjectProperties } from "../../shared/types/ObjectSchema";
 
 describe("TycoonSystem", () => {
@@ -182,6 +183,30 @@ describe("TycoonSystem", () => {
     expect(fixture.system.getUpgradeLevel("upgrade_income")).toBe(1);
   });
 
+  it("aplica intervalMultiplier ao intervalo efetivo do gerador", () => {
+    const fixture = createTycoonFixture([
+      tycoonObject("tycoonGenerator", "generator", {
+        generatorId: "gen_1",
+        incomePerTick: 10,
+        tickInterval: 1,
+      }),
+      tycoonObject("tycoonUpgrade", "upgrade", {
+        upgradeId: "upgrade_speed",
+        cost: 0,
+        targetGeneratorIds: ["gen_1"],
+        intervalMultiplier: 0.5,
+        maxLevel: 1,
+      }),
+    ]);
+
+    expect(fixture.system.interactWithObject("upgrade")).toBe(true);
+
+    simulateRuntimeTicks(fixture.system, { ticks: 1, deltaSeconds: 1.5 });
+
+    expect(fixture.system.getCash()).toBe(30);
+    expect(fixture.system.getUpgradeLevel("upgrade_speed")).toBe(1);
+  });
+
   it("respeita maxLevel do upgrade", () => {
     const fixture = createTycoonFixture([
       tycoonObject("tycoonUpgrade", "upgrade", {
@@ -219,6 +244,62 @@ describe("TycoonSystem", () => {
 
     expect(onCompleted).toHaveBeenCalledTimes(1);
     expect(fixture.system.getSummary().completed).toBe(true);
+  });
+
+  it("nao duplica upgrade quando recebe eco local de worldEvent", () => {
+    const worldEvents: WorldEvent[] = [];
+    const fixture = createTycoonFixture([
+      tycoonObject("tycoonUpgrade", "upgrade", {
+        upgradeId: "upgrade_income",
+        cost: 0,
+        maxLevel: 2,
+        hideAfterPurchase: false,
+      }),
+    ], {
+      onWorldEvent: (event) => worldEvents.push(event),
+    });
+
+    expect(fixture.system.interactWithObject("upgrade")).toBe(true);
+    expect(fixture.system.getUpgradeLevel("upgrade_income")).toBe(1);
+    expect(worldEvents).toHaveLength(1);
+
+    expect(fixture.system.applyWorldEvent(worldEvents[0])).toBe(false);
+
+    expect(fixture.system.getUpgradeLevel("upgrade_income")).toBe(1);
+  });
+
+  it("applySharedPurchase aplica compra sem custo", () => {
+    const fixture = createTycoonFixture([
+      tycoonObject("tycoonUnlockable", "wall", {
+        startsLocked: true,
+      }),
+      tycoonObject("tycoonBuyButton", "button", {
+        purchaseId: "buy_wall",
+        cost: 100,
+        unlockObjectIds: ["wall"],
+      }),
+    ]);
+
+    expect(fixture.system.applySharedPurchase("buy_wall")).toBe(true);
+
+    expect(fixture.system.getCash()).toBe(0);
+    expect(fixture.system.isPurchaseCompleted("buy_wall")).toBe(true);
+    expect(fixture.views.get("wall")?.visible).toBe(true);
+  });
+
+  it("applySharedUpgrade aplica upgrade sem custo", () => {
+    const fixture = createTycoonFixture([
+      tycoonObject("tycoonUpgrade", "upgrade", {
+        upgradeId: "upgrade_income",
+        cost: 100,
+        maxLevel: 1,
+      }),
+    ]);
+
+    expect(fixture.system.applySharedUpgrade("upgrade_income")).toBe(true);
+
+    expect(fixture.system.getCash()).toBe(0);
+    expect(fixture.system.getUpgradeLevel("upgrade_income")).toBe(1);
   });
 
   it("reset limpa cash, compras, upgrades, pending cash e objetos bloqueados", () => {
@@ -269,6 +350,7 @@ type FixtureOptions = {
   startingCash?: number;
   winPurchaseIds?: string[];
   onCompleted?: () => void;
+  onWorldEvent?: (event: WorldEvent) => void;
 };
 
 function createTycoonFixture(objects: MapObject[], options: FixtureOptions = {}) {
@@ -284,6 +366,7 @@ function createTycoonFixture(objects: MapObject[], options: FixtureOptions = {})
   const feedback = createMockFeedbackSystem();
   const system = new TycoonSystem(map, views, physics, hud, audio, feedback, {
     isMultiplayer: () => false,
+    emitWorldEvent: options.onWorldEvent,
     onCompleted: options.onCompleted,
   });
 

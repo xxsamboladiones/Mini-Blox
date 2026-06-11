@@ -51,6 +51,47 @@ export function createRuntimeTestMap(options: RuntimeTestMapOptions = {}): GameM
   });
 }
 
+export function createFreeplayTestMap(objects: MapObject[] = []): GameMap {
+  return createRuntimeTestMap({
+    gameMode: "freeplay",
+    objects,
+    tycoonSettings: { winPurchaseIds: [] },
+  });
+}
+
+export function createCoinTestMap(): GameMap {
+  return createRuntimeTestMap({
+    gameMode: "coinCollect",
+    objects: [
+      createRuntimeTestObject("coin", "coin_1", { coinValue: 1 }, { x: 1, y: 0.5, z: 0 }),
+      createRuntimeTestObject("finish", "finish", {}, { x: 3, y: 0.5, z: 0 }),
+    ],
+  });
+}
+
+export function createDoorButtonTestMap(): GameMap {
+  return createRuntimeTestMap({
+    gameMode: "freeplay",
+    objects: [
+      createRuntimeTestObject("door", "door_1", { doorId: "door_a" }, { x: 3, y: 1, z: 0 }),
+      createRuntimeTestObject(
+        "button",
+        "button_1",
+        { targetDoorId: "door_a" },
+        { x: 0, y: 0.3, z: 0 }
+      ),
+    ],
+  });
+}
+
+export function createTycoonTestMap(objects: MapObject[], options: RuntimeTestMapOptions = {}): GameMap {
+  return createRuntimeTestMap({
+    ...options,
+    gameMode: "tycoon",
+    objects,
+  });
+}
+
 export function createRuntimeTestObject(
   type: MapObjectType,
   id: string,

@@ -18,6 +18,7 @@ Use this checklist whenever a new `GameMode` is added.
 ## Runtime Rules
 
 - `RuntimeMechanics` should orchestrate systems and expose compatibility APIs; it should not become the primary implementation of a new mode.
+- New mode behavior should implement `RuntimeSystem` directly or use a small adapter registered with `RuntimeSystemManager`.
 - Restart and map switching must clear all mode-specific state.
 - HUD panels must be mode-scoped and hidden in other modes.
 - Objectives and win conditions must be deterministic after reset.

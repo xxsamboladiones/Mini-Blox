@@ -50,14 +50,43 @@ Use the harness for runtime systems that do not need a real browser canvas. Brow
 
 `.github/workflows/ci.yml` runs on pull requests and pushes to `main`/`master`:
 
-- Root: `npm ci`, typecheck, tests, check, build, template validation and render verification.
+- Root: `npm ci`, typecheck, tests, check, build and template validation.
 - Backend: `npm ci`, typecheck, tests, check and build.
 
-Smoke scripts that open ports or coordinate multiple processes remain local/manual unless moved into a dedicated CI job.
+`.github/workflows/smoke.yml` runs the slower port-based smoke checks in a separate job:
+
+- builds and starts the backend with a CI SQLite database;
+- waits for `/health` with `scripts/wait-for-url.mjs`;
+- runs backend and multiplayer smoke scripts;
+- starts the Vite dev server;
+- waits for the frontend and runs render verification plus the root multiplayer smoke.
+
+Keep the basic CI workflow fast and deterministic. Put checks that need live ports, background processes or browser probing in the smoke workflow.
+
+## Local Smokes
+
+```bash
+cd server
+npm run build
+npm run start
+```
+
+In another shell:
+
+```bash
+node server/scripts/smoke-server.mjs
+node server/scripts/smoke-multiplayer.mjs
+npm run dev
+node scripts/verify-render.mjs
+node smoke-multiplayer.mjs
+```
+
+Use temporary `DATABASE_URL=file:...` values when running repeated smoke tests to avoid database lock noise. Use `MINIBLOX_BROWSER_PATH` or `BROWSER_PATH` if render verification cannot find Chrome/Edge/Chromium.
 
 ## Test Expectations
 
 - New runtime systems should have unit tests around state transitions, reset behavior and callbacks.
+- New runtime systems should also have `RuntimeSystemManager` or adapter coverage for lifecycle, interaction priority and world-event handling.
 - New object types should have validation tests for valid templates and broken references.
 - Backend route tests should use temporary SQLite and should not depend on existing local data.
 - Regressions found by browser playtesting should get a small automated test when the behavior can be isolated.

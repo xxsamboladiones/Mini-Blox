@@ -51,6 +51,20 @@ describe("auth routes", () => {
     token = response.body.token ?? "";
   });
 
+  it("rejeita username duplicado", async () => {
+    const response = await server.requestJson<AuthResponse>("/api/auth/register", {
+      method: "POST",
+      body: {
+        username: "alice_test",
+        password: "password123",
+        displayName: "Alice Clone",
+      },
+    });
+
+    expect(response.status).toBe(409);
+    expect(response.body.ok).toBe(false);
+  });
+
   it("loga com senha correta", async () => {
     const response = await server.requestJson<AuthResponse>("/api/auth/login", {
       method: "POST",
@@ -78,6 +92,13 @@ describe("auth routes", () => {
     expect(response.body.ok).toBe(false);
   });
 
+  it("rejeita /me sem token", async () => {
+    const response = await server.requestJson<AuthResponse>("/api/auth/me");
+
+    expect(response.status).toBe(401);
+    expect(response.body.ok).toBe(false);
+  });
+
   it("retorna usuario autenticado em /me", async () => {
     const response = await server.requestJson<AuthResponse>("/api/auth/me", {
       token,
@@ -86,5 +107,21 @@ describe("auth routes", () => {
     expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.user?.username).toBe("alice_test");
+  });
+
+  it("logout invalida token", async () => {
+    const logout = await server.requestJson<AuthResponse>("/api/auth/logout", {
+      method: "POST",
+      token,
+    });
+
+    expect(logout.status).toBe(200);
+    expect(logout.body.ok).toBe(true);
+
+    const me = await server.requestJson<AuthResponse>("/api/auth/me", {
+      token,
+    });
+    expect(me.status).toBe(401);
+    expect(me.body.ok).toBe(false);
   });
 });
