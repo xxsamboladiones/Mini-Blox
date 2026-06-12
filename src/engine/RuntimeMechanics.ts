@@ -1,35 +1,20 @@
 import * as THREE from "three";
-import { getWeaponDefinition, getWeaponLabel, normalizeWeaponId } from "../shared/ItemCatalog";
+import { getWeaponDefinition, getWeaponLabel } from "../shared/ItemCatalog";
 import {
   applyObjectAppearanceToThree,
   applyObjectTransformToThree,
-  disposeObject3D,
 } from "./ObjectFactory";
 import { PhysicsSystem } from "./PhysicsSystem";
 import { PlayerController } from "./PlayerController";
 import { RuntimeHud, type GameModeSummary, type VictoryActions } from "./RuntimeHud";
-import { createWeaponProjectileVisual } from "./WeaponVisualFactory";
 import { LogicRuntime } from "./LogicRuntime";
 import { ObjectiveRuntime } from "./ObjectiveRuntime";
 import { GameModeRuntime } from "./GameModeRuntime";
-import {
-  clampEnemyHealth,
-  getEnemyRuntimeConfig,
-  isEnemyAlive,
-  shouldEnemyAttackPlayer,
-} from "./mechanics/EnemyMechanics";
+import { clampEnemyHealth } from "./mechanics/EnemyMechanics";
 import {
   isDamageZoneObject,
 } from "./mechanics/DamageZoneMechanics";
 import { TycoonSystem } from "./mechanics/TycoonSystem";
-import {
-  advanceProjectile,
-  createProjectile,
-  isProjectileExpired,
-  isProjectileNearPosition,
-  type ActiveProjectile,
-} from "./mechanics/ProjectileMechanics";
-import { RuntimeCombatSystem } from "./runtime/RuntimeCombatSystem";
 import { RuntimeTycoonSystem } from "./runtime/RuntimeTycoonSystem";
 import { RUNTIME_INTERACTION_PRIORITIES } from "./runtime/core/RuntimeInteraction";
 import { RuntimeSystemManager } from "./runtime/core/RuntimeSystemManager";
@@ -41,6 +26,16 @@ import {
 } from "./runtime/systems/RuntimeDoorButtonSystem";
 import { RuntimeHazardCheckpointSystem } from "./runtime/systems/RuntimeHazardCheckpointSystem";
 import { RuntimeMovementObjectSystem } from "./runtime/systems/RuntimeMovementObjectSystem";
+import {
+  RuntimeEnemySystem,
+  type EnemyRuntimeState,
+} from "./runtime/systems/RuntimeEnemySystem";
+import { RuntimeProjectileSystem } from "./runtime/systems/RuntimeProjectileSystem";
+import {
+  RuntimeCombatBridgeSystem,
+  createEquippedWeaponFromDefinition,
+  type EquippedWeapon,
+} from "./runtime/systems/RuntimeCombatBridgeSystem";
 import type { GameMap } from "../shared/types/MapSchema";
 import type {
   EnemyNetState,
@@ -53,12 +48,7 @@ import type {
   WorldEvent,
 } from "../shared/types/MultiplayerSchema";
 import type { MapObject, Vector3 } from "../shared/types/ObjectSchema";
-import type {
-  ItemPickupObject,
-  WeaponAttackType,
-  WeaponClass,
-  WeaponDefinition,
-} from "../shared/types/ItemSchema";
+import type { ItemPickupObject } from "../shared/types/ItemSchema";
 import type { AudioSystem } from "./AudioSystem";
 import type { FeedbackSystem } from "./FeedbackSystem";
 
@@ -84,31 +74,6 @@ type MultiplayerRuntimeOptions = {
   onPlayerHealRequest: (payload: PlayerHealRequestPayload) => void;
 };
 
-type EnemyRuntimeState = {
-  mapObject: MapObject;
-  spawnPosition: THREE.Vector3;
-  health: number;
-  maxHealth: number;
-  attackCooldown: number;
-  patrolTarget: 0 | 1;
-  targetPosition: THREE.Vector3;
-  targetRotationY: number;
-  netState: EnemyNetState["state"];
-};
-
-type EquippedWeapon = {
-  id: string;
-  itemId: string;
-  label: string;
-  weaponClass: WeaponClass;
-  attackType: WeaponAttackType;
-  damage: number;
-  range: number;
-  cooldown: number;
-  projectileSpeed: number;
-  coneDot: number;
-};
-
 type DialogueState = {
   objectId: string;
   speaker: string;
@@ -118,19 +83,6 @@ type DialogueState = {
 
 const DEFAULT_VOID_DEATH_OFFSET = 25;
 const RESPAWN_VERTICAL_OFFSET = 0.25;
-const UP = new THREE.Vector3(0, 1, 0);
-const DEFAULT_WEAPON: EquippedWeapon = {
-  id: "basic_sword",
-  itemId: "weapon_basic",
-  label: "Espada Basica",
-  weaponClass: "melee",
-  attackType: "slash",
-  damage: 18,
-  range: 1.85,
-  cooldown: 0.65,
-  projectileSpeed: 0,
-  coneDot: 0.18,
-};
 
 export class RuntimeMechanics {
   private currentRespawnPoint: Vector3;
@@ -138,24 +90,19 @@ export class RuntimeMechanics {
   private readonly voidDeathY: number;
   private readonly logicInsideObjectIds = new Set<string>();
   private readonly logicDisabledObjectIds = new Set<string>();
-  private readonly defeatedEnemyIds = new Set<string>();
-  private readonly combatSystem = new RuntimeCombatSystem();
   private readonly runtimeSystems = new RuntimeSystemManager();
-  private readonly activeProjectiles = new Map<string, ActiveProjectile<EquippedWeapon>>();
-  private projectileSequence = 0;
-  private readonly enemyStates = new Map<string, EnemyRuntimeState>();
   private suppressWorldEvents = false;
   private deathCooldown = 0;
   private messageCooldown = 0;
-  private enemySyncAccumulator = 0;
-  private equippedWeapon: EquippedWeapon | null = null;
   private activeDialogue: DialogueState | null = null;
-  private allEnemiesDefeatedDispatched = false;
   private isGameFinished = false;
   private readonly pickupSystem: RuntimePickupSystem;
   private readonly doorButtonSystem: RuntimeDoorButtonSystem;
   private readonly hazardCheckpointSystem: RuntimeHazardCheckpointSystem;
   private readonly movementObjectSystem: RuntimeMovementObjectSystem;
+  private readonly enemySystem: RuntimeEnemySystem;
+  private readonly projectileSystem: RuntimeProjectileSystem<EquippedWeapon>;
+  private readonly combatBridgeSystem: RuntimeCombatBridgeSystem;
   private readonly logicRuntime: LogicRuntime;
   private readonly objectiveRuntime: ObjectiveRuntime;
   private readonly gameModeRuntime: GameModeRuntime;
@@ -175,8 +122,76 @@ export class RuntimeMechanics {
     this.currentRespawnPoint = { ...map.spawnPoint };
     this.voidDeathEnabled = map.gameplaySettings?.voidDeathEnabled !== false;
     this.voidDeathY = resolveVoidDeathY(map);
-    this.initializeBehaviorStates();
     this.physicsSystem.setCollidersFromObjects(this.map, this.objectViews);
+    this.enemySystem = new RuntimeEnemySystem({
+      map: this.map,
+      objectViews: this.objectViews,
+      physicsSystem: this.physicsSystem,
+      hud: this.hud,
+      audio: this.audio,
+      feedback: this.feedback,
+      enableLifecycleUpdate: false,
+      isHost: () => this.options.multiplayer?.isHost() === true,
+      isMultiplayerEnabled: () => this.isMultiplayerEnabled(),
+      getLocalPlayerId: () => this.options.multiplayer?.getLocalPlayerId() ?? null,
+      getRemotePlayers: () => this.options.multiplayer?.getRemotePlayers() ?? [],
+      getPlayerPosition: () => this.player.getPosition(),
+      isLocalPlayerAlive: () => !this.player.isDead(),
+      getPlayerBounds: () => this.player.getBounds(),
+      getDeathCooldown: () => this.deathCooldown,
+      damagePlayer: (amount, message, position) => this.damagePlayer(amount, message, position),
+      onEnemyPositionUpdate: (enemies) => this.options.multiplayer?.onEnemyPositionUpdate(enemies),
+      setObjectRuntimeEnabled: (objectId, enabled) => {
+        if (enabled) {
+          this.logicDisabledObjectIds.delete(objectId);
+        } else {
+          this.logicDisabledObjectIds.add(objectId);
+        }
+      },
+      onEnemyDefeated: (defeatedCount, totalEnemies) =>
+        this.objectiveRuntime.onEnemyDefeated(defeatedCount, totalEnemies),
+      onGameModeEnemyDefeated: (defeatedCount, totalEnemies) =>
+        this.gameModeRuntime.onEnemyDefeated(defeatedCount, totalEnemies),
+      onLogicEvent: (event) => this.logicRuntime.dispatch(event),
+    });
+    this.projectileSystem = new RuntimeProjectileSystem<EquippedWeapon>({
+      world: this.world,
+      objectViews: this.objectViews,
+      enableLifecycleUpdate: false,
+      getEnemyStates: () => this.enemySystem.getEnemyStates(),
+      getRemotePlayers: () => this.options.multiplayer?.getRemotePlayers() ?? [],
+      isMultiplayerEnabled: () => this.isMultiplayerEnabled(),
+      damageEnemy: (state, amount) => this.damageEnemy(state, amount),
+      onEnemyHit: (enemyObjectId, damage, weaponId) =>
+        this.options.multiplayer?.onEnemyHit(enemyObjectId, damage, weaponId),
+      onPlayerAttack: (payload) => this.options.multiplayer?.onPlayerAttack(payload),
+    });
+    this.combatBridgeSystem = new RuntimeCombatBridgeSystem({
+      hud: this.hud,
+      audio: this.audio,
+      feedback: this.feedback,
+      enableLifecycleUpdate: false,
+      objectViews: this.objectViews,
+      projectileSystem: this.projectileSystem,
+      getEnemyStates: () => this.enemySystem.getEnemyStates(),
+      getRemotePlayers: () => this.options.multiplayer?.getRemotePlayers() ?? [],
+      getPlayerPosition: () => this.player.getPosition(),
+      getPlayerForwardDirection: () => this.player.getForwardDirection(),
+      setPlayerEquippedWeapon: (weaponId) => this.player.setEquippedWeapon(weaponId),
+      playPlayerAttackFeedback: (attackType) => this.player.playAttackFeedback(attackType),
+      isGameFinished: () => this.isGameFinished,
+      getDeathCooldown: () => this.deathCooldown,
+      getMessageCooldown: () => this.messageCooldown,
+      setMessageCooldown: (cooldownSeconds) => {
+        this.messageCooldown = cooldownSeconds;
+      },
+      isMultiplayerEnabled: () => this.isMultiplayerEnabled(),
+      damageEnemy: (state, amount) => this.damageEnemy(state, amount),
+      onEnemyHit: (enemyObjectId, damage, weaponId) =>
+        this.options.multiplayer?.onEnemyHit(enemyObjectId, damage, weaponId),
+      onPlayerAttack: (payload) => this.options.multiplayer?.onPlayerAttack(payload),
+      onPlayerAttackVisual: (payload) => this.options.multiplayer?.onPlayerAttackVisual(payload),
+    });
     this.pickupSystem = new RuntimePickupSystem({
       map: this.map,
       world: this.world,
@@ -190,7 +205,7 @@ export class RuntimeMechanics {
       emitWorldEvent: (event) => this.emitWorldEvent(event),
       onPlayerHealRequest: (payload) => this.options.multiplayer?.onPlayerHealRequest(payload),
       healPlayer: (amount) => this.healPlayer(amount),
-      equipWeapon: (itemId) => this.equipWeapon(itemId),
+      equipWeapon: (itemId) => this.combatBridgeSystem.equipWeapon(itemId),
       onCoinCollected: (totalCoins, amount) => {
         this.objectiveRuntime.onCoinCollected(totalCoins);
         this.gameModeRuntime.onCoinCollected(totalCoins, amount);
@@ -270,11 +285,11 @@ export class RuntimeMechanics {
       setCheckpoint: (objectId) => this.setCheckpointFromObject(objectId),
       finishMap: () => this.finishMap(),
       setObjectEnabled: (objectId, enabled) => this.setObjectEnabled(objectId, enabled),
-      isEnemyDefeated: (objectId) => this.defeatedEnemyIds.has(objectId),
-      getDefeatedEnemyCount: () => this.defeatedEnemyIds.size,
-      hasWeapon: (weaponId) => this.hasWeapon(weaponId),
+      isEnemyDefeated: (objectId) => this.enemySystem.isEnemyDefeated(objectId),
+      getDefeatedEnemyCount: () => this.enemySystem.getDefeatedEnemyCount(),
+      hasWeapon: (weaponId) => this.combatBridgeSystem.hasWeapon(weaponId),
       getHealth: () => this.player.getHealth(),
-      spawnEnemy: (objectId) => this.spawnEnemy(objectId),
+      spawnEnemy: (objectId) => this.enemySystem.spawnEnemy(objectId),
       healPlayer: (amount) => {
         const healed = this.healPlayer(amount);
         this.hud.showMessage(healed > 0 ? `Vida +${Math.round(healed)}` : "Vida ja esta cheia");
@@ -282,7 +297,7 @@ export class RuntimeMechanics {
       damagePlayer: (amount) =>
         this.damagePlayer(amount, "Logica causou dano", this.player.getPosition(), false),
       giveWeapon: (weaponId) => {
-        this.equipWeapon(weaponId);
+        this.combatBridgeSystem.equipWeapon(weaponId);
         this.pickupSystem.setWeaponInventoryItem(weaponId);
         this.hud.showMessage(`${getWeaponLabel(weaponId)} equipada`);
       },
@@ -322,6 +337,9 @@ export class RuntimeMechanics {
       onLogicEvent: (event) => this.logicRuntime.dispatch(event),
       onTeamChanged: (team) => this.player.setTeamColor(team?.color ?? null),
     });
+    this.runtimeSystems.register(this.enemySystem);
+    this.runtimeSystems.register(this.projectileSystem);
+    this.runtimeSystems.register(this.combatBridgeSystem);
     const tycoonSystem = new TycoonSystem(
       this.map,
       this.objectViews,
@@ -361,8 +379,7 @@ export class RuntimeMechanics {
   }
 
   dispose(): void {
-    this.clearProjectiles();
-    this.enemyStates.clear();
+    this.projectileSystem.clearProjectiles();
     this.activeDialogue = null;
     this.runtimeSystems.dispose();
   }
@@ -374,10 +391,9 @@ export class RuntimeMechanics {
 
     this.deathCooldown = Math.max(0, this.deathCooldown - deltaSeconds);
     this.messageCooldown = Math.max(0, this.messageCooldown - deltaSeconds);
-    this.combatSystem.update(deltaSeconds);
-    this.updateWeaponCooldownHud();
+    this.combatBridgeSystem.updateCombat(deltaSeconds);
     this.runtimeSystems.update(deltaSeconds);
-    this.updateProjectiles(deltaSeconds);
+    this.projectileSystem.updateProjectiles(deltaSeconds);
 
     if (this.updateVoidDeath()) {
       return;
@@ -385,7 +401,7 @@ export class RuntimeMechanics {
 
     const playerBounds = this.player.getBounds();
 
-    this.updateEnemies(deltaSeconds, playerBounds);
+    this.enemySystem.updateEnemyBehavior(deltaSeconds, playerBounds);
     this.updateLogicObjectEntryEvents(playerBounds);
     this.gameModeRuntime.update(deltaSeconds, playerBounds, this.player.getPosition());
 
@@ -522,88 +538,17 @@ export class RuntimeMechanics {
   }
 
   attack(): boolean {
-    if (this.isGameFinished || this.deathCooldown > 0) {
-      return false;
-    }
-
-    if (!this.equippedWeapon) {
-      if (this.messageCooldown <= 0) {
-        this.hud.showMessage("Pegue uma arma para atacar.");
-        this.messageCooldown = 1;
-      }
-
-      return false;
-    }
-
-    if (!this.combatSystem.canAttack()) {
-      return false;
-    }
-
-    const weapon = this.equippedWeapon;
-    const direction = this.player.getForwardDirection();
-    const origin = this.getAttackOrigin(direction);
-    this.combatSystem.beginAttack(weapon);
-    this.updateWeaponCooldownHud();
-    this.audio.play(weapon.attackType === "shoot" ? "blaster" : "attack");
-    this.player.playAttackFeedback(weapon.attackType);
-    this.feedback.spawn("attack", this.player.getPosition());
-
-    if (this.isMultiplayerEnabled()) {
-      this.options.multiplayer?.onPlayerAttackVisual({
-        weaponId: weapon.id,
-        attackType: weapon.attackType,
-        origin,
-        direction: fromThreeVector(direction),
-      });
-    }
-
-    if (weapon.weaponClass === "ranged") {
-      this.spawnProjectile(origin, direction, weapon, true);
-      return true;
-    }
-
-    const hit = this.findEnemyInAttackRange(weapon.range, weapon.coneDot);
-
-    if (hit) {
-      if (this.isMultiplayerEnabled()) {
-        this.options.multiplayer?.onEnemyHit(hit.mapObject.id, weapon.damage, weapon.id);
-      } else {
-        this.damageEnemy(hit, weapon.damage);
-      }
-      return true;
-    }
-
-    if (this.isMultiplayerEnabled()) {
-      const remoteHit = this.findRemotePlayerInAttackRange(weapon.range, weapon.coneDot);
-      if (remoteHit) {
-        this.options.multiplayer?.onPlayerAttack({
-          weaponId: weapon.id,
-          origin,
-          direction: fromThreeVector(direction),
-          range: weapon.range,
-          damage: weapon.damage,
-          targetPlayerId: remoteHit.id,
-          attackType: weapon.attackType,
-        });
-      }
-    }
-
-    return true;
+    return this.combatBridgeSystem.attack();
   }
 
   restart(): void {
     this.logicInsideObjectIds.clear();
     this.logicDisabledObjectIds.clear();
-    this.defeatedEnemyIds.clear();
     this.deathCooldown = 0;
     this.messageCooldown = 0;
-    this.combatSystem.reset();
-    this.enemySyncAccumulator = 0;
-    this.equippedWeapon = null;
-    this.player.setEquippedWeapon(null);
-    this.clearProjectiles();
+    this.combatBridgeSystem.reset();
+    this.projectileSystem.clearProjectiles();
     this.activeDialogue = null;
-    this.allEnemiesDefeatedDispatched = false;
     this.isGameFinished = false;
     this.currentRespawnPoint = { ...this.map.spawnPoint };
     this.hud.hideVictory();
@@ -626,7 +571,6 @@ export class RuntimeMechanics {
       applyObjectAppearanceToThree(view, mapObject);
     }
 
-    this.initializeBehaviorStates();
     this.physicsSystem.setCollidersFromObjects(this.map, this.objectViews);
     this.runtimeSystems.reset();
     this.currentRespawnPoint = this.gameModeRuntime.getRespawnPoint({ ...this.map.spawnPoint });
@@ -702,68 +646,11 @@ export class RuntimeMechanics {
   }
 
   applyEnemyUpdated(enemy: EnemyNetState, showFeedback = true): void {
-    const state = this.enemyStates.get(enemy.objectId);
-    const view = this.objectViews.get(enemy.objectId);
-
-    if (!state || !view) {
-      return;
-    }
-
-    const wasAlive = isEnemyAlive(state.health, view.visible);
-    const previousHealth = state.health;
-    state.health = clampEnemyHealth(enemy.health, enemy.maxHealth);
-    state.maxHealth = Math.max(1, enemy.maxHealth);
-    state.netState = enemy.state;
-    state.targetPosition.set(enemy.position.x, enemy.position.y, enemy.position.z);
-    state.targetRotationY = enemy.rotationY;
-
-    if (this.options.multiplayer?.isHost()) {
-      view.position.copy(state.targetPosition);
-      view.rotation.y = state.targetRotationY;
-    }
-
-    if (!enemy.alive || state.health <= 0 || enemy.state === "dead") {
-      this.applyEnemyDefeated(enemy.objectId, showFeedback && wasAlive);
-      return;
-    }
-
-    view.visible = true;
-    if (showFeedback && wasAlive && state.health < previousHealth) {
-      const damageDone = previousHealth - state.health;
-      this.audio.play("hit");
-      this.feedback.spawn("damage", fromThreeVector(view.position), `-${Math.ceil(damageDone)}`);
-      this.hud.showMessage(`Inimigo: ${Math.ceil(state.health)}/${state.maxHealth}`);
-    }
+    this.enemySystem.applyEnemyUpdated(enemy, showFeedback);
   }
 
   applyEnemyDefeated(enemyObjectId: string, showFeedback = true): void {
-    const state = this.enemyStates.get(enemyObjectId);
-    const view = this.objectViews.get(enemyObjectId);
-
-    if (!state || this.defeatedEnemyIds.has(enemyObjectId)) {
-      return;
-    }
-
-    state.health = 0;
-    state.netState = "dead";
-    if (view) {
-      view.visible = false;
-      this.physicsSystem.removeCollider(enemyObjectId);
-    }
-
-    this.defeatedEnemyIds.add(enemyObjectId);
-
-    if (showFeedback) {
-      this.hud.showMessage("Inimigo derrotado");
-      this.audio.play("item");
-      this.feedback.spawn(
-        "item",
-        view ? fromThreeVector(view.position) : state.mapObject.position,
-        "Inimigo -"
-      );
-    }
-
-    this.dispatchEnemyDefeated(enemyObjectId);
+    this.enemySystem.applyEnemyDefeated(enemyObjectId, showFeedback);
   }
 
   applyLocalPlayerHealth(health: number, message?: string, damageAmount?: number): void {
@@ -819,7 +706,7 @@ export class RuntimeMechanics {
   }
 
   getEquippedWeaponId(): string | null {
-    return this.equippedWeapon?.id ?? null;
+    return this.combatBridgeSystem.getEquippedWeaponId();
   }
 
   applyRemoteAttackVisual(payload: PlayerAttackVisualPayload): void {
@@ -833,7 +720,7 @@ export class RuntimeMechanics {
       return;
     }
 
-    this.spawnProjectile(
+    this.projectileSystem.spawnProjectile(
       payload.origin,
       direction.normalize(),
       createEquippedWeaponFromDefinition(definition),
@@ -915,51 +802,6 @@ export class RuntimeMechanics {
     const currentHealth = this.player.heal(Math.max(0, amount));
     this.hud.setHealth(currentHealth, this.player.getMaxHealth());
     return Math.max(0, currentHealth - previousHealth);
-  }
-
-  private equipWeapon(itemId: string): void {
-    const definition = getWeaponDefinition(itemId);
-    const weapon = definition ? createEquippedWeaponFromDefinition(definition) : DEFAULT_WEAPON;
-
-    this.equippedWeapon = weapon;
-    this.player.setEquippedWeapon(weapon.id);
-    this.hud.setWeapon({
-      label: weapon.label,
-      typeLabel: getWeaponHudTypeLabel(weapon),
-      cooldownProgress: 1,
-    });
-  }
-
-  private hasWeapon(weaponId: string): boolean {
-    return this.equippedWeapon?.id === normalizeWeaponId(weaponId);
-  }
-
-  private spawnEnemy(objectId: string): boolean {
-    const state = this.enemyStates.get(objectId);
-    const view = this.objectViews.get(objectId);
-
-    if (!state || !view) {
-      return false;
-    }
-
-    const config = getEnemyRuntimeConfig(state.mapObject);
-    const maxHealth = config.maxHealth;
-    state.health = maxHealth;
-    state.maxHealth = maxHealth;
-    state.attackCooldown = 0;
-    state.patrolTarget = 1;
-    state.targetPosition.copy(state.spawnPosition);
-    state.targetRotationY = getNumber(state.mapObject.rotation?.y, 0);
-    state.netState = config.behavior;
-    view.visible = true;
-    applyObjectTransformToThree(view, state.mapObject);
-    applyObjectAppearanceToThree(view, state.mapObject);
-    this.logicDisabledObjectIds.delete(objectId);
-    this.defeatedEnemyIds.delete(objectId);
-    this.allEnemiesDefeatedDispatched = false;
-    this.feedback.spawn("item", state.mapObject.position, "Inimigo");
-    this.hud.showMessage("Inimigo reativado");
-    return true;
   }
 
   setCheckpointFromObject(objectId: string): boolean {
@@ -1106,416 +948,6 @@ export class RuntimeMechanics {
     this.finishMap(message);
   }
 
-  private initializeBehaviorStates(): void {
-    this.enemyStates.clear();
-
-    for (const mapObject of this.map.objects) {
-      if (mapObject.type === "enemy") {
-        const view = this.objectViews.get(mapObject.id);
-        const config = getEnemyRuntimeConfig(mapObject);
-        const maxHealth = config.maxHealth;
-
-        if (view) {
-          view.visible = true;
-          applyObjectTransformToThree(view, mapObject);
-          applyObjectAppearanceToThree(view, mapObject);
-        }
-
-        this.enemyStates.set(mapObject.id, {
-          mapObject,
-          spawnPosition: toThreeVector(mapObject.position),
-          health: maxHealth,
-          maxHealth,
-          attackCooldown: 0,
-          patrolTarget: 1,
-          targetPosition: toThreeVector(mapObject.position),
-          targetRotationY: getNumber(mapObject.rotation?.y, 0),
-          netState: config.behavior,
-        });
-      }
-    }
-  }
-
-  private updateEnemies(deltaSeconds: number, playerBounds: THREE.Box3): void {
-    const playerPosition = toThreeVector(this.player.getPosition());
-    const isMultiplayer = this.isMultiplayerEnabled();
-    const isHost = isMultiplayer && this.options.multiplayer?.isHost() === true;
-    const shouldSyncEnemyPositions = isHost && (this.enemySyncAccumulator += deltaSeconds) >= 0.14;
-    const enemyPositionUpdates: EnemyPositionUpdate[] = [];
-
-    for (const state of this.enemyStates.values()) {
-      const view = this.objectViews.get(state.mapObject.id);
-
-      if (!view || !view.visible || state.health <= 0) {
-        continue;
-      }
-
-      state.attackCooldown = Math.max(0, state.attackCooldown - deltaSeconds);
-      const config = getEnemyRuntimeConfig(state.mapObject);
-      let target: THREE.Vector3 | null = null;
-      let targetPlayerId: string | undefined;
-
-      if (isMultiplayer && !isHost) {
-        this.interpolateEnemyView(state, view, deltaSeconds);
-      } else {
-        if (config.behavior === "chase") {
-          const targetCandidate = this.getClosestEnemyTarget(view.position, config.detectionRange);
-          if (targetCandidate) {
-            target = toThreeVector(targetCandidate.position);
-            targetPlayerId = targetCandidate.playerId;
-          }
-        } else if (config.behavior === "patrol") {
-          const patrolOffset = getThreeVector(state.mapObject.properties?.patrolOffset, {
-            x: 4,
-            y: 0,
-            z: 0,
-          });
-          target =
-            state.patrolTarget === 1
-              ? state.spawnPosition.clone().add(patrolOffset)
-              : state.spawnPosition.clone();
-
-          if (distance2DVector(view.position, target) <= 0.22) {
-            state.patrolTarget = state.patrolTarget === 1 ? 0 : 1;
-          }
-        }
-
-        if (target && config.speed > 0) {
-          const direction = target.clone().sub(view.position);
-          direction.y = 0;
-
-          if (direction.lengthSq() > 0.0001) {
-            direction.normalize();
-            const step = Math.min(
-              config.speed * deltaSeconds,
-              distance2DVector(view.position, target)
-            );
-            view.position.addScaledVector(direction, step);
-            view.position.y = state.spawnPosition.y;
-            view.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI;
-          }
-        }
-
-        state.targetPosition.copy(view.position);
-        state.targetRotationY = view.rotation.y;
-        state.netState = target ? config.behavior : "idle";
-
-        if (shouldSyncEnemyPositions) {
-          enemyPositionUpdates.push({
-            objectId: state.mapObject.id,
-            position: fromThreeVector(view.position),
-            rotationY: view.rotation.y,
-            state: state.netState,
-            targetPlayerId,
-          });
-        }
-      }
-
-      const enemyBounds = new THREE.Box3().setFromObject(view);
-      enemyBounds.expandByScalar(0.1);
-      const distanceToPlayer = distance2DVector(view.position, playerPosition);
-
-      if (
-        shouldEnemyAttackPlayer({
-          distanceToPlayer,
-          attackRange: config.attackRange,
-          intersectsPlayer: enemyBounds.intersectsBox(playerBounds),
-          attackCooldown: state.attackCooldown,
-          deathCooldown: this.deathCooldown,
-        })
-      ) {
-        state.attackCooldown = config.attackCooldown;
-        this.damagePlayer(config.damage, "Inimigo causou dano", state.mapObject.position);
-      }
-    }
-
-    if (shouldSyncEnemyPositions) {
-      this.enemySyncAccumulator = 0;
-      if (enemyPositionUpdates.length > 0) {
-        this.options.multiplayer?.onEnemyPositionUpdate(enemyPositionUpdates);
-      }
-    }
-  }
-
-  private findEnemyInAttackRange(range: number, coneDot: number): EnemyRuntimeState | null {
-    const playerPosition = toThreeVector(this.player.getPosition());
-    const facing = this.player.getForwardDirection();
-    let bestState: EnemyRuntimeState | null = null;
-    let bestDistance = Infinity;
-
-    for (const state of this.enemyStates.values()) {
-      const view = this.objectViews.get(state.mapObject.id);
-
-      if (!view || !view.visible || state.health <= 0) {
-        continue;
-      }
-
-      const offsetToEnemy = view.position.clone().sub(playerPosition);
-      offsetToEnemy.y = 0;
-      const distance = offsetToEnemy.length();
-
-      if (distance > range + 0.7 || distance <= 0.0001) {
-        continue;
-      }
-
-      const dot = offsetToEnemy.clone().normalize().dot(facing);
-
-      if (dot < coneDot && distance > 0.85) {
-        continue;
-      }
-
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestState = state;
-      }
-    }
-
-    return bestState;
-  }
-
-  private findRemotePlayerInAttackRange(range: number, coneDot: number): PlayerNetState | null {
-    const playerPosition = toThreeVector(this.player.getPosition());
-    const facing = this.player.getForwardDirection();
-    let bestPlayer: PlayerNetState | null = null;
-    let bestDistance = Infinity;
-
-    for (const remotePlayer of this.options.multiplayer?.getRemotePlayers() ?? []) {
-      if (!remotePlayer.isAlive) {
-        continue;
-      }
-
-      const offsetToPlayer = toThreeVector(remotePlayer.position).sub(playerPosition);
-      offsetToPlayer.y = 0;
-      const distance = offsetToPlayer.length();
-
-      if (distance > range + 0.7 || distance <= 0.0001) {
-        continue;
-      }
-
-      const dot = offsetToPlayer.clone().normalize().dot(facing);
-      if (dot < coneDot && distance > 0.85) {
-        continue;
-      }
-
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestPlayer = remotePlayer;
-      }
-    }
-
-    return bestPlayer;
-  }
-
-  private spawnProjectile(
-    origin: Vector3,
-    direction: THREE.Vector3,
-    weapon: EquippedWeapon,
-    local: boolean
-  ): void {
-    const mesh = createWeaponProjectileVisual(weapon.id);
-    const id = `projectile-${Date.now()}-${this.projectileSequence++}`;
-    const projectile = createProjectile(id, mesh, origin, direction, weapon, local);
-
-    if (!projectile) {
-      disposeObject3D(mesh);
-      return;
-    }
-
-    this.world.add(mesh);
-    this.activeProjectiles.set(id, projectile);
-  }
-
-  private updateProjectiles(deltaSeconds: number): void {
-    if (this.activeProjectiles.size === 0) {
-      return;
-    }
-
-    const removeIds: string[] = [];
-
-    for (const projectile of this.activeProjectiles.values()) {
-      advanceProjectile(projectile, deltaSeconds);
-
-      if (projectile.local) {
-        const enemyHit = this.findEnemyHitByProjectile(projectile);
-        if (enemyHit) {
-          if (this.isMultiplayerEnabled()) {
-            this.options.multiplayer?.onEnemyHit(
-              enemyHit.mapObject.id,
-              projectile.weapon.damage,
-              projectile.weapon.id
-            );
-          } else {
-            this.damageEnemy(enemyHit, projectile.weapon.damage);
-          }
-          removeIds.push(projectile.id);
-          continue;
-        }
-
-        if (this.isMultiplayerEnabled()) {
-          const remoteHit = this.findRemotePlayerHitByProjectile(projectile);
-          if (remoteHit) {
-            this.options.multiplayer?.onPlayerAttack({
-              weaponId: projectile.weapon.id,
-              origin: projectile.origin,
-              direction: fromThreeVector(projectile.direction),
-              range: projectile.weapon.range,
-              damage: projectile.weapon.damage,
-              targetPlayerId: remoteHit.id,
-              attackType: projectile.weapon.attackType,
-            });
-            removeIds.push(projectile.id);
-            continue;
-          }
-        }
-      }
-
-      if (isProjectileExpired(projectile)) {
-        removeIds.push(projectile.id);
-      }
-    }
-
-    for (const id of removeIds) {
-      this.removeProjectile(id);
-    }
-  }
-
-  private findEnemyHitByProjectile(projectile: ActiveProjectile): EnemyRuntimeState | null {
-    let closest: EnemyRuntimeState | null = null;
-    let closestDistance = Infinity;
-
-    for (const state of this.enemyStates.values()) {
-      const view = this.objectViews.get(state.mapObject.id);
-      if (!view || !view.visible || state.health <= 0) {
-        continue;
-      }
-
-      if (!isProjectileNearPosition(projectile.mesh.position, view.position, 0.72, 1.7)) {
-        continue;
-      }
-
-      const horizontalDistance = distance2DVector(projectile.mesh.position, view.position);
-      if (horizontalDistance < closestDistance) {
-        closestDistance = horizontalDistance;
-        closest = state;
-      }
-    }
-
-    return closest;
-  }
-
-  private findRemotePlayerHitByProjectile(projectile: ActiveProjectile): PlayerNetState | null {
-    let closest: PlayerNetState | null = null;
-    let closestDistance = Infinity;
-
-    for (const remotePlayer of this.options.multiplayer?.getRemotePlayers() ?? []) {
-      if (!remotePlayer.isAlive) {
-        continue;
-      }
-
-      const remotePosition = toThreeVector(remotePlayer.position);
-      remotePosition.y += 0.9;
-      if (!isProjectileNearPosition(projectile.mesh.position, remotePosition, 0.68, 1.35)) {
-        continue;
-      }
-
-      const horizontalDistance = distance2DVector(projectile.mesh.position, remotePosition);
-      if (horizontalDistance < closestDistance) {
-        closestDistance = horizontalDistance;
-        closest = remotePlayer;
-      }
-    }
-
-    return closest;
-  }
-
-  private removeProjectile(projectileId: string): void {
-    const projectile = this.activeProjectiles.get(projectileId);
-    if (!projectile) {
-      return;
-    }
-
-    this.world.remove(projectile.mesh);
-    disposeObject3D(projectile.mesh);
-    this.activeProjectiles.delete(projectileId);
-  }
-
-  private clearProjectiles(): void {
-    for (const projectileId of [...this.activeProjectiles.keys()]) {
-      this.removeProjectile(projectileId);
-    }
-  }
-
-  private getAttackOrigin(direction: THREE.Vector3): Vector3 {
-    const position = toThreeVector(this.player.getPosition());
-    const forward = direction.clone();
-    forward.y = 0;
-
-    if (forward.lengthSq() <= 0.0001) {
-      forward.set(0, 0, -1);
-    }
-
-    forward.normalize();
-    const right = new THREE.Vector3().crossVectors(forward, UP).normalize();
-    position.addScaledVector(forward, 0.72);
-    position.addScaledVector(right, 0.24);
-    position.y += 1.08;
-    return fromThreeVector(position);
-  }
-
-  private updateWeaponCooldownHud(): void {
-    if (!this.equippedWeapon) {
-      return;
-    }
-
-    const progress = this.combatSystem.getWeaponCooldownProgress(this.equippedWeapon);
-    this.hud.setWeaponCooldown(progress);
-  }
-
-  private interpolateEnemyView(
-    state: EnemyRuntimeState,
-    view: THREE.Object3D,
-    deltaSeconds: number
-  ): void {
-    const alpha = Math.min(1, deltaSeconds * 8);
-    view.position.lerp(state.targetPosition, alpha);
-    view.rotation.y = THREE.MathUtils.lerp(view.rotation.y, state.targetRotationY, alpha);
-  }
-
-  private getClosestEnemyTarget(
-    enemyPosition: THREE.Vector3,
-    detectionRange: number
-  ): { playerId?: string; position: Vector3 } | null {
-    const localPlayerId = this.options.multiplayer?.getLocalPlayerId() ?? undefined;
-    const candidates: Array<{ playerId?: string; position: Vector3; alive: boolean }> = [
-      {
-        playerId: localPlayerId,
-        position: this.player.getPosition(),
-        alive: !this.player.isDead(),
-      },
-      ...(this.options.multiplayer?.getRemotePlayers() ?? []).map((player) => ({
-        playerId: player.id,
-        position: player.position,
-        alive: player.isAlive,
-      })),
-    ];
-    let best: { playerId?: string; position: Vector3 } | null = null;
-    let bestDistance = Infinity;
-
-    for (const candidate of candidates) {
-      if (!candidate.alive) {
-        continue;
-      }
-
-      const distance = distance2DVector(enemyPosition, toThreeVector(candidate.position));
-      if (distance <= detectionRange && distance < bestDistance) {
-        bestDistance = distance;
-        best = { playerId: candidate.playerId, position: candidate.position };
-      }
-    }
-
-    return best;
-  }
-
   private damageEnemy(state: EnemyRuntimeState, amount: number): void {
     const view = this.objectViews.get(state.mapObject.id);
     const hitPosition = view ? fromThreeVector(view.position) : state.mapObject.position;
@@ -1528,33 +960,7 @@ export class RuntimeMechanics {
       return;
     }
 
-    if (view) {
-      view.visible = false;
-    }
-
-    this.physicsSystem.removeCollider(state.mapObject.id);
-    this.defeatedEnemyIds.add(state.mapObject.id);
-    this.hud.showMessage("Inimigo derrotado");
-    this.audio.play("item");
-    this.feedback.spawn("item", hitPosition, "Inimigo -");
-    this.dispatchEnemyDefeated(state.mapObject.id);
-  }
-
-  private dispatchEnemyDefeated(objectId: string): void {
-    const totalEnemies = this.getTotalEnemyObjects();
-    this.objectiveRuntime.onEnemyDefeated(this.defeatedEnemyIds.size, totalEnemies);
-    this.gameModeRuntime.onEnemyDefeated(this.defeatedEnemyIds.size, totalEnemies);
-    this.logicRuntime.dispatch({ type: "onEnemyDefeated", objectId });
-    this.logicRuntime.dispatch({ type: "onAnyEnemyDefeated", objectId });
-
-    if (
-      totalEnemies > 0 &&
-      !this.allEnemiesDefeatedDispatched &&
-      this.defeatedEnemyIds.size >= totalEnemies
-    ) {
-      this.allEnemiesDefeatedDispatched = true;
-      this.logicRuntime.dispatch({ type: "onAllEnemiesDefeated" });
-    }
+    this.enemySystem.applyEnemyDefeated(state.mapObject.id);
   }
 
   private updateVoidDeath(): boolean {
@@ -1622,10 +1028,6 @@ export class RuntimeMechanics {
     const objectBounds = new THREE.Box3().setFromObject(view);
     objectBounds.expandByScalar(0.18);
     return objectBounds.intersectsBox(playerBounds);
-  }
-
-  private getTotalEnemyObjects(): number {
-    return this.map.objects.filter((mapObject) => mapObject.type === "enemy").length;
   }
 
   private getObjectById(objectId: string): MapObject | ItemPickupObject | null {
@@ -1701,48 +1103,6 @@ function getNpcDialogueLines(mapObject: MapObject, objectiveHint: string | null)
   }
 
   return [...lines, `Objetivo atual: ${objectiveHint}`];
-}
-
-function createEquippedWeaponFromDefinition(definition: WeaponDefinition): EquippedWeapon {
-  return {
-    id: definition.combatId,
-    itemId: definition.id === "sword" ? "weapon_basic" : definition.id,
-    label: definition.name,
-    weaponClass: definition.weaponClass,
-    attackType: definition.attackType,
-    damage: definition.damage,
-    range: definition.range,
-    cooldown: definition.cooldown,
-    projectileSpeed: Math.max(0, definition.projectileSpeed ?? 0),
-    coneDot: Math.max(-1, Math.min(1, definition.coneDot ?? 0.18)),
-  };
-}
-
-function getWeaponHudTypeLabel(weapon: EquippedWeapon): string {
-  const mode = weapon.weaponClass === "ranged" ? "Ranged" : "Melee";
-  return `${mode} - ${weapon.damage} dmg - ${weapon.cooldown.toFixed(2)}s`;
-}
-
-function getVector(value: unknown, fallback: Vector3): Vector3 {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "x" in value &&
-    "y" in value &&
-    "z" in value &&
-    typeof value.x === "number" &&
-    typeof value.y === "number" &&
-    typeof value.z === "number"
-  ) {
-    return { x: value.x, y: value.y, z: value.z };
-  }
-
-  return { ...fallback };
-}
-
-function getThreeVector(value: unknown, fallback: Vector3): THREE.Vector3 {
-  const vector = getVector(value, fallback);
-  return toThreeVector(vector);
 }
 
 function toThreeVector(vector: Vector3): THREE.Vector3 {

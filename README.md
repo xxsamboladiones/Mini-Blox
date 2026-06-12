@@ -20,15 +20,16 @@ The current alpha focuses on a playable creator loop: build maps, test them in t
 - Tycoon creation/gameplay with generators, collectors, buy buttons, upgrades and unlockables
 - SQLite-backed online catalog with simple username/password auth
 - Server rate limits, structured JSON logs and WebSocket heartbeat cleanup
-- Official templates for basic, platform, puzzle, collect, combat, Tycoon, PvP and coop examples
+- 29 official premium templates covering sandbox, obby, collect, puzzle, combat, Tycoon, PvP, coop, city, island and stress examples
 - Basic logic/objective/game-mode panels
 
 ## Alpha 0.2.0-alpha.1 Runtime Extraction
 
 - Added the `RuntimeSystemManager` lifecycle for small runtime systems with ordered update, interaction and world-event delegation
-- Extracted Tycoon, pickup/inventory/spawner and door/button responsibilities out of `RuntimeMechanics`
+- Extracted Tycoon, pickup/inventory/spawner, door/button, movement-object, hazard/checkpoint, enemy, projectile and combat-bridge responsibilities out of `RuntimeMechanics`
 - Added guardrails for runtime-system registration and lookup so duplicate system IDs fail early
-- Kept `RuntimeMechanics` as the runtime orchestrator while movement objects, hazards/checkpoints and enemies remain future extraction targets
+- Kept `RuntimeMechanics` as the runtime orchestrator for global player lifecycle, finish/void flows, cross-system callbacks and multiplayer shared-state application
+- Reworked the official template catalog into a 29-map premium pack while keeping lightweight menu metadata separate from heavy generators
 
 ## Alpha 0.1.9 Performance, CI Smokes & Runtime Systems
 

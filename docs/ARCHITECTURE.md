@@ -33,7 +33,9 @@ Every new object type should be visible in the object panel, editable in the pro
 - `ObjectFactory.ts` builds the visual representation for map objects.
 - `GameModeRuntime.ts`, `ObjectiveRuntime.ts`, `LogicRuntime.ts`, `RuntimeHud.ts`, `AudioSystem.ts` and `FeedbackSystem.ts` consume system state and events.
 
-The runtime-system extraction is incremental. `RuntimePickupSystem` owns coins, keys, item pickups and spawners. `RuntimeDoorButtonSystem` owns opened doors, activated buttons and required-key checks. `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads and teleporters, including their cooldowns and collider updates. `RuntimeHazardCheckpointSystem` owns checkpoints, damage zones and message zones while bridging the global death cooldown that still belongs to player lifecycle. The Tycoon mode follows the same direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
+The runtime-system extraction is incremental. `RuntimePickupSystem` owns coins, keys, item pickups and spawners. `RuntimeDoorButtonSystem` owns opened doors, activated buttons and required-key checks. `RuntimeMovementObjectSystem` owns moving platforms, disappearing blocks, jump pads and teleporters, including their cooldowns and collider updates. `RuntimeHazardCheckpointSystem` owns checkpoints, damage zones and message zones while bridging the global death cooldown that still belongs to player lifecycle. `RuntimeEnemySystem` owns enemy state, initialization, reset, spawn, network state application, patrol/chase movement, enemy attack cooldowns and host position sync. `RuntimeProjectileSystem` owns projectile spawning, movement, expiry, cleanup and projectile hit lookup/application callbacks. `RuntimeCombatBridgeSystem` owns equipped weapons, weapon cooldown HUD, high-level player attack flow, melee target selection and ranged projectile spawning. The Tycoon mode follows the same direction: `TycoonSystem` owns money, generators, collectors, purchases, upgrades and completion, while `RuntimeTycoonSystem` adapts it to the runtime manager for update, reset, interaction and world-event flow.
+
+`RuntimeMechanics` still owns global player lifecycle, void death, finish flow, damage/death callbacks, logic/objective/game-mode wiring and shared multiplayer state application. `docs/ENEMY_COMBAT_AUDIT.md` documents the current behavior and `src/engine/RuntimeMechanicsEnemyCombat.test.ts` protects the integration boundary.
 
 ## Backend
 
@@ -52,6 +54,7 @@ SQLite is the implemented adapter. Postgres is reserved for future repository ad
 
 - Do not add new gameplay logic directly inside `RuntimeMechanics`.
 - New runtime mechanics should be registered through `RuntimeSystemManager` or documented as a temporary bridge.
+- Enemy/combat changes must keep `RuntimeEnemySystem.test.ts` and `RuntimeMechanicsEnemyCombat.test.ts` passing through each extraction phase.
 - Every new object type needs schema, catalog, ObjectFactory visual, editor properties, normalization, local validation, online validation and tests.
 - Every new game mode needs schema, editor settings, runtime system, HUD/objective integration, validation and tests.
 - Every `GameMap` schema change needs explicit normalization or migration documentation.

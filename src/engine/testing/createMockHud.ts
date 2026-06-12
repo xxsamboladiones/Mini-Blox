@@ -19,6 +19,7 @@ export type MockRuntimeHud = RuntimeHud & {
   coins: Array<{ count: number; total?: number }>;
   health: Array<{ current: number; max: number }>;
   weapons: Array<RuntimeWeaponHudInfo | string | null>;
+  weaponCooldowns: number[];
   inventories: HudInventoryItem[][];
   keys: string[][];
   objectives: HudObjectiveState[][];
@@ -26,6 +27,7 @@ export type MockRuntimeHud = RuntimeHud & {
   tycoonStatuses: Array<TycoonHudStatus | null>;
   victories: Array<{ message: string; coinCount: number; summary?: GameModeSummary }>;
   defeats: Array<{ message: string; summary?: GameModeSummary; durationMs: number }>;
+  dialogues: Array<{ speaker: string; line: string; hasNext: boolean }>;
   getLatestTycoonStatus: () => TycoonHudStatus | null;
 };
 
@@ -34,6 +36,7 @@ export function createMockHud(): MockRuntimeHud {
   const coins: Array<{ count: number; total?: number }> = [];
   const health: Array<{ current: number; max: number }> = [];
   const weapons: Array<RuntimeWeaponHudInfo | string | null> = [];
+  const weaponCooldowns: number[] = [];
   const inventories: HudInventoryItem[][] = [];
   const keys: string[][] = [];
   const objectives: HudObjectiveState[][] = [];
@@ -41,12 +44,14 @@ export function createMockHud(): MockRuntimeHud {
   const tycoonStatuses: Array<TycoonHudStatus | null> = [];
   const victories: Array<{ message: string; coinCount: number; summary?: GameModeSummary }> = [];
   const defeats: Array<{ message: string; summary?: GameModeSummary; durationMs: number }> = [];
+  const dialogues: Array<{ speaker: string; line: string; hasNext: boolean }> = [];
 
   const mock = {
     messages,
     coins,
     health,
     weapons,
+    weaponCooldowns,
     inventories,
     keys,
     objectives,
@@ -54,6 +59,7 @@ export function createMockHud(): MockRuntimeHud {
     tycoonStatuses,
     victories,
     defeats,
+    dialogues,
     getLatestTycoonStatus: () => tycoonStatuses.at(-1) ?? null,
     showMessage: (text: string, durationMs = 1800) => {
       messages.push({ text, durationMs });
@@ -66,6 +72,9 @@ export function createMockHud(): MockRuntimeHud {
     },
     setWeapon: (weapon: RuntimeWeaponHudInfo | string | null) => {
       weapons.push(weapon);
+    },
+    setWeaponCooldown: (progress: number) => {
+      weaponCooldowns.push(progress);
     },
     setInventory: (items: HudInventoryItem[]) => {
       inventories.push(structuredClone(items));
@@ -97,6 +106,18 @@ export function createMockHud(): MockRuntimeHud {
       durationMs = 2600
     ) => {
       defeats.push({ message, summary, durationMs });
+    },
+    hideVictory: () => {
+      victories.length = 0;
+    },
+    hideDefeat: () => {
+      defeats.length = 0;
+    },
+    showDialogue: (speaker: string, line: string, hasNext: boolean) => {
+      dialogues.push({ speaker, line, hasNext });
+    },
+    hideDialogue: () => {
+      dialogues.length = 0;
     },
   };
 

@@ -15,7 +15,7 @@ node scripts/validate-templates.mjs
 node scripts/verify-render.mjs
 ```
 
-Root Vitest is configured to test `src/**` and exclude `server/**`. Current tests cover `TycoonSystem`, `RuntimeSystemManager`, `RuntimePickupSystem`, `RuntimeDoorButtonSystem`, `RuntimeMovementObjectSystem`, `RuntimeHazardCheckpointSystem` and editor map validation.
+Root Vitest is configured to test `src/**` and exclude `server/**`. Current tests cover `TycoonSystem`, `RuntimeSystemManager`, `RuntimePickupSystem`, `RuntimeDoorButtonSystem`, `RuntimeMovementObjectSystem`, `RuntimeHazardCheckpointSystem`, `RuntimeEnemySystem`, `RuntimeProjectileSystem`, `RuntimeCombatBridgeSystem`, enemy/combat/projectile integration protection and editor map validation.
 
 ## Backend
 
@@ -91,6 +91,9 @@ Use temporary `DATABASE_URL=file:...` values when running repeated smoke tests t
 - Door/button-like systems should test linked object changes, required-key bridges, repeated interaction rules, world events and reset restoration.
 - Movement-object systems should test position interpolation, collider updates/removal, cooldowns, player motion callbacks and reset restoration.
 - Hazard/checkpoint systems should test checkpoint activation/reset, damage cooldowns, fatal damage callbacks and message-zone entry/exit rules.
+- Enemy state/reset/spawn/network-apply, movement, attack cooldown and host-sync changes should update `RuntimeEnemySystem.test.ts`.
+- Projectile lifecycle/hit changes should update `RuntimeProjectileSystem.test.ts` and keep `RuntimeMechanicsEnemyCombat.test.ts` passing.
+- Weapon equip, cooldown, melee target selection, ranged projectile spawning and combat bridge changes should update `RuntimeCombatBridgeSystem.test.ts` and keep `RuntimeMechanicsEnemyCombat.test.ts` passing.
 - New object types should have validation tests for valid templates and broken references.
 - Backend route tests should use temporary SQLite and should not depend on existing local data.
 - Regressions found by browser playtesting should get a small automated test when the behavior can be isolated.

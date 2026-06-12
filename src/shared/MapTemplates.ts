@@ -95,13 +95,13 @@ type RoutePoint = Vector3 & {
 const TEMPLATE_CONFIGS = [
   {
     id: "empty",
-    name: "Mapa vazio",
-    description: "Base realmente limpa para comecar uma criacao sem itens, objetivos ou decoracao.",
-    icon: "square",
+    name: "Jardim Inicial",
+    description: "Jardim sandbox limpo, bonito e seguro para iniciar uma criacao premium.",
+    icon: "sprout",
     style: "sandbox",
-    theme: "classic",
-    ambientMusic: "none",
-    tags: ["official", "basic", "sandbox", "showcase", "classic"],
+    theme: "grass",
+    ambientMusic: "calm",
+    tags: ["official", "premium", "sandbox", "garden", "beginner"],
     minObjects: 2,
     sections: 1,
     areas: 1,
@@ -121,14 +121,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "obby",
-    name: "Obby basico",
-    description:
-      "Obby linear planejado com tutorial, dificuldade progressiva, checkpoints e final claro.",
+    name: "Obby Jardim Suspenso",
+    description: "Obby suspenso em jardim com checkpoints, moedas guia e saltos progressivos.",
     icon: "route",
     style: "obby",
-    theme: "classic",
+    theme: "grass",
     ambientMusic: "adventure",
-    tags: ["official", "platform", "obby", "tutorial", "checkpoint", "showcase"],
+    tags: ["official", "premium", "obby", "garden", "checkpoint"],
     minObjects: 30,
     sections: 7,
     areas: 3,
@@ -148,14 +147,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "coin",
-    name: "Coleta de moedas",
-    description:
-      "Mapa semiaberto de exploracao com trilhas de moedas, bosque, ruina e ilha secreta.",
+    name: "Caca as Moedas Douradas",
+    description: "Trilha de coleta dourada com rotas laterais, recompensa e final claro.",
     icon: "coins",
     style: "coinWorld",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["official", "collect", "exploration", "puzzle", "showcase", "grass"],
+    tags: ["official", "premium", "collect", "gold", "exploration"],
     minObjects: 250,
     sections: 7,
     areas: 5,
@@ -175,13 +173,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "door",
-    name: "Porta e botao",
-    description: "Puzzle limpo com salas em linha, botoes perto das portas e uma chave clara.",
+    name: "Templo dos Botoes",
+    description: "Templo puzzle com botoes, portas e chave em sequencia legivel.",
     icon: "door-open",
     style: "puzzle",
     theme: "classic",
     ambientMusic: "dark",
-    tags: ["official", "puzzle", "door", "button", "logic", "classic"],
+    tags: ["official", "premium", "puzzle", "button", "temple"],
     minObjects: 28,
     sections: 4,
     areas: 4,
@@ -201,13 +199,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "checkpoint",
-    name: "Checkpoint + zona de morte",
-    description: "Desafio curto com checkpoints antes de cada perigo e zonas de morte evitaveis.",
-    icon: "flag",
+    name: "Corrida nas Nuvens",
+    description: "Percurso aereo com checkpoints antes dos perigos e saltos possiveis.",
+    icon: "cloud",
     style: "challenge",
-    theme: "desert",
+    theme: "classic",
     ambientMusic: "adventure",
-    tags: ["official", "platform", "checkpoint", "hazard", "challenge", "desert"],
+    tags: ["official", "premium", "platform", "clouds", "checkpoint"],
     minObjects: 34,
     sections: 5,
     areas: 3,
@@ -227,13 +225,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "mechanics",
-    name: "Mapa de Mecanicas",
-    description: "Laboratorio limpo com uma estacao clara para cada mecanica jogavel.",
-    icon: "sparkles",
+    name: "Escola de Mecanicas Mini Blox",
+    description: "Escola jogavel com estacoes claras para aprender cada mecanica.",
+    icon: "graduation-cap",
     style: "mechanics",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "basic", "tutorial", "logic", "mechanics", "neon"],
+    tags: ["official", "premium", "tutorial", "mechanics", "school"],
     minObjects: 42,
     sections: 8,
     areas: 8,
@@ -253,13 +251,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "combatArena",
-    name: "Arena de Combate",
-    description: "Arena compacta para testar vida, arma basica, inimigos e spawners de cura.",
+    name: "Arena Treino de Combate",
+    description: "Arena de treino com arma inicial, inimigos, cura e objetivo direto.",
     icon: "swords",
     style: "challenge",
-    theme: "dark",
+    theme: "classic",
     ambientMusic: "adventure",
-    tags: ["official", "combat", "arena", "enemy", "weapons", "dark"],
+    tags: ["official", "premium", "combat", "training", "enemy"],
     minObjects: 170,
     sections: 4,
     areas: 3,
@@ -279,14 +277,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "combatDungeon",
-    name: "Dungeon de Combate",
-    description:
-      "Dungeon compacta com arma basica, salas de inimigos, curas, portas por logica e boss final.",
+    name: "Dungeon dos Slimes",
+    description: "Dungeon compacta com salas de inimigos, curas, portas e boss final.",
     icon: "swords",
     style: "dungeon",
     theme: "dark",
     ambientMusic: "dark",
-    tags: ["official", "combat", "dungeon", "enemy", "boss", "dark"],
+    tags: ["official", "premium", "combat", "dungeon", "slime"],
     minObjects: 240,
     sections: 5,
     areas: 5,
@@ -306,13 +303,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "guideMission",
-    name: "Missao do Guia",
-    description: "Missao curta com NPC guia, objetivos no HUD, moedas, chave, inimigos e final.",
-    icon: "user-round",
+    name: "Museu dos Blocos",
+    description: "Museu guiado com NPC, objetivos, coleta, chave, combate leve e final.",
+    icon: "landmark",
     style: "forest",
-    theme: "grass",
+    theme: "classic",
     ambientMusic: "calm",
-    tags: ["official", "objective", "tutorial", "npc", "combat", "grass"],
+    tags: ["official", "premium", "museum", "npc", "objective"],
     minObjects: 34,
     sections: 5,
     areas: 5,
@@ -332,14 +329,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "localTeamArena",
-    name: "Arena de Times Local",
-    description:
-      "Arena local com dois times, spawns separados, inimigos pontuaveis e HUD de placar.",
+    name: "Coliseu dos Cubos",
+    description: "Coliseu local com dois times, spawns simetricos, inimigos e placar.",
     icon: "flag",
     style: "challenge",
-    theme: "dark",
+    theme: "desert",
     ambientMusic: "adventure",
-    tags: ["official", "local", "team", "combat", "arena", "dark"],
+    tags: ["official", "premium", "team", "coliseum", "combat"],
     minObjects: 170,
     sections: 4,
     areas: 3,
@@ -359,14 +355,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "localCapturePoint",
-    name: "Capture Point Local",
-    description:
-      "Arena pequena com dois times locais e ponto central que gera pontuacao ao capturar.",
+    name: "Capture a Torre",
+    description: "Arena local com duas bases e torre central de captura acessivel.",
     icon: "circle-dot",
     style: "challenge",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "local", "team", "capture", "arena", "neon"],
+    tags: ["official", "premium", "capture", "team", "tower"],
     minObjects: 160,
     sections: 4,
     areas: 3,
@@ -386,13 +381,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "multiplayerPvpArena",
-    name: "Arena Multiplayer PvP",
-    description: "Arena pequena publicada para testar PvP basico, respawn e times em sala online.",
+    name: "Duelo nas Pontes",
+    description: "Arena multiplayer de pontes com rotas claras, times e respawn rapido.",
     icon: "swords",
     style: "challenge",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["official", "multiplayer", "pvp", "team", "arena", "showcase"],
+    tags: ["official", "premium", "multiplayer", "pvp", "bridges"],
     minObjects: 120,
     sections: 3,
     areas: 2,
@@ -412,14 +407,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "multiplayerCoopEnemies",
-    name: "Arena Coop Inimigos",
-    description:
-      "Arena cooperativa curta para testar inimigos sincronizados, moedas, portas e itens compartilhados.",
+    name: "Coop Fortaleza dos Inimigos",
+    description: "Fortaleza cooperativa para derrotar inimigos sincronizados e abrir caminho.",
     icon: "shield",
     style: "challenge",
     theme: "grass",
     ambientMusic: "adventure",
-    tags: ["official", "multiplayer", "coop", "combat", "enemy", "showcase"],
+    tags: ["official", "premium", "multiplayer", "coop", "fortress"],
     minObjects: 130,
     sections: 3,
     areas: 3,
@@ -439,41 +433,39 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "weaponArsenal",
-    name: "Arsenal de Teste",
-    description:
-      "Laboratorio curto para testar espada, martelo, adaga e blaster contra inimigos locais.",
-    icon: "swords",
-    style: "challenge",
-    theme: "classic",
-    ambientMusic: "adventure",
-    tags: ["official", "combat", "weapons", "test", "enemy", "classic"],
-    minObjects: 125,
+    name: "Fabrica Neon Tycoon",
+    description: "Tycoon neon com geradores, coletor, upgrades e compras em progressao.",
+    icon: "factory",
+    style: "tycoon",
+    theme: "neon",
+    ambientMusic: "neon",
+    tags: ["official", "premium", "tycoon", "neon", "factory"],
+    minObjects: 34,
     sections: 3,
-    areas: 3,
-    coins: 8,
+    areas: 2,
+    coins: 0,
     doors: 0,
     buttons: 0,
     keys: 0,
-    checkpoints: 2,
+    checkpoints: 0,
     damageZones: 0,
     jumpPads: 0,
     teleporters: 0,
     movingPlatforms: 0,
     disappearingBlocks: 0,
-    messageZones: 3,
+    messageZones: 2,
     logicRules: 2,
-    decorations: 54,
+    decorations: 14,
   },
   {
     id: "pvpArsenal",
-    name: "Arena PvP Arsenal",
-    description:
-      "Arena online com bases, times e quatro armas para testar sincronizacao visual e dano server-side.",
-    icon: "swords",
+    name: "Estacao Espacial",
+    description: "Arena espacial de times com armas, bases e linhas de combate legiveis.",
+    icon: "rocket",
     style: "challenge",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "multiplayer", "pvp", "weapons", "team", "neon"],
+    tags: ["official", "premium", "space", "multiplayer", "weapons"],
     minObjects: 135,
     sections: 3,
     areas: 3,
@@ -493,65 +485,65 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "competitiveCoin",
-    name: "Coleta Competitiva Local",
-    description: "Mapa medio de moedas com meta clara, rota principal e placar local de coleta.",
-    icon: "coins",
-    style: "coinWorld",
+    name: "Fazenda Tycoon",
+    description: "Tycoon rural simples com fluxo de caixa, botoes e progresso visual.",
+    icon: "wheat",
+    style: "tycoon",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["official", "collect", "competitive", "local", "score", "grass"],
-    minObjects: 190,
-    sections: 5,
-    areas: 4,
-    coins: 42,
-    doors: 1,
-    buttons: 1,
+    tags: ["official", "premium", "tycoon", "farm", "economy"],
+    minObjects: 34,
+    sections: 3,
+    areas: 2,
+    coins: 0,
+    doors: 0,
+    buttons: 0,
     keys: 0,
-    checkpoints: 3,
-    damageZones: 1,
-    jumpPads: 1,
-    teleporters: 0,
-    movingPlatforms: 0,
-    disappearingBlocks: 0,
-    messageZones: 5,
-    logicRules: 2,
-    decorations: 82,
-  },
-  {
-    id: "objectiveArena",
-    name: "Arena de Objetivos",
-    description: "Arena curta com arma, inimigos, captura local, porta e objetivos obrigatorios.",
-    icon: "list-checks",
-    style: "challenge",
-    theme: "classic",
-    ambientMusic: "adventure",
-    tags: ["official", "objective", "combat", "arena", "capture", "classic"],
-    minObjects: 190,
-    sections: 5,
-    areas: 4,
-    coins: 20,
-    doors: 1,
-    buttons: 1,
-    keys: 0,
-    checkpoints: 2,
+    checkpoints: 0,
     damageZones: 0,
     jumpPads: 0,
     teleporters: 0,
     movingPlatforms: 0,
     disappearingBlocks: 0,
-    messageZones: 5,
-    logicRules: 5,
-    decorations: 82,
+    messageZones: 2,
+    logicRules: 2,
+    decorations: 14,
+  },
+  {
+    id: "objectiveArena",
+    name: "Laboratorio de Energia Tycoon",
+    description: "Tycoon de laboratorio com geradores de energia, upgrade e barreira final.",
+    icon: "zap",
+    style: "tycoon",
+    theme: "neon",
+    ambientMusic: "neon",
+    tags: ["official", "premium", "tycoon", "lab", "energy"],
+    minObjects: 34,
+    sections: 3,
+    areas: 2,
+    coins: 0,
+    doors: 0,
+    buttons: 0,
+    keys: 0,
+    checkpoints: 0,
+    damageZones: 0,
+    jumpPads: 0,
+    teleporters: 0,
+    movingPlatforms: 0,
+    disappearingBlocks: 0,
+    messageZones: 2,
+    logicRules: 2,
+    decorations: 14,
   },
   {
     id: "keyPuzzle",
-    name: "Puzzle com Chave",
-    description: "Puzzle sequencial com chaves antes das portas e salas sem bloqueios confusos.",
+    name: "Ruinas com Chaves",
+    description: "Ruinas puzzle com chaves antes das portas e salas sem softlock.",
     icon: "key-round",
     style: "dungeon",
-    theme: "dark",
+    theme: "desert",
     ambientMusic: "dark",
-    tags: ["official", "puzzle", "key", "door", "dungeon", "dark"],
+    tags: ["official", "premium", "puzzle", "keys", "ruins"],
     minObjects: 35,
     sections: 5,
     areas: 5,
@@ -571,13 +563,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "logic",
-    name: "Mapa com Logica",
-    description: "Laboratorio sequencial de logica visual, com uma mecanica clara por sala.",
+    name: "Circuito de Plataformas Moveis",
+    description: "Circuito tecnico com logica visual, plataformas, portas e checkpoints.",
     icon: "workflow",
     style: "logic",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "puzzle", "logic", "tutorial", "mechanics", "neon"],
+    tags: ["official", "premium", "mechanics", "logic", "platform"],
     minObjects: 250,
     sections: 11,
     areas: 11,
@@ -597,14 +589,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "forest",
-    name: "Bosque Simples",
-    description:
-      "Floresta grande exploravel com trilha principal, ruina escondida, chaves e templo final.",
+    name: "Bosque Encantado",
+    description: "Bosque grande com trilha principal, ruinas, chaves, segredos e templo final.",
     icon: "tree-pine",
     style: "forest",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["official", "exploration", "collect", "puzzle", "large", "grass"],
+    tags: ["official", "premium", "forest", "exploration", "magic"],
     minObjects: 640,
     sections: 10,
     areas: 8,
@@ -624,13 +615,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "desert",
-    name: "Deserto",
-    description: "Ruinas enormes no deserto com templos, corredores, obby, teleporte e puzzle.",
+    name: "Deserto dos Saltos",
+    description: "Deserto de ruinas com saltos, perigos, teleportes e puzzle final.",
     icon: "sun",
     style: "desert",
     theme: "desert",
     ambientMusic: "adventure",
-    tags: ["official", "exploration", "puzzle", "platform", "large", "desert"],
+    tags: ["official", "premium", "desert", "platform", "ruins"],
     minObjects: 650,
     sections: 10,
     areas: 9,
@@ -650,14 +641,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "neonObby",
-    name: "Neon Obby",
-    description:
-      "Obby neon limpo com checkpoints, brilho, saltos possiveis e perigos fora das plataformas.",
+    name: "Obby Neon Vertical",
+    description: "Obby neon vertical com checkpoints, brilho e leitura clara da rota.",
     icon: "zap",
     style: "neon",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "platform", "obby", "checkpoint", "large", "neon"],
+    tags: ["official", "premium", "obby", "neon", "vertical"],
     minObjects: 39,
     sections: 9,
     areas: 4,
@@ -677,14 +667,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "megaObby",
-    name: "Mega Obby Extremo",
-    description:
-      "Obby longo e legivel com checkpoints frequentes, gaps possiveis e hazards abaixo da rota.",
-    icon: "route",
+    name: "Mega Showcase Profissional",
+    description: "Showcase grande de plataformas, checkpoints, hazards e decoracao legivel.",
+    icon: "sparkles",
     style: "obby",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "platform", "obby", "stress", "experimental", "neon"],
+    tags: ["official", "premium", "showcase", "obby", "large"],
     minObjects: 54,
     sections: 12,
     areas: 4,
@@ -704,13 +693,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "megaCoinWorld",
-    name: "Mundo de Coleta Gigante",
-    description: "Mundo de coleta amplo e organizado por ilhas, com moedas em trilhas legiveis.",
-    icon: "coins",
+    name: "Portal das Ilhas",
+    description: "Mundo de ilhas com teleportes, moedas, chaves e rotas organizadas.",
+    icon: "landmark",
     style: "coinWorld",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["official", "collect", "exploration", "stress", "experimental", "grass"],
+    tags: ["official", "premium", "islands", "portal", "collect"],
     minObjects: 77,
     sections: 6,
     areas: 6,
@@ -730,13 +719,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "keyDungeon",
-    name: "Dungeon de Chaves",
-    description: "Dungeon sequencial com chaves antes das portas, rotas claras e salas jogaveis.",
-    icon: "key-round",
+    name: "Castelo das Portas",
+    description: "Castelo sequencial com chaves, portas, salas claras e final seguro.",
+    icon: "castle",
     style: "dungeon",
     theme: "dark",
     ambientMusic: "dark",
-    tags: ["official", "puzzle", "key", "door", "stress", "dark"],
+    tags: ["official", "premium", "castle", "doors", "keys"],
     minObjects: 64,
     sections: 7,
     areas: 7,
@@ -756,14 +745,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "testCity",
-    name: "Cidade de Teste",
-    description:
-      "Cidade local com predios, ruas, portas, botoes, checkpoints, moedas e teleportes.",
+    name: "Cidade Mini Blox",
+    description: "Cidade premium com ruas, predios, moedas, portas, botoes e teleportes.",
     icon: "map",
     style: "city",
     theme: "classic",
     ambientMusic: "adventure",
-    tags: ["official", "city", "scale", "experimental", "validation", "classic"],
+    tags: ["official", "premium", "city", "showcase", "large"],
     minObjects: 1200,
     sections: 10,
     areas: 10,
@@ -784,13 +772,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "adventureIsland",
-    name: "Ilha de Aventura",
-    description: "Ilha enorme com biomas, pontes, segredos, chaves, portas, teleportes e final.",
+    name: "Ilha Pirata",
+    description: "Ilha grande com pontes, segredos, chaves, moedas e aventura final.",
     icon: "tree-pine",
     style: "island",
     theme: "grass",
     ambientMusic: "adventure",
-    tags: ["official", "exploration", "collect", "adventure", "large", "grass"],
+    tags: ["official", "premium", "pirate", "island", "large"],
     minObjects: 1050,
     sections: 12,
     areas: 8,
@@ -810,14 +798,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "basicTycoon",
-    name: "Tycoon Basico",
-    description:
-      "Mini fabrica tycoon com geradores, coletor, botoes de compra, upgrade, barreira e vitoria por progresso.",
-    icon: "factory",
+    name: "Mina de Cristal Tycoon",
+    description: "Tycoon de mina com geradores, coletor, upgrades, barreira e trofeu final.",
+    icon: "gem",
     style: "tycoon",
     theme: "grass",
     ambientMusic: "calm",
-    tags: ["official", "tycoon", "economy", "progression", "beginner", "solo"],
+    tags: ["official", "premium", "tycoon", "crystal", "economy"],
     minObjects: 34,
     sections: 3,
     areas: 2,
@@ -837,14 +824,13 @@ const TEMPLATE_CONFIGS = [
   },
   {
     id: "stressTest",
-    name: "Stress Test Completo",
-    description:
-      "Mapa massivo para testar editor, outliner, runtime, colisores, logica e JSON grande.",
+    name: "Stress Test Bonito",
+    description: "Stress test organizado e visualmente limpo para validar escala e performance.",
     icon: "sparkles",
     style: "stress",
     theme: "neon",
     ambientMusic: "neon",
-    tags: ["official", "stress", "scale", "experimental", "validation", "neon"],
+    tags: ["official", "premium", "stress", "performance", "showcase"],
     minObjects: 1500,
     sections: 20,
     areas: 14,
@@ -872,6 +858,17 @@ const TEMPLATE_BY_ID = TEMPLATE_CONFIGS.reduce(
   },
   {} as Record<MapTemplateId, TemplateConfig>
 );
+
+const PREMIUM_TYCOON_TEMPLATE_IDS = new Set<MapTemplateId>([
+  "weaponArsenal",
+  "competitiveCoin",
+  "objectiveArena",
+  "basicTycoon",
+]);
+
+function isPremiumTycoonTemplateId(templateId: MapTemplateId): boolean {
+  return PREMIUM_TYCOON_TEMPLATE_IDS.has(templateId);
+}
 
 const PALETTES: Record<VisualTheme, Palette> = {
   classic: {
@@ -942,6 +939,10 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
 
   if (config.id === "obby") {
     return createCleanObbyTemplateMap(config, "basic");
+  }
+
+  if (isPremiumTycoonTemplateId(config.id)) {
+    return createBasicTycoonMap(config);
   }
 
   if (config.id === "coin") {
@@ -1022,10 +1023,6 @@ function createGeneratedMap(config: TemplateConfig): GameMap {
 
   if (config.id === "competitiveCoin") {
     return createDesignedCompetitiveCoinMap(config);
-  }
-
-  if (config.id === "basicTycoon") {
-    return createBasicTycoonMap(config);
   }
 
   if (config.id === "objectiveArena") {
@@ -1636,28 +1633,18 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
 
   if (config.id === "obby" || config.id === "neonObby" || config.id === "megaObby") {
     settings = createGameModeSettings("obby", "finish");
-  } else if (
-    config.id === "coin" ||
-    config.id === "competitiveCoin" ||
-    config.id === "megaCoinWorld"
-  ) {
+  } else if (config.id === "coin" || config.id === "megaCoinWorld") {
     settings = createGameModeSettings("coinCollect", "collectCoins", {
       targetAmount:
-        config.id === "competitiveCoin"
-          ? Math.min(28, Math.max(1, coins))
-          : Math.min(config.id === "coin" ? 35 : 120, Math.max(1, coins)),
+        Math.min(config.id === "coin" ? 35 : 120, Math.max(1, coins)),
       requireAll: false,
     });
-  } else if (
-    config.id === "combatArena" ||
-    config.id === "combatDungeon" ||
-    config.id === "weaponArsenal"
-  ) {
+  } else if (config.id === "combatArena" || config.id === "combatDungeon") {
     settings = createGameModeSettings("combatArena", "defeatEnemies", {
       targetAmount: Math.max(1, enemies),
       requireAll: true,
     });
-  } else if (config.id === "guideMission" || config.id === "objectiveArena") {
+  } else if (config.id === "guideMission") {
     settings = createGameModeSettings("objectiveRun", "completeObjectives", {
       targetAmount: Math.max(1, requiredObjectives),
       requireAll: true,
@@ -1694,7 +1681,7 @@ function applyGameModePreset(map: GameMap, config: TemplateConfig): void {
     settings.teamsEnabled = true;
     settings.roundEnabled = true;
     settings.roundTimeLimit = 180;
-  } else if (config.id === "basicTycoon") {
+  } else if (isPremiumTycoonTemplateId(config.id)) {
     settings = createGameModeSettings("tycoon", "completeTycoon", {
       requireAll: true,
     });

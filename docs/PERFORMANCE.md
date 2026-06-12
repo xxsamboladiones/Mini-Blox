@@ -15,11 +15,11 @@ MiniBlox uses Vite with explicit chunks for the largest browser subsystems. The 
 
 Before this pass, the root build emitted one initial app chunk around `1,889 kB` and Vite warnings for mixed static/dynamic imports around online storage/services.
 
-After lazy screens and manual chunks, the initial `index` chunk is around `23.76 kB` before gzip. The largest generated chunks are expected vendor/specialized chunks:
+After lazy screens and manual chunks, the initial `index` chunk is around `23.79 kB` before gzip. The largest generated chunks are expected vendor/specialized chunks:
 
 - `vendor-three`: about `620 kB`
 - `vendor-ui`: about `596 kB`
-- `runtime-engine`: about `220 kB`
+- `runtime-engine`: about `235 kB`
 - `editor`: about `193 kB`
 - `template-generators`: about `141 kB`, loaded when a template map is created or templates are validated
 - `online`: about `58 kB`
